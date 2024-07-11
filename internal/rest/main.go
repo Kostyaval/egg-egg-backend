@@ -10,7 +10,7 @@ import (
 
 type ServiceInterface interface{}
 
-func NewREST(cfg *config.Config, log *slog.Logger, srv ServiceInterface) *fiber.App {
+func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fiber.App {
 	// Create fiber app
 	app := fiber.New(fiber.Config{
 		ProxyHeader:           fiber.HeaderXForwardedFor,
@@ -22,6 +22,9 @@ func NewREST(cfg *config.Config, log *slog.Logger, srv ServiceInterface) *fiber.
 	if cfg.Runtime == config.RuntimeProduction {
 		app.Use(recover.New())
 	}
+
+	h := newHandler(srv, logger)
+	app.Get("/ping", h.ping)
 
 	return app
 }
