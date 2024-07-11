@@ -1,0 +1,20 @@
+---
+linters:
+  disable-all: true
+  enable:
+    # default
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    # additional
+    - gofmt
+    - gosec
+    - godot
+    - revive
+    - wsl
+    - paralleltest
+    - prealloc
