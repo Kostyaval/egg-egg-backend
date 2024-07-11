@@ -20,6 +20,7 @@ type Config struct {
 
 func NewConfig() (*Config, error) {
 	var ok bool
+
 	time.Local = time.UTC
 
 	if err := os.Setenv("TZ", "UTC"); err != nil {
