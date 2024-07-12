@@ -24,7 +24,7 @@ type handler struct {
 	srv ServiceInterface
 }
 
-func newHandler(srv ServiceInterface, logger *slog.Logger) *handler {
+func newHandler(logger *slog.Logger, srv ServiceInterface) *handler {
 	return &handler{
 		log: &handlerLogger{log: logger},
 		srv: srv,

@@ -53,24 +53,29 @@ func main() {
 	}()
 
 	// Setup Telegram bot
-	bot, err := tg.NewTelegramBot(cfg)
+	bot, err := tg.NewTelegramBot(cfg, logger, mongodb)
 	if err != nil {
 		logger.Error("new telegram bot", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
 
+	go func() {
+		logger.Info("start telegram bot")
+		bot.Bot.Start()
+	}()
+
 	// Setup service
-	srv := service.NewService(cfg, mongodb, bot)
+	srv := service.NewService(cfg, mongodb)
 
 	// Setup REST
 	restApp := rest.NewREST(cfg, logger, srv)
 	restAddr := "0.0.0.0:8000"
 
 	go func() {
-		logger.With(slog.String("addr", restAddr)).Info("Start")
+		logger.With(slog.String("addr", restAddr)).Info("start REST")
 
 		if err := restApp.Listen(restAddr); err != nil {
-			logger.Error("rest app listen", slog.String("error", err.Error()))
+			logger.Error("listen REST", slog.String("error", err.Error()))
 			os.Exit(1)
 		}
 	}()
@@ -83,9 +88,11 @@ func main() {
 	logger.Info("service shutdown")
 
 	if err := restApp.Shutdown(); err != nil {
-		logger.Error("rest shutdown", slog.String("error", err.Error()))
+		logger.Error("shutdown REST", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
+
+	bot.Bot.Stop()
 
 	logger.Info("good bye")
 }
