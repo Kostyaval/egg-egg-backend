@@ -23,7 +23,7 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 		app.Use(recover.New())
 	}
 
-	h := newHandler(srv, logger)
+	h := newHandler(logger, srv)
 	app.Get("/ping", h.ping)
 
 	return app
