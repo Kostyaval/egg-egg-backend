@@ -16,10 +16,14 @@ type Config struct {
 	Runtime       string
 	MongoURI      string
 	TelegramToken string
+	JWT           *JWTConfig
 }
 
 func NewConfig() (*Config, error) {
-	var ok bool
+	var (
+		ok  bool
+		err error
+	)
 
 	time.Local = time.UTC
 
@@ -51,6 +55,12 @@ func NewConfig() (*Config, error) {
 	cfg.TelegramToken, ok = os.LookupEnv("TELEGRAM_TOKEN")
 	if !ok || cfg.TelegramToken == "" {
 		return nil, errors.New("env TELEGRAM_TOKEN is not set")
+	}
+
+	// Setup JWT config
+	cfg.JWT, err = newJWTConfig()
+	if err != nil {
+		return nil, err
 	}
 
 	return cfg, nil
