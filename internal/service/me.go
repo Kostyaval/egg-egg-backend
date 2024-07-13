@@ -11,31 +11,41 @@ type meDB interface {
 	UpdateUserJWT(ctx context.Context, uid int64, jti uuid.UUID) error
 }
 
-func (s Service) GetMe(ctx context.Context, uid int64, jti uuid.UUID) (*domain.UserProfile, error) {
+func (s Service) GetMe(ctx context.Context, uid int64) (*domain.UserProfile, []byte, error) {
 	u, err := s.db.GetUserWithID(ctx, uid)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if u == nil {
-		return nil, domain.ErrNoUser
+		return nil, nil, domain.ErrNoUser
 	}
 
 	if u.IsGhost {
-		return nil, domain.ErrGhostUser
+		return nil, nil, domain.ErrGhostUser
 	}
 
 	if u.HasBan {
-		return nil, domain.ErrBannedUser
+		return nil, nil, domain.ErrBannedUser
 	}
 
 	if u.JTI != nil {
-		return nil, domain.ErrMultipleDevices
+		return nil, nil, domain.ErrMultipleDevices
 	}
 
-	if err := s.db.UpdateUserJWT(ctx, uid, jti); err != nil {
-		return nil, err
+	jwtClaims, err := domain.NewJWTClaims(u.Telegram.ID, u.Nickname)
+	if err != nil {
+		return nil, nil, err
 	}
 
-	return u, nil
+	jwtBytes, err := jwtClaims.Encode(s.cfg.JWT)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if err := s.db.UpdateUserJWT(ctx, uid, jwtClaims.JTI); err != nil {
+		return nil, nil, err
+	}
+
+	return u, jwtBytes, nil
 }

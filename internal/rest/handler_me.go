@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"log/slog"
 	"strconv"
@@ -12,7 +11,7 @@ import (
 )
 
 type meService interface {
-	GetMe(ctx context.Context, uid int64, jti uuid.UUID) (*domain.UserProfile, error)
+	GetMe(ctx context.Context, uid int64) (*domain.UserProfile, []byte, error)
 }
 
 func (h handler) me(c *fiber.Ctx) error {
@@ -37,13 +36,7 @@ func (h handler) me(c *fiber.Ctx) error {
 		return newHTTPError(fiber.StatusBadRequest, "telegram user id bad format")
 	}
 
-	jwt, jti, err := jwtEncodeClaims(h.jwt, newJWTClaims(tgID))
-	if err != nil {
-		log.Error("jwtEncodeClaims", slog.String("error", err.Error()))
-		return c.Status(fiber.StatusInternalServerError).Send(nil)
-	}
-
-	u, err := h.srv.GetMe(c.Context(), tgID, jti)
+	u, jwt, err := h.srv.GetMe(c.Context(), tgID)
 	if err != nil {
 		log.Error("srv.GetMe", slog.String("error", err.Error()))
 
