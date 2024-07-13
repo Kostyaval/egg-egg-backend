@@ -30,6 +30,7 @@ func NewMongoDB(cfg *config.Config) (*DB, error) {
 		Options: options.Index().SetUnique(true),
 	}
 
+	// create unique user nickname index
 	indexUserNickname := mongo.IndexModel{
 		Keys: bson.M{"profile.nickname": 1},
 		Options: options.Index().
@@ -43,6 +44,60 @@ func NewMongoDB(cfg *config.Config) (*DB, error) {
 	})
 	if err != nil {
 		return nil, err
+	}
+
+	// create index for auto-delete jwt token
+	ctx := context.Background()
+	cur, err := usersCol.Indexes().List(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		_ = cur.Close(ctx)
+	}()
+
+	var ixs []bson.M
+	if err = cur.All(ctx, &ixs); err != nil {
+		return nil, err
+	}
+
+	hasIndexJTI := false
+	for _, ix := range ixs {
+		if ix["name"] == "profile.jti_1" {
+			hasIndexJTI = true
+			break
+		}
+	}
+
+	if hasIndexJTI {
+		var result bson.M
+
+		err := cli.Database("game").RunCommand(
+			context.Background(),
+			bson.D{
+				bson.E{Key: "collMod", Value: "users"},
+				bson.E{Key: "index", Value: bson.D{
+					bson.E{Key: "name", Value: "profile.jti_1"},
+					bson.E{Key: "expireAfterSeconds", Value: int32(cfg.JWT.TTL.Seconds())},
+				}},
+			}).Decode(&result)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		indexJTI := mongo.IndexModel{
+			Keys: bson.M{"profile.jti": 1},
+			Options: options.Index().
+				SetUnique(true).
+				SetPartialFilterExpression(bson.M{"profile.jti": bson.M{"$type": "string"}}).
+				SetExpireAfterSeconds(int32(cfg.JWT.TTL.Seconds())),
+		}
+
+		_, err = usersCol.Indexes().CreateOne(context.Background(), indexJTI)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &DB{
