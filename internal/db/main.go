@@ -35,7 +35,11 @@ func NewMongoDB(cfg *config.Config) (*DB, error) {
 		Keys: bson.M{"profile.nickname": 1},
 		Options: options.Index().
 			SetUnique(true).
-			SetPartialFilterExpression(bson.M{"profile.nickname": bson.M{"$type": "string"}}),
+			SetPartialFilterExpression(bson.M{"profile.nickname": bson.M{"$type": "string"}}).
+			SetCollation(&options.Collation{
+				Locale:   "en",
+				Strength: 2, // case insensitive
+			}),
 	}
 
 	_, err = usersCol.Indexes().CreateMany(context.Background(), []mongo.IndexModel{
