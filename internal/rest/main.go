@@ -44,5 +44,8 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 	app.Get("/ping", h.ping)
 	app.Get("/me", h.me)
 
+	app.Use(middlewareJWT(&middlewareJWTConfig{log: h.log, cfg: cfg.JWT, mustNickname: true}))
+	// ...
+
 	return app
 }
