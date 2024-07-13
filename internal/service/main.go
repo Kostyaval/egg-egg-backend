@@ -2,7 +2,9 @@ package service
 
 import "gitlab.com/egg-be/egg-backend/internal/config"
 
-type DBInterface interface{}
+type DBInterface interface {
+	meDB
+}
 
 type Service struct {
 	cfg *config.Config

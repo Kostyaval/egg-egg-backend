@@ -15,6 +15,7 @@ type DB struct {
 
 func NewMongoDB(cfg *config.Config) (*DB, error) {
 	opts := options.Client().ApplyURI(cfg.MongoURI)
+	opts.Registry = newMongoRegistry()
 
 	cli, err := mongo.Connect(context.Background(), opts)
 	if err != nil {

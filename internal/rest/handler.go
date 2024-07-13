@@ -2,6 +2,7 @@ package rest
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"gitlab.com/egg-be/egg-backend/internal/config"
 	"log/slog"
 )
 
@@ -22,11 +23,13 @@ func (l handlerLogger) HTTPRequest(c *fiber.Ctx) *slog.Logger {
 type handler struct {
 	log *handlerLogger
 	srv ServiceInterface
+	jwt *config.JWTConfig
 }
 
-func newHandler(logger *slog.Logger, srv ServiceInterface) *handler {
+func newHandler(jwt *config.JWTConfig, logger *slog.Logger, srv ServiceInterface) *handler {
 	return &handler{
 		log: &handlerLogger{log: logger},
 		srv: srv,
+		jwt: jwt,
 	}
 }

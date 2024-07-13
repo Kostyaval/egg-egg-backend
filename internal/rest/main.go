@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"gitlab.com/egg-be/egg-backend/internal/config"
@@ -8,7 +9,9 @@ import (
 	"time"
 )
 
-type ServiceInterface interface{}
+type ServiceInterface interface {
+	meService
+}
 
 func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fiber.App {
 	// Create fiber app
@@ -17,14 +20,29 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 		DisableStartupMessage: true,
 		IdleTimeout:           5 * time.Second,
 		BodyLimit:             1 * 1024 * 1024, // max size 1MB
+		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
+			var fiberErr *fiber.Error
+			if errors.As(err, &fiberErr) {
+				return ctx.Status(fiberErr.Code).JSON(
+					newHTTPError(fiber.StatusInternalServerError, "unexpected error").withDetails(fiberErr))
+			}
+
+			var ee *httpError
+			if errors.As(err, &ee) {
+				return ctx.Status(ee.Status).JSON(ee)
+			}
+
+			return nil
+		},
 	})
 
 	if cfg.Runtime == config.RuntimeProduction {
 		app.Use(recover.New())
 	}
 
-	h := newHandler(logger, srv)
+	h := newHandler(cfg.JWT, logger, srv)
 	app.Get("/ping", h.ping)
+	app.Get("/me", h.me)
 
 	return app
 }

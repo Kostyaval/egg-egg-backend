@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -20,4 +21,5 @@ type UserProfile struct {
 	HasBan    bool                `bson:"hasBan"`
 	IsGhost   bool                `bson:"isGhost"`
 	Telegram  TelegramUserProfile `bson:"telegram"`
+	JTI       *uuid.UUID          `bson:"jti"`
 }
