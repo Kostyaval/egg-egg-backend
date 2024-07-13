@@ -60,12 +60,14 @@ func (h handler) me(c *fiber.Ctx) error {
 	var res struct {
 		UID      int64   `json:"uid"`
 		Nickname *string `json:"nickname"`
+		Language string  `json:"language"`
 		Token    string  `json:"token"`
 	}
 
 	res.UID = u.Telegram.ID
 	res.Nickname = u.Nickname
 	res.Token = string(jwt)
+	res.Language = u.Telegram.Language
 
 	return c.JSON(res)
 }
