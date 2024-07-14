@@ -12,6 +12,7 @@ import (
 type ServiceInterface interface {
 	meService
 	jwtRefreshService
+	jwtDeleteService
 }
 
 func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fiber.App {
@@ -47,6 +48,7 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 
 	app.Use(middlewareJWT(&middlewareJWTConfig{log: h.log, cfg: cfg.JWT, mustNickname: false}))
 	app.Put("/me/token", h.jwtRefresh)
+	app.Delete("/me/token", h.jwtDelete)
 
 	return app
 }

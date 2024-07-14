@@ -5,6 +5,10 @@ import (
 	"gitlab.com/egg-be/egg-backend/internal/domain"
 )
 
+type jwtDB interface {
+	DeleteUserJWT(ctx context.Context, uid int64) error
+}
+
 func (s Service) RefreshJWT(ctx context.Context, jwtClaims *domain.JWTClaims) ([]byte, error) {
 	u, err := s.db.GetUserWithID(ctx, jwtClaims.UID)
 	if err != nil {
@@ -46,4 +50,8 @@ func (s Service) RefreshJWT(ctx context.Context, jwtClaims *domain.JWTClaims) ([
 	}
 
 	return newJWTBytes, nil
+}
+
+func (s Service) DeleteJWT(ctx context.Context, jwtClaims *domain.JWTClaims) error {
+	return s.db.DeleteUserJWT(ctx, jwtClaims.UID)
 }
