@@ -20,10 +20,12 @@ func (e *httpError) Error() string {
 	)
 
 	msg.WriteString("message: %s")
+
 	args = append(args, e.Message)
 
 	if e.Details != "" {
 		args = append(args, e.Details)
+
 		msg.WriteString(", details: %s")
 	}
 

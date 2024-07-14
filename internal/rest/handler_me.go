@@ -17,8 +17,7 @@ type meService interface {
 func (h handler) me(c *fiber.Ctx) error {
 	log := h.log.HTTPRequest(c)
 
-	xTgID := c.Get("X-Telegram-Id")
-	xTgID = strings.TrimSpace(xTgID)
+	xTgID := strings.TrimSpace(c.Get("X-Telegram-Id"))
 	if xTgID == "" {
 		log.Error("X-Telegram-Id", slog.String("error", "empty header"))
 		return newHTTPError(fiber.StatusBadRequest, "empty telegram user id")

@@ -39,8 +39,8 @@ func (h handler) jwtRefresh(c *fiber.Ctx) error {
 	}
 
 	res.Token = string(newJWT)
+
 	log.Info("jwt refresh")
 
 	return c.JSON(res)
-
 }

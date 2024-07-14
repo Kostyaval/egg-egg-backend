@@ -52,6 +52,7 @@ func NewMongoDB(cfg *config.Config) (*DB, error) {
 
 	// create index for auto-delete jwt token
 	ctx := context.Background()
+
 	cur, err := usersCol.Indexes().List(ctx)
 	if err != nil {
 		return nil, err
@@ -67,6 +68,7 @@ func NewMongoDB(cfg *config.Config) (*DB, error) {
 	}
 
 	hasIndexJTI := false
+
 	for _, ix := range ixs {
 		if ix["name"] == "profile.jti_1" {
 			hasIndexJTI = true
