@@ -47,12 +47,14 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 
 	h := newHandler(cfg.JWT, logger, srv)
 	app.Get("/ping", h.ping)
-	app.Get("/me", h.me)
 
-	app.Use(middlewareJWT(&middlewareJWTConfig{log: h.log, cfg: cfg.JWT, mustNickname: false}))
-	app.Put("/me/token", h.jwtRefresh)
-	app.Delete("/me/token", h.jwtDelete)
-	app.Get("/me/nickname", h.checkUserNickname)
+	api := app.Group("/api")
+	api.Get("/me", h.me)
+
+	api.Use(middlewareJWT(&middlewareJWTConfig{log: h.log, cfg: cfg.JWT, mustNickname: false}))
+	api.Put("/me/token", h.jwtRefresh)
+	api.Delete("/me/token", h.jwtDelete)
+	api.Get("/me/nickname", h.checkUserNickname)
 
 	return app
 }
