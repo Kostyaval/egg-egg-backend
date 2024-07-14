@@ -3,8 +3,10 @@ package db
 import (
 	"context"
 	"errors"
+	"fmt"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -39,4 +41,14 @@ func (db DB) RegisterUser(ctx context.Context, user *domain.UserProfile) error {
 	}
 
 	return nil
+}
+
+func (db DB) CheckUserNickname(ctx context.Context, nickname string) (bool, error) {
+	rx := primitive.Regex{Pattern: fmt.Sprintf("^%s$", nickname), Options: "i"}
+	count, err := db.users.CountDocuments(ctx, bson.D{{"profile.nickname", rx}})
+	if err != nil {
+		return false, err
+	}
+
+	return count == 0, nil
 }

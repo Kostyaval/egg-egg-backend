@@ -13,9 +13,12 @@ type ServiceInterface interface {
 	meService
 	jwtRefreshService
 	jwtDeleteService
+	nicknameService
 }
 
 func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fiber.App {
+	setupValidator()
+
 	// Create fiber app
 	app := fiber.New(fiber.Config{
 		ProxyHeader:           fiber.HeaderXForwardedFor,
@@ -49,6 +52,7 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 	app.Use(middlewareJWT(&middlewareJWTConfig{log: h.log, cfg: cfg.JWT, mustNickname: false}))
 	app.Put("/me/token", h.jwtRefresh)
 	app.Delete("/me/token", h.jwtDelete)
+	app.Get("/me/nickname", h.checkUserNickname)
 
 	return app
 }

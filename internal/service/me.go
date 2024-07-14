@@ -9,6 +9,7 @@ import (
 type meDB interface {
 	GetUserWithID(ctx context.Context, uid int64) (*domain.UserProfile, error)
 	UpdateUserJWT(ctx context.Context, uid int64, jti uuid.UUID) error
+	CheckUserNickname(ctx context.Context, nickname string) (bool, error)
 }
 
 func (s Service) GetMe(ctx context.Context, uid int64) (*domain.UserProfile, []byte, error) {
@@ -48,4 +49,8 @@ func (s Service) GetMe(ctx context.Context, uid int64) (*domain.UserProfile, []b
 	}
 
 	return u, jwtBytes, nil
+}
+
+func (s Service) CheckUserNickname(ctx context.Context, nickname string) (bool, error) {
+	return s.db.CheckUserNickname(ctx, nickname)
 }
