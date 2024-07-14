@@ -55,6 +55,7 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 	api.Put("/me/token", h.jwtRefresh)
 	api.Delete("/me/token", h.jwtDelete)
 	api.Get("/me/nickname", h.checkUserNickname)
+	api.Post("/me/nickname", h.createUserNickname)
 
 	return app
 }

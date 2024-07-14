@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 func (db DB) GetUserWithID(ctx context.Context, uid int64) (*domain.UserProfile, error) {
@@ -51,4 +53,32 @@ func (db DB) CheckUserNickname(ctx context.Context, nickname string) (bool, erro
 	}
 
 	return count == 0, nil
+}
+
+func (db DB) UpdateUserNickname(ctx context.Context, uid int64, nickname string, jti uuid.UUID) error {
+	res, err := db.users.UpdateOne(ctx, bson.D{
+		{"profile.telegram.id", uid},
+		{"profile.hasBan", false},
+		{"profile.isGhost", false},
+	}, bson.D{
+		{"$set", bson.M{
+			"profile.jti":       jti,
+			"profile.nickname":  nickname,
+			"profile.updatedAt": primitive.NewDateTimeFromTime(time.Now()),
+		}},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return domain.ErrNoUser
+	}
+
+	if res.ModifiedCount != 1 {
+		return domain.ErrConflictNickname
+	}
+
+	return nil
 }
