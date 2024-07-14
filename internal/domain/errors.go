@@ -10,4 +10,6 @@ var (
 	ErrMultipleDevices = errors.New("multiple devices")
 	ErrJWTEncode       = errors.New("jwt encode")
 	ErrJWTDecode       = errors.New("jwt decode")
+	ErrNoJWT           = errors.New("jwt is not found")
+	ErrCorruptJWT      = errors.New("jwt corrupt")
 )

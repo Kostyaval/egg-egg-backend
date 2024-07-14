@@ -34,7 +34,7 @@ func middlewareJWT(mw *middlewareJWTConfig) fiber.Handler {
 			return newHTTPError(fiber.StatusForbidden, "no nickname")
 		}
 
-		c.Locals("jwt", claims)
+		c.Locals("jwt", &claims)
 
 		return c.Next()
 	}

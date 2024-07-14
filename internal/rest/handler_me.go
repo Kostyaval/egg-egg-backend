@@ -16,7 +16,6 @@ type meService interface {
 
 func (h handler) me(c *fiber.Ctx) error {
 	log := h.log.HTTPRequest(c)
-	log.Info("me")
 
 	xTgID := c.Get("X-Telegram-Id")
 	xTgID = strings.TrimSpace(xTgID)
@@ -61,6 +60,8 @@ func (h handler) me(c *fiber.Ctx) error {
 	res.Nickname = u.Nickname
 	res.Token = string(jwt)
 	res.Language = u.Telegram.Language
+
+	log.Info("me")
 
 	return c.JSON(res)
 }

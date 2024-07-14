@@ -3,6 +3,7 @@ package rest
 import (
 	"github.com/gofiber/fiber/v2"
 	"gitlab.com/egg-be/egg-backend/internal/config"
+	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"log/slog"
 )
 
@@ -18,6 +19,17 @@ func (l handlerLogger) HTTPRequest(c *fiber.Ctx) *slog.Logger {
 	)
 
 	return l.log.With(attr)
+}
+
+func (l handlerLogger) AuthorizedHTTPRequest(c *fiber.Ctx) (*slog.Logger, *domain.JWTClaims) {
+	log := l.HTTPRequest(c)
+
+	jwt, ok := c.Locals("jwt").(*domain.JWTClaims)
+	if ok {
+		return log.With(slog.Int64("uid", jwt.UID)), jwt
+	}
+
+	return log, nil
 }
 
 type handler struct {
