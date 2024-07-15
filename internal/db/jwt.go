@@ -5,6 +5,8 @@ import (
 	"github.com/google/uuid"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
 func (db DB) UpdateUserJWT(ctx context.Context, uid int64, jti uuid.UUID) error {
@@ -14,7 +16,10 @@ func (db DB) UpdateUserJWT(ctx context.Context, uid int64, jti uuid.UUID) error 
 			bson.E{Key: "profile.hasBan", Value: false},
 			bson.E{Key: "profile.isGhost", Value: false},
 		},
-		bson.M{"$set": bson.M{"profile.jti": jti}},
+		bson.M{"$set": bson.M{
+			"profile.jti":       jti,
+			"activity.onlineAt": primitive.NewDateTimeFromTime(time.Now()),
+		}},
 	)
 
 	if err != nil {
@@ -33,7 +38,10 @@ func (db DB) DeleteUserJWT(ctx context.Context, uid int64) error {
 		bson.D{
 			bson.E{Key: "profile.telegram.id", Value: uid},
 		},
-		bson.M{"$set": bson.M{"profile.jti": nil}},
+		bson.M{"$set": bson.M{
+			"profile.jti":        nil,
+			"activity.offlineAt": primitive.NewDateTimeFromTime(time.Now()),
+		}},
 	)
 
 	if err != nil {
