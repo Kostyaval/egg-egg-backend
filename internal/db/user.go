@@ -47,7 +47,8 @@ func (db DB) RegisterUser(ctx context.Context, user *domain.UserProfile) error {
 
 func (db DB) CheckUserNickname(ctx context.Context, nickname string) (bool, error) {
 	rx := primitive.Regex{Pattern: fmt.Sprintf("^%s$", nickname), Options: "i"}
-	count, err := db.users.CountDocuments(ctx, bson.D{{"profile.nickname", rx}})
+
+	count, err := db.users.CountDocuments(ctx, bson.D{{Key: "profile.nickname", Value: rx}})
 	if err != nil {
 		return false, err
 	}
@@ -57,11 +58,11 @@ func (db DB) CheckUserNickname(ctx context.Context, nickname string) (bool, erro
 
 func (db DB) UpdateUserNickname(ctx context.Context, uid int64, nickname string, jti uuid.UUID) error {
 	res, err := db.users.UpdateOne(ctx, bson.D{
-		{"profile.telegram.id", uid},
-		{"profile.hasBan", false},
-		{"profile.isGhost", false},
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
 	}, bson.D{
-		{"$set", bson.M{
+		{Key: "$set", Value: bson.M{
 			"profile.jti":       jti,
 			"profile.nickname":  nickname,
 			"profile.updatedAt": primitive.NewDateTimeFromTime(time.Now()),
