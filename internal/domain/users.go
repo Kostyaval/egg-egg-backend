@@ -17,6 +17,7 @@ type UserProfile struct {
 	HasBan    bool                `bson:"hasBan"`
 	IsGhost   bool                `bson:"isGhost"`
 	Telegram  TelegramUserProfile `bson:"telegram"`
+	Reference *int64              `bson:"ref"`
 	JTI       *uuid.UUID          `bson:"jti"`
 }
 
