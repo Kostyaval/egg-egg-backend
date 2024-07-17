@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"github.com/gofiber/fiber/v2"
+	initdata "github.com/telegram-mini-apps/init-data-golang"
+	"gitlab.com/egg-be/egg-backend/internal/config"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"log/slog"
-	"strconv"
-	"strings"
+	"time"
 )
 
 type meService interface {
@@ -17,24 +18,23 @@ type meService interface {
 func (h handler) me(c *fiber.Ctx) error {
 	log := h.log.HTTPRequest(c)
 
-	xTgID := strings.TrimSpace(c.Get("X-Telegram-Id"))
-	if xTgID == "" {
-		log.Error("X-Telegram-Id", slog.String("error", "empty header"))
-		return newHTTPError(fiber.StatusBadRequest, "empty telegram user id")
+	exp := 30 * time.Second
+	if h.cfg.Runtime == config.RuntimeDevelopment {
+		exp = 24 * time.Hour
 	}
 
-	tgID, err := strconv.ParseInt(xTgID, 10, 64)
+	if err := initdata.Validate(string(c.Request().URI().QueryString()), h.cfg.TelegramToken, exp); err != nil {
+		log.Error("validate initial data", slog.String("error", err.Error()))
+		return c.Status(fiber.StatusForbidden).Send(nil)
+	}
+
+	data, err := initdata.Parse(string(c.Request().URI().QueryString()))
 	if err != nil {
-		log.Error("strconv.ParseInt", slog.String("error", err.Error()))
-		return newHTTPError(fiber.StatusBadRequest, "telegram user id bad format")
+		log.Error("parse initial data", slog.String("error", err.Error()))
+		return c.Status(fiber.StatusBadRequest).Send(nil)
 	}
 
-	if tgID <= 0 {
-		log.Error("bad telegram id")
-		return newHTTPError(fiber.StatusBadRequest, "telegram user id bad format")
-	}
-
-	u, jwt, err := h.srv.GetMe(c.Context(), tgID)
+	u, jwt, err := h.srv.GetMe(c.Context(), data.User.ID)
 	if err != nil {
 		log.Error("srv.GetMe", slog.String("error", err.Error()))
 
@@ -60,7 +60,7 @@ func (h handler) me(c *fiber.Ctx) error {
 	res.Token = string(jwt)
 	res.Language = u.Telegram.Language
 
-	log.Info("me")
+	log.Info("me", slog.Int64("uid", u.Telegram.ID))
 
 	return c.JSON(res)
 }

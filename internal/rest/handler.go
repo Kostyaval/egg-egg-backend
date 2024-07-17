@@ -14,7 +14,7 @@ type handlerLogger struct {
 func (l handlerLogger) HTTPRequest(c *fiber.Ctx) *slog.Logger {
 	attr := slog.Group("req",
 		slog.String("m", c.Method()),
-		slog.String("uri", string(c.Request().RequestURI())),
+		slog.String("uri", string(c.Request().URI().Path())),
 		slog.String("ip", c.IP()),
 	)
 
@@ -35,13 +35,13 @@ func (l handlerLogger) AuthorizedHTTPRequest(c *fiber.Ctx) (*slog.Logger, *domai
 type handler struct {
 	log *handlerLogger
 	srv ServiceInterface
-	jwt *config.JWTConfig
+	cfg *config.Config
 }
 
-func newHandler(jwt *config.JWTConfig, logger *slog.Logger, srv ServiceInterface) *handler {
+func newHandler(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *handler {
 	return &handler{
 		log: &handlerLogger{log: logger},
 		srv: srv,
-		jwt: jwt,
+		cfg: cfg,
 	}
 }

@@ -45,7 +45,7 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 		app.Use(recover.New())
 	}
 
-	h := newHandler(cfg.JWT, logger, srv)
+	h := newHandler(cfg, logger, srv)
 	app.Get("/ping", h.ping)
 
 	api := app.Group("/api")
