@@ -14,6 +14,7 @@
 | **JWT_PUBLIC_KEY_PATH**  | T |                                                                                  |              |
 | **JWT_ISS**              | F |                                                                                  | `egg.one`    |
 | **JWT_TTL**              | F |                                                                                  | `15m`        |
+| **RULES_PATH**           | T | Path to yaml file described the game rules                                       |              |
 
 
 ## Generate JWT keys

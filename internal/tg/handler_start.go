@@ -14,7 +14,8 @@ import (
 
 type startHandlerDB interface {
 	GetUserWithID(ctx context.Context, uid int64) (*domain.UserProfile, error)
-	RegisterUser(ctx context.Context, user *domain.UserProfile) error
+	RegisterUser(ctx context.Context, user *domain.UserProfile, points int) error
+	IncUserPoints(ctx context.Context, uid int64, points int) error
 }
 
 var regexpUserReference = regexp.MustCompile(`^(?i)/start [0-9]+$`)
@@ -35,6 +36,8 @@ func (h handler) start(c tele.Context) error {
 
 	// registration
 	if u == nil {
+		userPoints := 0
+		refUserPoints := 0
 		user := &domain.UserProfile{
 			Nickname:  nil,
 			CreatedAt: primitive.NewDateTimeFromTime(time.Now()),
@@ -65,12 +68,34 @@ func (h handler) start(c tele.Context) error {
 
 				if refUser != nil && !refUser.IsGhost && !refUser.HasBan {
 					user.Reference = &refID
+
+					if len(h.rules.Referral) > 0 {
+						if user.Telegram.IsPremium {
+							userPoints = h.rules.Referral[0].Recipient.Premium
+							refUserPoints = h.rules.Referral[0].Sender.Premium
+						} else {
+							userPoints = h.rules.Referral[0].Recipient.Plain
+							refUserPoints = h.rules.Referral[0].Sender.Plain
+						}
+
+						if err := h.db.IncUserPoints(context.Background(), refID, refUserPoints); err != nil {
+							log.Error("db.AddUserPoints referral", slog.String("error", err.Error()))
+							return c.Send("Oops! Something went wrong. Please try again later")
+						}
+					}
 				}
 			}
 		}
 
-		if err := h.db.RegisterUser(context.Background(), user); err != nil {
+		if err := h.db.RegisterUser(context.Background(), user, userPoints); err != nil {
 			log.Error("registration", slog.String("error", err.Error()))
+
+			if refUserPoints > 0 {
+				if err := h.db.IncUserPoints(context.Background(), *user.Reference, -refUserPoints); err != nil {
+					log.Error("db.SubUserPoints referral", slog.String("error", err.Error()))
+				}
+			}
+
 			return c.Send("Oops! Something went wrong. Please try again later")
 		}
 

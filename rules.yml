@@ -1,0 +1,45 @@
+---
+# referrals bonuses
+referral:
+  # egg level: 0 (registration)
+  - sender:
+      plain: 1000
+      premium: 2500
+    recipient:
+      plain: 5000
+      premium: 5000
+  # egg level: 1
+  - sender:
+      plain: 5000
+      premium: 15000
+    recipient:
+      plain: 0
+      premium: 0
+  # egg level: 2
+  - sender:
+      plain: 15000
+      premium: 25000
+    recipient:
+      plain: 0
+      premium: 0
+  # egg level: 3
+  - sender:
+      plain: 25000
+      premium: 50000
+    recipient:
+      plain: 0
+      premium: 0
+  # egg level: 4
+  - sender:
+      plain: 50000
+      premium: 100000
+    recipient:
+      plain: 0
+      premium: 0
+  # egg level: 5
+  - sender:
+      plain: 100000
+      premium: 200000
+    recipient:
+      plain: 0
+      premium: 0

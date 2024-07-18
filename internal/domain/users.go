@@ -8,6 +8,8 @@ import (
 type UserDocument struct {
 	Profile   UserProfile        `bson:"profile"`
 	OfflineAt primitive.DateTime `bson:"offlineAt"`
+	Points    int                `bson:"points"`
+	Level     int                `bson:"level"`
 }
 
 type UserProfile struct {

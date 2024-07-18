@@ -1,6 +1,7 @@
 package tg
 
 import (
+	"gitlab.com/egg-be/egg-backend/internal/config"
 	tele "gopkg.in/telebot.v3"
 	"log/slog"
 )
@@ -19,13 +20,15 @@ func (l handlerLogger) Message(c tele.Context) *slog.Logger {
 }
 
 type handler struct {
-	log *handlerLogger
-	db  DBInterface
+	log   *handlerLogger
+	rules *config.Rules
+	db    DBInterface
 }
 
-func newHandler(logger *slog.Logger, db DBInterface) *handler {
+func newHandler(logger *slog.Logger, rules *config.Rules, db DBInterface) *handler {
 	return &handler{
-		log: &handlerLogger{log: logger},
-		db:  db,
+		log:   &handlerLogger{log: logger},
+		rules: rules,
+		db:    db,
 	}
 }

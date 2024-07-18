@@ -3,7 +3,9 @@ package config
 import (
 	"errors"
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -16,6 +18,7 @@ type Config struct {
 	Runtime       string
 	MongoURI      string
 	TelegramToken string
+	Rules         *Rules
 	JWT           *JWTConfig
 }
 
@@ -55,6 +58,27 @@ func NewConfig() (*Config, error) {
 	cfg.TelegramToken, ok = os.LookupEnv("TELEGRAM_TOKEN")
 	if !ok || cfg.TelegramToken == "" {
 		return nil, errors.New("env TELEGRAM_TOKEN is not set")
+	}
+
+	// Setup game rules path
+	rulesPath, ok := os.LookupEnv("RULES_PATH")
+	if !ok || rulesPath == "" {
+		return nil, errors.New("env RULES_PATH is not set")
+	}
+
+	rulesPath, err = filepath.Abs(rulesPath)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := os.ReadFile(rulesPath)
+	if err != nil {
+		return nil, err
+	}
+
+	err = yaml.Unmarshal(data, &cfg.Rules)
+	if err != nil {
+		return nil, err
 	}
 
 	// Setup JWT config

@@ -12,7 +12,8 @@ type DBInterface interface {
 }
 
 type Tg struct {
-	Bot *tele.Bot
+	Bot   *tele.Bot
+	Rules *config.Rules
 }
 
 func NewTelegramBot(cfg *config.Config, logger *slog.Logger, db DBInterface) (*Tg, error) {
@@ -26,7 +27,7 @@ func NewTelegramBot(cfg *config.Config, logger *slog.Logger, db DBInterface) (*T
 		return nil, err
 	}
 
-	h := newHandler(logger, db)
+	h := newHandler(logger, cfg.Rules, db)
 	bot.Handle("/start", h.start)
 
 	return &Tg{
