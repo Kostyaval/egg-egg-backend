@@ -6,8 +6,8 @@ import (
 )
 
 type UserDocument struct {
-	Profile  UserProfile  `bson:"profile"`
-	Activity UserActivity `bson:"activity"`
+	Profile   UserProfile        `bson:"profile"`
+	OfflineAt primitive.DateTime `bson:"offlineAt"`
 }
 
 type UserProfile struct {
@@ -28,9 +28,4 @@ type TelegramUserProfile struct {
 	Lastname  string `bson:"lastname"`
 	Language  string `bson:"language"`
 	Username  string `bson:"username"`
-}
-
-type UserActivity struct {
-	OnlineAt  primitive.DateTime `bson:"onlineAt"`
-	OfflineAt primitive.DateTime `bson:"offlineAt"`
 }
