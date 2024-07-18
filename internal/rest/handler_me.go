@@ -23,9 +23,11 @@ func (h handler) me(c *fiber.Ctx) error {
 		exp = 24 * time.Hour
 	}
 
-	if err := initdata.Validate(string(c.Request().URI().QueryString()), h.cfg.TelegramToken, exp); err != nil {
-		log.Error("validate initial data", slog.String("error", err.Error()))
-		return c.Status(fiber.StatusForbidden).Send(nil)
+	if h.cfg.Runtime == config.RuntimeProduction {
+		if err := initdata.Validate(string(c.Request().URI().QueryString()), h.cfg.TelegramToken, exp); err != nil {
+			log.Error("validate initial data", slog.String("error", err.Error()))
+			return c.Status(fiber.StatusForbidden).Send(nil)
+		}
 	}
 
 	data, err := initdata.Parse(string(c.Request().URI().QueryString()))
