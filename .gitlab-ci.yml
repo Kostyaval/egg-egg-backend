@@ -28,9 +28,6 @@ deploy:
     - echo "KUBECONFIG set to: $KUBECONFIG"
     - kubectl version --client
   script:
-    - |
-      /bin/sh -c '
-      echo "Running kubectl command..."
-      kubectl set image deployment/egg-backend egg-backend=$DOCKER_REGISTRY/egg-backend:$CI_COMMIT_SHA -n $KUBE_NAMESPACE
-      kubectl rollout status deployment/egg-backend -n $KUBE_NAMESPACE
-      '
+    - echo "Running kubectl command..."
+    - kubectl set image deployment/egg-backend egg-backend=$DOCKER_REGISTRY/egg-backend:$CI_COMMIT_SHA -n $KUBE_NAMESPACE
+    - kubectl rollout status deployment/egg-backend -n $KUBE_NAMESPACE
