@@ -12,7 +12,7 @@ import (
 )
 
 type meService interface {
-	GetMe(ctx context.Context, uid int64) (*domain.UserProfile, []byte, error)
+	GetMe(ctx context.Context, uid int64) (domain.UserDocument, []byte, error)
 }
 
 func (h handler) me(c *fiber.Ctx) error {
@@ -51,18 +51,14 @@ func (h handler) me(c *fiber.Ctx) error {
 	}
 
 	var res struct {
-		UID      int64   `json:"uid"`
-		Nickname *string `json:"nickname"`
-		Language string  `json:"language"`
-		Token    string  `json:"token"`
+		domain.UserDocument
+		Token string `json:"token"`
 	}
 
-	res.UID = u.Telegram.ID
-	res.Nickname = u.Nickname
+	res.UserDocument = u
 	res.Token = string(jwt)
-	res.Language = u.Telegram.Language
 
-	log.Info("me", slog.Int64("uid", u.Telegram.ID))
+	log.Info("me", slog.Int64("uid", u.Profile.Telegram.ID))
 
 	return c.JSON(res)
 }

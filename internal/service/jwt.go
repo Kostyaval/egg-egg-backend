@@ -7,16 +7,13 @@ import (
 
 type jwtDB interface {
 	DeleteUserJWT(ctx context.Context, uid int64) error
+	GetUserProfileWithID(ctx context.Context, uid int64) (domain.UserProfile, error)
 }
 
 func (s Service) RefreshJWT(ctx context.Context, jwtClaims *domain.JWTClaims) ([]byte, error) {
-	u, err := s.db.GetUserWithID(ctx, jwtClaims.UID)
+	u, err := s.db.GetUserProfileWithID(ctx, jwtClaims.UID)
 	if err != nil {
 		return nil, err
-	}
-
-	if u == nil {
-		return nil, domain.ErrNoUser
 	}
 
 	if u.IsGhost {

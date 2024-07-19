@@ -6,13 +6,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func (db DB) IncUserPoints(ctx context.Context, uid int64, points int) error {
+func (db DB) IncReferralPoints(ctx context.Context, uid int64, points int) error {
 	res, err := db.users.UpdateOne(ctx, bson.D{
 		{Key: "profile.telegram.id", Value: uid},
 		{Key: "profile.hasBan", Value: false},
 		{Key: "profile.isGhost", Value: false},
 	}, bson.D{
-		{Key: "$inc", Value: bson.M{"points": points}},
+		{Key: "$inc", Value: bson.M{"points": points, "referralPoints": points}},
 	})
 
 	if err != nil {

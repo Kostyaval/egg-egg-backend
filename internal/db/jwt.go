@@ -17,8 +17,8 @@ func (db DB) UpdateUserJWT(ctx context.Context, uid int64, jti uuid.UUID) error 
 			bson.E{Key: "profile.isGhost", Value: false},
 		},
 		bson.M{"$set": bson.M{
-			"profile.jti":       jti,
-			"activity.onlineAt": primitive.NewDateTimeFromTime(time.Now()),
+			"profile.jti": jti,
+			"playedAt":    primitive.NewDateTimeFromTime(time.Now()),
 		}},
 	)
 
@@ -39,8 +39,8 @@ func (db DB) DeleteUserJWT(ctx context.Context, uid int64) error {
 			bson.E{Key: "profile.telegram.id", Value: uid},
 		},
 		bson.M{"$set": bson.M{
-			"profile.jti":        nil,
-			"activity.offlineAt": primitive.NewDateTimeFromTime(time.Now()),
+			"profile.jti": nil,
+			"playedAt":    primitive.NewDateTimeFromTime(time.Now()),
 		}},
 	)
 
