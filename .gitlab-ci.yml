@@ -1,0 +1,28 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  DOCKER_REGISTRY: registry.digitalocean.com/egg-registry
+  KUBE_NAMESPACE: default
+
+build:
+  stage: build
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
+  before_script:
+    - echo $DO_REGISTRY_TOKEN | docker login $DOCKER_REGISTRY -u $DO_REGISTRY_TOKEN --password-stdin
+  script:
+    - docker build -t $DOCKER_REGISTRY/egg-backend:$CI_COMMIT_SHA .
+    - docker push $DOCKER_REGISTRY/egg-backend:$CI_COMMIT_SHA
+
+deploy:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  before_script:
+    - echo "$KUBE_CONFIG" | base64 -d > kubeconfig
+    - export KUBECONFIG=./kubeconfig
+  script:
+    - kubectl set image deployment/egg-backend egg-backend=$DOCKER_REGISTRY/egg-backend:$CI_COMMIT_SHA -n $KUBE_NAMESPACE
+    - kubectl rollout status deployment/egg-backend -n $KUBE_NAMESPACE

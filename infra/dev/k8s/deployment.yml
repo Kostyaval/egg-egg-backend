@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: egg-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: egg-backend
+  template:
+    metadata:
+      labels:
+        app: egg-backend
+    spec:
+      containers:
+      - name: egg-backend
+        image: registry.digitalocean.com/egg-registry/egg-backend:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-secret
+              key: uri
+        - name: TELEGRAM_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: telegram-secret
+              key: token
+        - name: RULES_PATH
+          valueFrom:
+            configMapKeyRef:
+              name: egg-backend-config
+              key: RULES_PATH
+        - name: JWT_PRIVATE_KEY_PATH
+          value: "/etc/egg/jwt/private.jwk"
+        - name: JWT_PUBLIC_KEY_PATH
+          value: "/etc/egg/jwt/public.jwk"
+        - name: JWT_TTL
+          value: "24h"
+        volumeMounts:
+        - name: jwt-keys
+          mountPath: "/etc/egg/jwt"
+          readOnly: true
+      volumes:
+      - name: jwt-keys
+        secret:
+          secretName: jwt-keys-secret

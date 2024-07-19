@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: egg-backend-config
+data:
+  RUNTIME: "development"
+  JWT_TTL: "24h"
+  RULES_PATH: "/etc/egg/rules.yml"
