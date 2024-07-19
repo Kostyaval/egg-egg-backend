@@ -19,10 +19,17 @@ build:
 
 deploy:
   stage: deploy
-  image: bitnami/kubectl:latest
+  image:
+    name: bitnami/kubectl:latest
+  entrypoint: ['']
   before_script: 
     - echo "$KUBE_CONFIG" | base64 -d > kubeconfig
     - export KUBECONFIG=./kubeconfig
+    - kubectl config set-cluster k8s --server="${KUBE_SERVER}"
+    - kubectl config set clusters.k8s.certificate-authority-data ${KUBE_CA_PEM}
+    - kubectl config set-credentials do-user --token="${KUBE_TOKEN}"
+    - kubectl config set-context default --cluster=k8s --user=do-user
+    - kubectl config use-context default
   script:
     - kubectl set image deployment/egg-backend egg-backend=$DOCKER_REGISTRY/egg-backend:$CI_COMMIT_SHA -n $KUBE_NAMESPACE
     - kubectl rollout status deployment/egg-backend -n $KUBE_NAMESPACE
