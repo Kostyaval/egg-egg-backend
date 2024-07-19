@@ -13,9 +13,27 @@ import (
 	"time"
 )
 
-func (db DB) GetUserWithID(ctx context.Context, uid int64) (*domain.UserProfile, error) {
+func (db DB) GetUserDocumentWithID(ctx context.Context, uid int64) (domain.UserDocument, error) {
+	var result domain.UserDocument
+
+	opts := &options.FindOneOptions{}
+	opts.SetProjection(bson.D{{Key: "_id", Value: 0}})
+
+	r := db.users.FindOne(ctx, bson.M{"profile.telegram.id": uid}, opts)
+	if err := r.Decode(&result); err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return result, domain.ErrNoUser
+		}
+
+		return result, err
+	}
+
+	return result, nil
+}
+
+func (db DB) GetUserProfileWithID(ctx context.Context, uid int64) (domain.UserProfile, error) {
 	var result struct {
-		Profile *domain.UserProfile `bson:"profile"`
+		Profile domain.UserProfile `bson:"profile"`
 	}
 
 	opts := &options.FindOneOptions{}
@@ -27,10 +45,10 @@ func (db DB) GetUserWithID(ctx context.Context, uid int64) (*domain.UserProfile,
 	r := db.users.FindOne(ctx, bson.M{"profile.telegram.id": uid}, opts)
 	if err := r.Decode(&result); err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, nil
+			return result.Profile, domain.ErrNoUser
 		}
 
-		return nil, err
+		return result.Profile, err
 	}
 
 	return result.Profile, nil
@@ -41,6 +59,8 @@ func (db DB) RegisterUser(ctx context.Context, user *domain.UserProfile, points 
 		{Key: "profile", Value: user},
 		{Key: "level", Value: 0},
 		{Key: "points", Value: points},
+		{Key: "referralPoints", Value: 0},
+		{Key: "playedAt", Value: primitive.NewDateTimeFromTime(time.Now())},
 	})
 	if err != nil {
 		return err
@@ -70,6 +90,7 @@ func (db DB) UpdateUserNickname(ctx context.Context, uid int64, nickname string,
 			"profile.jti":       jti,
 			"profile.nickname":  nickname,
 			"profile.updatedAt": primitive.NewDateTimeFromTime(time.Now()),
+			"playedAt":          primitive.NewDateTimeFromTime(time.Now()),
 		}},
 	})
 
