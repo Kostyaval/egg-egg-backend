@@ -20,14 +20,9 @@ build:
 deploy:
   stage: deploy
   image: bitnami/kubectl:latest
-  before_script:
-    - echo "Current working directory: $(pwd)"
-    - echo "Contents of current directory: $(ls -la)"
+  before_script: 
     - echo "$KUBE_CONFIG" | base64 -d > kubeconfig
     - export KUBECONFIG=./kubeconfig
-    - echo "KUBECONFIG set to: $KUBECONFIG"
-    - kubectl version --client
   script:
-    - echo "Running kubectl command..."
     - kubectl set image deployment/egg-backend egg-backend=$DOCKER_REGISTRY/egg-backend:$CI_COMMIT_SHA -n $KUBE_NAMESPACE
     - kubectl rollout status deployment/egg-backend -n $KUBE_NAMESPACE
