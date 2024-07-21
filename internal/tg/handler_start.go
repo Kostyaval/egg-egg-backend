@@ -16,7 +16,6 @@ import (
 type startHandlerDB interface {
 	GetUserProfileWithID(ctx context.Context, uid int64) (domain.UserProfile, error)
 	RegisterUser(ctx context.Context, user *domain.UserProfile, points int) error
-	IncReferralPoints(ctx context.Context, uid int64, points int) error
 }
 
 var regexpUserReferral = regexp.MustCompile(`^(?i)/start [0-9]+$`)
@@ -33,8 +32,6 @@ func (h handler) start(c tele.Context) error {
 	if err != nil {
 		// registration
 		if errors.Is(err, domain.ErrNoUser) {
-			userPoints := 0
-			refUserPoints := 0
 			user := &domain.UserProfile{
 				Nickname:  nil,
 				CreatedAt: primitive.NewDateTimeFromTime(time.Now()),
@@ -62,37 +59,15 @@ func (h handler) start(c tele.Context) error {
 					if err != nil {
 						log.Error("db.GetUserProfileWithID refUser", slog.String("error", err.Error()))
 					} else {
-						if !refUser.IsGhost && !refUser.HasBan {
+						if !refUser.IsGhost && !refUser.HasBan && refUser.Nickname != nil {
 							user.Referral = &refID
-
-							if len(h.rules.Referral) > 0 {
-								if user.Telegram.IsPremium {
-									userPoints = h.rules.Referral[0].Recipient.Premium
-									refUserPoints = h.rules.Referral[0].Sender.Premium
-								} else {
-									userPoints = h.rules.Referral[0].Recipient.Plain
-									refUserPoints = h.rules.Referral[0].Sender.Plain
-								}
-
-								if err := h.db.IncReferralPoints(context.Background(), refID, refUserPoints); err != nil {
-									log.Error("db.AddUserPoints referral", slog.String("error", err.Error()))
-									return c.Send("Oops! Something went wrong. Please try again later")
-								}
-							}
 						}
 					}
 				}
 			}
 
-			if err := h.db.RegisterUser(context.Background(), user, userPoints); err != nil {
+			if err := h.db.RegisterUser(context.Background(), user, 0); err != nil {
 				log.Error("registration", slog.String("error", err.Error()))
-
-				if refUserPoints > 0 {
-					if err := h.db.IncReferralPoints(context.Background(), *user.Referral, -refUserPoints); err != nil {
-						log.Error("db.SubUserPoints referral", slog.String("error", err.Error()))
-					}
-				}
-
 				return c.Send("Oops! Something went wrong. Please try again later")
 			}
 
