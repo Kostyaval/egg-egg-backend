@@ -16,6 +16,12 @@ type middlewareJWTConfig struct {
 
 func middlewareJWT(mw *middlewareJWTConfig) fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		// the middleware used twice, so no need to decode the jwt again
+		_, ok := c.Locals("jwt").(*domain.JWTClaims)
+		if ok {
+			return c.Next()
+		}
+
 		log := mw.log.HTTPRequest(c)
 
 		token := strings.TrimPrefix(c.Get(fiber.HeaderAuthorization), "Bearer ")
