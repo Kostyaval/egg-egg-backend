@@ -11,7 +11,7 @@ import (
 
 type nicknameService interface {
 	CheckUserNickname(ctx context.Context, nickname string) (bool, error)
-	CreateUserNickname(ctx context.Context, uid int64, nickname string) ([]byte, error)
+	CreateUserNickname(ctx context.Context, uid int64, nickname string) ([]byte, *domain.UserDocument, *domain.ReferralBonus, error)
 }
 
 var regexpNickname = regexp.MustCompile(`^(?i)[a-z][a-z0-9]{3,31}$`)
@@ -95,7 +95,7 @@ func (h handler) createUserNickname(c *fiber.Ctx) error {
 		return newHTTPError(fiber.StatusBadRequest, "invalid nickname format")
 	}
 
-	token, err := h.srv.CreateUserNickname(c.Context(), jwt.UID, req.Nickname)
+	token, user, ref, err := h.srv.CreateUserNickname(c.Context(), jwt.UID, req.Nickname)
 	if err != nil {
 		log.Error("srv.CreateUserNickname", slog.String("error", err.Error()))
 
@@ -112,12 +112,22 @@ func (h handler) createUserNickname(c *fiber.Ctx) error {
 
 	log.Info("create nickname")
 
-	var res struct {
-		Nickname *string `json:"nickname"`
-		Token    string  `json:"token"`
+	if ref != nil {
+		log.Info("referral bonus", slog.Int("points", ref.UserPoints))
+
+		log.Info(
+			"referral bonus",
+			slog.Int64("ref", ref.ReferralUserID),
+			slog.Int("points", ref.ReferralUserPoints),
+		)
 	}
 
-	res.Nickname = &req.Nickname
+	var res struct {
+		*domain.UserDocument
+		Token string `json:"token"`
+	}
+
+	res.UserDocument = user
 	res.Token = string(token)
 
 	return c.JSON(res)
