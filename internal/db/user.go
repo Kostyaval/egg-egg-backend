@@ -108,3 +108,33 @@ func (db DB) UpdateUserNickname(ctx context.Context, uid int64, nickname string,
 
 	return nil
 }
+
+func (db DB) UpdateUserTapCount(ctx context.Context, uid int64, count int64) error {
+	res, err := db.users.UpdateOne(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$inc", Value: bson.M{
+			"taps.count":  count,
+			"taps.energy": -count,
+		}},
+		{Key: "$set", Value: bson.M{
+			"playedAt": primitive.NewDateTimeFromTime(time.Now()),
+		}},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return domain.ErrNoUser
+	}
+
+	if res.ModifiedCount != 1 {
+		return domain.ErrConflictNickname
+	}
+
+	return nil
+}

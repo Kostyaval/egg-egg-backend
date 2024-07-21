@@ -11,6 +11,12 @@ type UserDocument struct {
 	Points         int                `bson:"points" json:"points"`
 	ReferralPoints int                `bson:"referralPoints" json:"referralPoints"`
 	Level          int                `bson:"level" json:"level"`
+	Taps           Taps               `bson:"taps" json:"taps"`
+}
+
+type Taps struct {
+	Energy int `bson:"energy" json:"energy"`
+	Count  int `bson:"count" json:"count"`
 }
 
 type UserProfile struct {

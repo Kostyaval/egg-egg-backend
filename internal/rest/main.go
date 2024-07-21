@@ -14,6 +14,7 @@ type ServiceInterface interface {
 	jwtRefreshService
 	jwtDeleteService
 	nicknameService
+	tapService
 }
 
 func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fiber.App {
@@ -56,6 +57,9 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 	api.Delete("/me/token", h.jwtDelete)
 	api.Get("/me/nickname", h.checkUserNickname)
 	api.Post("/me/nickname", h.createUserNickname)
+
+	api.Use(middlewareJWT(&middlewareJWTConfig{log: h.log, cfg: cfg.JWT, mustNickname: true}))
+	api.Put("/me/tap", h.addTap)
 
 	return app
 }
