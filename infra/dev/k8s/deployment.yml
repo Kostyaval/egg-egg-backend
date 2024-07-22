@@ -33,6 +33,11 @@ spec:
             configMapKeyRef:
               name: egg-backend-config
               key: RULES_PATH
+        - name: REDIS_URI
+          valueFrom:
+            secretKeyRef:
+              name: redis-secret
+              key: REDIS_URI
         - name: JWT_PRIVATE_KEY_PATH
           value: "/etc/egg/jwt/private.jwk"
         - name: JWT_PUBLIC_KEY_PATH
