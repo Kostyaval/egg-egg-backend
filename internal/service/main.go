@@ -9,7 +9,9 @@ type DBInterface interface {
 	leaderboardDB
 }
 
-type RedisInterface interface{}
+type RedisInterface interface {
+	meRedis
+}
 
 type Service struct {
 	cfg *config.Config
