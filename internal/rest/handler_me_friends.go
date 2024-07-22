@@ -40,13 +40,13 @@ func (h handler) readUserFriends(c *fiber.Ctx) error {
 	}
 
 	var resp struct {
-		List   []domain.Friend `json:"list"`
-		Amount int64           `json:"amount"`
-		Limit  int64           `json:"limit"`
-		Skip   int64           `json:"skip"`
+		List  []domain.Friend `json:"list"`
+		Total int64           `json:"total"`
+		Limit int64           `json:"limit"`
+		Skip  int64           `json:"skip"`
 	}
 
-	resp.List, resp.Amount, err = h.srv.ReadUserFriends(c.Context(), jwt.UID, req.Limit, req.Skip)
+	resp.List, resp.Total, err = h.srv.ReadUserFriends(c.Context(), jwt.UID, req.Limit, req.Skip)
 	if err != nil {
 		log.Error("ReadUserFriends", slog.String("error", err.Error()))
 		return newHTTPError(fiber.StatusInternalServerError, "read error").withDetails(err)

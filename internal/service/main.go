@@ -6,6 +6,7 @@ type DBInterface interface {
 	meDB
 	jwtDB
 	friendsDB
+	leaderboardDB
 }
 
 type RedisInterface interface{}

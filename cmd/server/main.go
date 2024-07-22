@@ -60,7 +60,7 @@ func main() {
 	}
 
 	defer func() {
-		if err := redis.Client.Close(); err != nil {
+		if err := redis.Close(); err != nil {
 			logger.Error("redis close", slog.String("error", err.Error()))
 		}
 	}()

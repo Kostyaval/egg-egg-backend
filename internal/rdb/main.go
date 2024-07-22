@@ -7,7 +7,7 @@ import (
 )
 
 type Redis struct {
-	Client *redis.Client
+	leaderboardClient *redis.Client
 }
 
 func NewRedis(cfg *config.Config) (*Redis, error) {
@@ -16,7 +16,14 @@ func NewRedis(cfg *config.Config) (*Redis, error) {
 		return nil, err
 	}
 
+	opt.DB = 0
+	leaderboardClient := redis.NewClient(opt)
+
 	return &Redis{
-		Client: redis.NewClient(opt),
+		leaderboardClient: leaderboardClient,
 	}, nil
+}
+
+func (r Redis) Close() error {
+	return r.leaderboardClient.Close()
 }
