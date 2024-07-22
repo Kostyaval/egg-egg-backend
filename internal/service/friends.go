@@ -16,8 +16,8 @@ func (s Service) ReadUserFriends(ctx context.Context, uid int64, limit int64, sk
 	}
 
 	for i := 0; i < len(list); i++ {
-		if list[i].Level < len(s.cfg.Rules.Referral) {
-			for k := 0; k <= list[i].Level; k++ {
+		if int(list[i].Level) < len(s.cfg.Rules.Referral) {
+			for k := 0; k <= int(list[i].Level); k++ {
 				if list[i].IsPremium {
 					list[i].Points += s.cfg.Rules.Referral[k].Sender.Premium
 				} else {

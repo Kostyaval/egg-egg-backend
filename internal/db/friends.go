@@ -35,7 +35,7 @@ func (db DB) ReadUserFriends(ctx context.Context, uid int64, limit int64, skip i
 	for c.Next(ctx) {
 		var u struct {
 			Profile domain.UserProfile `bson:"profile"`
-			Level   int                `bson:"level"`
+			Level   domain.Level       `bson:"level"`
 		}
 
 		err := c.Decode(&u)

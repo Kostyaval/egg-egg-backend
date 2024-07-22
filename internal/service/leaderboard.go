@@ -9,7 +9,7 @@ import (
 type leaderboardDB interface {
 	ReadLeaderboardPlayer(ctx context.Context, uid int64) (domain.LeaderboardPlayer, error)
 	ReadFriendsLeaderboardPlayers(ctx context.Context, uid int64, limit int64, skip int64) ([]domain.LeaderboardPlayer, error)
-	ReadLevelLeaderboardPlayers(ctx context.Context, level int, excludeUID int64, limit int64, skip int64) ([]domain.LeaderboardPlayer, error)
+	ReadLevelLeaderboardPlayers(ctx context.Context, level domain.Level, excludeUID int64, limit int64, skip int64) ([]domain.LeaderboardPlayer, error)
 	ReadGlobalLeaderboardPlayers(ctx context.Context, excludeUID int64, limit int64, skip int64) ([]domain.LeaderboardPlayer, error)
 }
 

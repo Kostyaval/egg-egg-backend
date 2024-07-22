@@ -11,7 +11,7 @@ import (
 
 type leaderboardPlayerBSON struct {
 	Profile domain.UserProfile `bson:"profile"`
-	Level   int                `bson:"level"`
+	Level   domain.Level       `bson:"level"`
 	Points  int                `bson:"points"`
 }
 
@@ -99,7 +99,7 @@ func (db DB) ReadFriendsLeaderboardPlayers(ctx context.Context, uid int64, limit
 	return list, nil
 }
 
-func (db DB) ReadLevelLeaderboardPlayers(ctx context.Context, level int, excludeUID int64, limit int64, skip int64) ([]domain.LeaderboardPlayer, error) {
+func (db DB) ReadLevelLeaderboardPlayers(ctx context.Context, level domain.Level, excludeUID int64, limit int64, skip int64) ([]domain.LeaderboardPlayer, error) {
 	list := make([]domain.LeaderboardPlayer, 0, limit)
 
 	opts := &options.FindOptions{}
