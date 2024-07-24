@@ -18,6 +18,7 @@ type leaderboardRedis interface {
 	ReadLevelLeaderboardPlayerRank(ctx context.Context, uid int64, level domain.Level) (int64, error)
 	ReadGlobalLeaderboardPlayerRank(ctx context.Context, uid int64) (int64, error)
 	ReadLevelLeaderboardRanks(ctx context.Context, level domain.Level, limit int64, skip int64) ([]int64, error)
+	ReadGlobalLeaderboardRanks(ctx context.Context, limit int64, skip int64) ([]int64, error)
 }
 
 func (s Service) ReadLeaderboard(ctx context.Context, uid int64, tab string, limit int64, skip int64) (domain.LeaderboardPlayer, []domain.LeaderboardPlayer, int64, error) {
@@ -66,8 +67,31 @@ func (s Service) ReadLeaderboard(ctx context.Context, uid int64, tab string, lim
 	}
 
 	if tab == "global" {
-		// TODO
-		return me, nil, 0, errors.New("not implemented")
+		me.Rank, err = s.rdb.ReadGlobalLeaderboardPlayerRank(ctx, uid)
+		if err != nil {
+			return me, nil, 0, err
+		}
+
+		uids, err := s.rdb.ReadGlobalLeaderboardRanks(ctx, limit, skip)
+		if err != nil {
+			return me, nil, 0, err
+		}
+
+		list, err := s.db.ReadLeaderboardPlayers(ctx, uids)
+		if err != nil {
+			return me, nil, 0, err
+		}
+
+		for i := int64(0); i < int64(len(list)); i++ {
+			list[i].Rank = skip + i + 1
+		}
+
+		total, err := s.db.ReadGlobalLeaderboardTotalPlayers(ctx)
+		if err != nil {
+			return me, nil, 0, err
+		}
+
+		return me, list, total, nil
 	}
 
 	return me, nil, 0, errors.New("invalid tab")
