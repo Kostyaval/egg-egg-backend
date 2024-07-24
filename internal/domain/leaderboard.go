@@ -5,5 +5,5 @@ type LeaderboardPlayer struct {
 	Level     Level  `json:"level"`
 	IsPremium bool   `json:"isPremium"`
 	Points    int    `json:"points"`
-	Rank      int    `json:"rank"`
+	Rank      int64  `json:"rank"`
 }

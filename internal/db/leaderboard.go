@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"sort"
 )
 
 type leaderboardPlayerBSON struct {
@@ -48,6 +49,58 @@ func (db DB) ReadLeaderboardPlayer(ctx context.Context, uid int64) (domain.Leade
 	result.Level = doc.Level
 
 	return result, nil
+}
+
+func (db DB) ReadLeaderboardPlayers(ctx context.Context, uids []int64) ([]domain.LeaderboardPlayer, error) {
+	list := make([]domain.LeaderboardPlayer, 0, len(uids))
+
+	opts := &options.FindOptions{}
+	opts.SetProjection(bson.D{
+		{Key: "_id", Value: 0},
+		{Key: "playedAt", Value: 0},
+		{Key: "referralPoints", Value: 0},
+	})
+
+	c, err := db.users.Find(ctx, bson.M{
+		"profile.telegram.id": bson.D{{Key: "$in", Value: uids}},
+	}, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		_ = c.Close(ctx)
+	}()
+
+	var players []leaderboardPlayerBSON
+	if err = c.All(ctx, &players); err != nil {
+		return nil, err
+	}
+
+	// Sorting with the same as `uids` sequence
+	sortIndexMap := make(map[int64]int)
+	for k, v := range uids {
+		sortIndexMap[v] = k
+	}
+
+	sort.Slice(players, func(i, j int) bool {
+		return sortIndexMap[players[i].Profile.Telegram.ID] < sortIndexMap[players[j].Profile.Telegram.ID]
+	})
+
+	for _, doc := range players {
+		list = append(list, domain.LeaderboardPlayer{
+			Nickname:  *doc.Profile.Nickname,
+			Level:     doc.Level,
+			IsPremium: doc.Profile.Telegram.IsPremium,
+			Points:    doc.Points,
+		})
+	}
+
+	if err := c.Err(); err != nil {
+		return nil, err
+	}
+
+	return list, nil
 }
 
 func (db DB) ReadFriendsLeaderboardPlayers(ctx context.Context, uid int64, limit int64, skip int64) ([]domain.LeaderboardPlayer, error) {
@@ -99,101 +152,17 @@ func (db DB) ReadFriendsLeaderboardPlayers(ctx context.Context, uid int64, limit
 	return list, nil
 }
 
-func (db DB) ReadLevelLeaderboardPlayers(ctx context.Context, level domain.Level, excludeUID int64, limit int64, skip int64) ([]domain.LeaderboardPlayer, error) {
-	list := make([]domain.LeaderboardPlayer, 0, limit)
-
-	opts := &options.FindOptions{}
-	opts.SetProjection(bson.D{
-		{Key: "_id", Value: 0},
-		{Key: "playedAt", Value: 0},
-		{Key: "referralPoints", Value: 0},
+func (db DB) ReadLevelLeaderboardTotalPlayers(ctx context.Context, level domain.Level) (int64, error) {
+	return db.users.CountDocuments(ctx, bson.M{
+		"profile.nickname": bson.D{{Key: "$ne", Value: nil}},
+		"profile.isGhost":  false,
+		"level":            level,
 	})
-	opts.SetLimit(limit)
-	opts.SetSkip(skip)
-	opts.SetSort(bson.M{"points": -1})
-
-	c, err := db.users.Find(ctx, bson.M{
-		"profile.telegram.id": bson.D{{Key: "$ne", Value: excludeUID}},
-		"profile.nickname":    bson.D{{Key: "$ne", Value: nil}},
-		"profile.isGhost":     false,
-		"level":               level,
-	}, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	defer func() {
-		_ = c.Close(ctx)
-	}()
-
-	for c.Next(ctx) {
-		var doc leaderboardPlayerBSON
-
-		err := c.Decode(&doc)
-		if err != nil {
-			return nil, err
-		}
-
-		list = append(list, domain.LeaderboardPlayer{
-			Nickname:  *doc.Profile.Nickname,
-			Level:     doc.Level,
-			IsPremium: doc.Profile.Telegram.IsPremium,
-			Points:    doc.Points,
-		})
-	}
-
-	if err := c.Err(); err != nil {
-		return nil, err
-	}
-
-	return list, nil
 }
 
-func (db DB) ReadGlobalLeaderboardPlayers(ctx context.Context, excludeUID int64, limit int64, skip int64) ([]domain.LeaderboardPlayer, error) {
-	list := make([]domain.LeaderboardPlayer, 0, limit)
-
-	opts := &options.FindOptions{}
-	opts.SetProjection(bson.D{
-		{Key: "_id", Value: 0},
-		{Key: "playedAt", Value: 0},
-		{Key: "referralPoints", Value: 0},
+func (db DB) ReadGlobalLeaderboardTotalPlayers(ctx context.Context) (int64, error) {
+	return db.users.CountDocuments(ctx, bson.M{
+		"profile.nickname": bson.D{{Key: "$ne", Value: nil}},
+		"profile.isGhost":  false,
 	})
-	opts.SetLimit(limit)
-	opts.SetSkip(skip)
-	opts.SetSort(bson.M{"points": -1})
-
-	c, err := db.users.Find(ctx, bson.M{
-		"profile.telegram.id": bson.D{{Key: "$ne", Value: excludeUID}},
-		"profile.nickname":    bson.D{{Key: "$ne", Value: nil}},
-		"profile.isGhost":     false,
-	}, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	defer func() {
-		_ = c.Close(ctx)
-	}()
-
-	for c.Next(ctx) {
-		var doc leaderboardPlayerBSON
-
-		err := c.Decode(&doc)
-		if err != nil {
-			return nil, err
-		}
-
-		list = append(list, domain.LeaderboardPlayer{
-			Nickname:  *doc.Profile.Nickname,
-			Level:     doc.Level,
-			IsPremium: doc.Profile.Telegram.IsPremium,
-			Points:    doc.Points,
-		})
-	}
-
-	if err := c.Err(); err != nil {
-		return nil, err
-	}
-
-	return list, nil
 }

@@ -11,6 +11,7 @@ type DBInterface interface {
 
 type RedisInterface interface {
 	meRedis
+	leaderboardRedis
 }
 
 type Service struct {

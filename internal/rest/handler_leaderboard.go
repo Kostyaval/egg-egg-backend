@@ -51,17 +51,17 @@ func (h handler) leaderboard(c *fiber.Ctx) error {
 	}
 
 	var res struct {
-		Player domain.LeaderboardPlayer   `json:"player"`
-		Rivals []domain.LeaderboardPlayer `json:"rivals"`
-		Total  int64                      `json:"total"`
-		Limit  int64                      `json:"limit"`
-		Skip   int64                      `json:"skip"`
+		Me    domain.LeaderboardPlayer   `json:"me"`
+		List  []domain.LeaderboardPlayer `json:"list"`
+		Total int64                      `json:"total"`
+		Limit int64                      `json:"limit"`
+		Skip  int64                      `json:"skip"`
 	}
 
 	res.Skip = req.Skip
 	res.Limit = req.Limit
 
-	res.Player, res.Rivals, res.Total, err = h.srv.ReadLeaderboard(c.Context(), jwt.UID, req.Tab, req.Limit, req.Skip)
+	res.Me, res.List, res.Total, err = h.srv.ReadLeaderboard(c.Context(), jwt.UID, req.Tab, req.Limit, req.Skip)
 	if err != nil {
 		log.Error("ReadLeaderboard", slog.String("error", err.Error()))
 
