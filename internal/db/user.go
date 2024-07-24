@@ -57,13 +57,10 @@ func (db DB) GetUserProfileWithID(ctx context.Context, uid int64) (domain.UserPr
 func (db DB) RegisterUser(ctx context.Context, user *domain.UserProfile, points int) error {
 	_, err := db.users.InsertOne(ctx, bson.D{
 		{Key: "profile", Value: user},
-		{Key: "level", Value: &domain.Level{
-			Level:        0,
-			Improvements: 0,
-		}},
+		{Key: "level", Value: 0},
 		{Key: "taps", Value: &domain.Taps{
-			Energy: 0,
-			Count:  0,
+			TapCount:         0,
+			EnergyBoostCount: 0,
 		}},
 		{Key: "points", Value: points},
 		{Key: "referralPoints", Value: 0},
@@ -116,15 +113,14 @@ func (db DB) UpdateUserNickname(ctx context.Context, uid int64, nickname string,
 	return nil
 }
 
-func (db DB) UpdateUserTapCount(ctx context.Context, uid int64, count int64) error {
+func (db DB) UpdateUserTapCount(ctx context.Context, uid int64, count int) error {
 	res, err := db.users.UpdateOne(ctx, bson.D{
 		{Key: "profile.telegram.id", Value: uid},
 		{Key: "profile.hasBan", Value: false},
 		{Key: "profile.isGhost", Value: false},
 	}, bson.D{
 		{Key: "$inc", Value: bson.M{
-			"taps.count":  count,
-			"taps.energy": -count,
+			"taps.count": count,
 		}},
 		{Key: "$set", Value: bson.M{
 			"playedAt": primitive.NewDateTimeFromTime(time.Now()),

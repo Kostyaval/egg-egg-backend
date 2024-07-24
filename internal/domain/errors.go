@@ -13,4 +13,6 @@ var (
 	ErrJWTDecode        = errors.New("jwt decode")
 	ErrNoJWT            = errors.New("jwt is not found")
 	ErrCorruptJWT       = errors.New("jwt corrupt")
+	ErrTapOverLimit     = errors.New("tap over limit")
+	ErrTapTooFast       = errors.New("tap too fast")
 )

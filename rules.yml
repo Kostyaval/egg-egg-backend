@@ -43,3 +43,62 @@ referral:
     recipient:
       plain: 0
       premium: 0
+
+# taps
+taps:
+  # egg level: 0
+  - points: 1
+    energy: 500
+    energyRecovery: 1800
+    energyBoosts:
+    energyBoostCost: 5000
+
+  # egg level: 1
+  - points: 1
+    energy: 1000
+    energyRecovery: 3600
+    energyBoosts:
+      - 500
+    energyBoostCost: 5000
+
+  # egg level: 2
+  - points: 1
+    energy: 2000
+    energyRecovery: 7200
+    energyBoosts:
+      - 500
+      - 500
+    energyBoostCost: 5000
+
+  # egg level: 3
+  - points: 1
+    energy: 3500
+    energyRecovery: 12600
+    energyBoosts:
+      - 500
+      - 500
+      - 500
+    energyBoostCost: 5000
+
+  # egg level: 4
+  - points: 1
+    energy: 5500
+    energyRecovery: 19800
+    energyBoosts:
+      - 500
+      - 500
+      - 500
+      - 500
+    energyBoostCost: 5000
+
+  # egg level: 5
+  - points: 1
+    energy: 8000
+    energyRecovery: 28800
+    energyBoosts:
+      - 500
+      - 500
+      - 500
+      - 500
+      - 500
+    energyBoostCost: 5000

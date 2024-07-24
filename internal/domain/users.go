@@ -10,18 +10,18 @@ type UserDocument struct {
 	PlayedAt       primitive.DateTime `bson:"playedAt" json:"playedAt"`
 	Points         int                `bson:"points" json:"points"`
 	ReferralPoints int                `bson:"referralPoints" json:"referralPoints"`
-	Level          Level              `bson:"level" json:"level"`
+	Level          int                `bson:"level" json:"level"`
 	Taps           Taps               `bson:"taps" json:"taps"`
 }
 
+// max count 24k
 type Taps struct {
-	Energy int `bson:"energy" json:"energy"`
-	Count  int `bson:"count" json:"count"`
-}
-
-type Level struct {
-	Level        int `bson:"level" json:"level"`
-	Improvements int `bson:"improvements" json:"improvements"`
+	TapCount          int `bson:"tapCount" json:"tapCount"`
+	TapBoostCount     int `bson:"boostCount" json:"boostCount"`
+	EnergyBoostCount  int `bson:"energyBoosts" json:"energyBoosts"`
+	LevelTapBoosts    int `bson:"levelTapBoosts" json:"levelTapBoosts"`
+	LevelEnergyBoosts int `bson:"levelEnergyBoosts" json:"levelEnergyBoosts"`
+	EnergyCount       int `bson:"energyCount" json:"energyCount"` // just for response, always 0
 }
 
 type UserProfile struct {
