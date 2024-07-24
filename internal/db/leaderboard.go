@@ -152,6 +152,14 @@ func (db DB) ReadFriendsLeaderboardPlayers(ctx context.Context, uid int64, limit
 	return list, nil
 }
 
+func (db DB) ReadFriendsLeaderboardTotalPlayers(ctx context.Context, uid int64) (int64, error) {
+	return db.users.CountDocuments(ctx, bson.M{
+		"profile.ref":      uid,
+		"profile.isGhost":  false,
+		"profile.nickname": bson.D{{Key: "$ne", Value: nil}},
+	})
+}
+
 func (db DB) ReadLevelLeaderboardTotalPlayers(ctx context.Context, level domain.Level) (int64, error) {
 	return db.users.CountDocuments(ctx, bson.M{
 		"profile.nickname": bson.D{{Key: "$ne", Value: nil}},

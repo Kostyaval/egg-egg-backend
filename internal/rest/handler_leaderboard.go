@@ -45,11 +45,6 @@ func (h handler) leaderboard(c *fiber.Ctx) error {
 		req.Tab = "friends"
 	}
 
-	if req.Tab == "friends" {
-		req.Skip = 0
-		req.Limit = 500
-	}
-
 	var res struct {
 		Me    domain.LeaderboardPlayer   `json:"me"`
 		List  []domain.LeaderboardPlayer `json:"list"`
@@ -71,6 +66,8 @@ func (h handler) leaderboard(c *fiber.Ctx) error {
 
 		return newHTTPError(fiber.StatusInternalServerError, "read leaderboard").withDetails(err)
 	}
+
+	log.Info(req.Tab)
 
 	return c.JSON(res)
 }

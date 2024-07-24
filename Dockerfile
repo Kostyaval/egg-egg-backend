@@ -25,6 +25,7 @@ COPY --chown=$USER:$USER ./ ./
 
 RUN go mod download
 RUN make lint
+RUN make test
 RUN make build
 
 
