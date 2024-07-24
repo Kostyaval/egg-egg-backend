@@ -15,7 +15,7 @@ import (
 
 type startHandlerDB interface {
 	GetUserProfileWithID(ctx context.Context, uid int64) (domain.UserProfile, error)
-	RegisterUser(ctx context.Context, user *domain.UserProfile, points int) error
+	RegisterUser(ctx context.Context, user *domain.UserProfile) error
 }
 
 var regexpUserReferral = regexp.MustCompile(`^(?i)/start [0-9]+$`)
@@ -66,7 +66,7 @@ func (h handler) start(c tele.Context) error {
 				}
 			}
 
-			if err := h.db.RegisterUser(context.Background(), user, 0); err != nil {
+			if err := h.db.RegisterUser(context.Background(), user); err != nil {
 				log.Error("registration", slog.String("error", err.Error()))
 				return c.Send("Oops! Something went wrong. Please try again later")
 			}

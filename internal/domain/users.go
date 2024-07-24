@@ -10,7 +10,7 @@ type UserDocument struct {
 	PlayedAt       primitive.DateTime `bson:"playedAt" json:"playedAt"`
 	Points         int                `bson:"points" json:"points"`
 	ReferralPoints int                `bson:"referralPoints" json:"referralPoints"`
-	Level          int                `bson:"level" json:"level"`
+	Level          Level              `bson:"level" json:"level"`
 }
 
 type UserProfile struct {

@@ -11,8 +11,12 @@ type meDB interface {
 	UpdateUserJWT(ctx context.Context, uid int64, jti uuid.UUID) error
 	CheckUserNickname(ctx context.Context, nickname string) (bool, error)
 	UpdateUserNickname(ctx context.Context, uid int64, nickname string, jti uuid.UUID) error
-	IncPointsWithReferral(ctx context.Context, uid int64, points int) error
-	IncPoints(ctx context.Context, uid int64, points int) error
+	IncPointsWithReferral(ctx context.Context, uid int64, points int) (int, error)
+	IncPoints(ctx context.Context, uid int64, points int) (int, error)
+}
+
+type meRedis interface {
+	SetLeaderboardPlayerPoints(ctx context.Context, uid int64, level domain.Level, points int) error
 }
 
 func (s Service) GetMe(ctx context.Context, uid int64) (domain.UserDocument, []byte, error) {
@@ -86,15 +90,15 @@ func (s Service) CreateUserNickname(ctx context.Context, uid int64, nickname str
 
 	if len(s.cfg.Rules.Referral) > 0 {
 		if user.Profile.Referral != nil {
-			refUser, err := s.db.GetUserProfileWithID(ctx, *user.Profile.Referral)
+			refUser, err := s.db.GetUserDocumentWithID(ctx, *user.Profile.Referral)
 			if err != nil {
 				return token, &user, nil, err
 			}
 
-			if !refUser.HasBan && !refUser.IsGhost && refUser.Nickname != nil {
+			if !refUser.Profile.HasBan && !refUser.Profile.IsGhost && refUser.Profile.Nickname != nil {
 				ref := &domain.ReferralBonus{
 					UserID:         user.Profile.Telegram.ID,
-					ReferralUserID: refUser.Telegram.ID,
+					ReferralUserID: refUser.Profile.Telegram.ID,
 				}
 
 				if user.Profile.Telegram.IsPremium {
@@ -105,17 +109,22 @@ func (s Service) CreateUserNickname(ctx context.Context, uid int64, nickname str
 					ref.ReferralUserPoints = s.cfg.Rules.Referral[0].Sender.Plain
 				}
 
-				if err := s.db.IncPoints(context.Background(), user.Profile.Telegram.ID, ref.UserPoints); err != nil {
+				if _, err := s.db.IncPoints(context.Background(), user.Profile.Telegram.ID, ref.UserPoints); err != nil {
 					ref.UserPoints = 0
 					return token, &user, nil, err
 				}
 
+				// no need to check error, because always will be updated with taps
+				_ = s.rdb.SetLeaderboardPlayerPoints(ctx, user.Profile.Telegram.ID, user.Level, ref.UserPoints)
 				user.Points = ref.UserPoints
 
-				if err := s.db.IncPointsWithReferral(context.Background(), refUser.Telegram.ID, ref.ReferralUserPoints); err != nil {
+				if _, err := s.db.IncPointsWithReferral(context.Background(), refUser.Profile.Telegram.ID, ref.ReferralUserPoints); err != nil {
 					ref.ReferralUserPoints = 0
 					return token, &user, nil, err
 				}
+
+				// no need to check error, because always will be updated with taps
+				_ = s.rdb.SetLeaderboardPlayerPoints(ctx, refUser.Profile.Telegram.ID, refUser.Level, ref.ReferralUserPoints+refUser.Points)
 
 				return token, &user, ref, nil
 			}

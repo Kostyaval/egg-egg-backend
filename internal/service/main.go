@@ -6,16 +6,24 @@ type DBInterface interface {
 	meDB
 	jwtDB
 	friendsDB
+	leaderboardDB
+}
+
+type RedisInterface interface {
+	meRedis
+	leaderboardRedis
 }
 
 type Service struct {
 	cfg *config.Config
 	db  DBInterface
+	rdb RedisInterface
 }
 
-func NewService(cfg *config.Config, db DBInterface) *Service {
+func NewService(cfg *config.Config, db DBInterface, rdb RedisInterface) *Service {
 	return &Service{
 		cfg: cfg,
 		db:  db,
+		rdb: rdb,
 	}
 }

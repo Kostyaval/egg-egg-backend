@@ -54,11 +54,11 @@ func (db DB) GetUserProfileWithID(ctx context.Context, uid int64) (domain.UserPr
 	return result.Profile, nil
 }
 
-func (db DB) RegisterUser(ctx context.Context, user *domain.UserProfile, points int) error {
+func (db DB) RegisterUser(ctx context.Context, user *domain.UserProfile) error {
 	_, err := db.users.InsertOne(ctx, bson.D{
 		{Key: "profile", Value: user},
-		{Key: "level", Value: 0},
-		{Key: "points", Value: points},
+		{Key: "level", Value: domain.Lv0},
+		{Key: "points", Value: 0},
 		{Key: "referralPoints", Value: 0},
 		{Key: "playedAt", Value: primitive.NewDateTimeFromTime(time.Now())},
 	})

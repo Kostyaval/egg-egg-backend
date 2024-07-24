@@ -17,6 +17,7 @@ const (
 type Config struct {
 	Runtime       string
 	MongoURI      string
+	RedisURI      string
 	TelegramToken string
 	Rules         *Rules
 	JWT           *JWTConfig
@@ -52,6 +53,12 @@ func NewConfig() (*Config, error) {
 	cfg.MongoURI, ok = os.LookupEnv("MONGODB_URI")
 	if !ok || cfg.MongoURI == "" {
 		return nil, errors.New("env MONGODB_URI is not set")
+	}
+
+	// Setup Redis URI
+	cfg.RedisURI, ok = os.LookupEnv("REDIS_URI")
+	if !ok || cfg.RedisURI == "" {
+		return nil, errors.New("env REDIS_URI is not set")
 	}
 
 	// Setup Telegram Token

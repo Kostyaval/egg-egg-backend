@@ -9,6 +9,7 @@
 |--------------------------|---|----------------------------------------------------------------------------------|--------------|
 | **RUNTIME**              | F | `development`, `production`                                                      | `production` |
 | **MONGODB_URI**          | T | e.g. `mongodb+srv://<user>:<password>@<cluster-url>?retryWrites=true&w=majority` |              |
+| **REDIS_URI**            | T | e.g. `redis://<user>:<pass>@<redis-url>/<db>`                                    |              |
 | **TELEGRAM_TOKEN**       | T |                                                                                  |              |
 | **JWT_PRIVATE_KEY_PATH** | T |                                                                                  |              |
 | **JWT_PUBLIC_KEY_PATH**  | T |                                                                                  |              |

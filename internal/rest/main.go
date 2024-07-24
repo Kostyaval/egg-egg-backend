@@ -15,6 +15,7 @@ type ServiceInterface interface {
 	jwtDeleteService
 	nicknameService
 	friendsService
+	leaderboardService
 }
 
 func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fiber.App {
@@ -60,6 +61,7 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 
 	api.Use(middlewareJWT(&middlewareJWTConfig{log: h.log, cfg: cfg.JWT, mustNickname: true}))
 	api.Get("/me/friends", h.readUserFriends)
+	api.Get("/leaderboard", h.leaderboard)
 
 	return app
 }
