@@ -18,3 +18,10 @@ linters:
     - wsl
     - paralleltest
     - prealloc
+    - testifylint
+
+linters-settings:
+  testifylint:
+    # Enable all checkers (https://github.com/Antonboom/testifylint#checkers).
+    # Default: false
+    enable-all: true
