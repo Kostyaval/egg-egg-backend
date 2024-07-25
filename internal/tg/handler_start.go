@@ -60,7 +60,10 @@ func (h handler) start(c tele.Context) error {
 						log.Error("db.GetUserProfileWithID refUser", slog.String("error", err.Error()))
 					} else {
 						if !refUser.IsGhost && !refUser.HasBan && refUser.Nickname != nil {
-							user.Referral = &refID
+							user.Referral = &domain.ReferralUserProfile{
+								ID:       refUser.Telegram.ID,
+								Nickname: *refUser.Nickname,
+							}
 						}
 					}
 				}

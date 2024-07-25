@@ -14,14 +14,19 @@ type UserDocument struct {
 }
 
 type UserProfile struct {
-	Nickname  *string             `bson:"nickname" json:"nickname"`
-	CreatedAt primitive.DateTime  `bson:"createdAt" json:"-"`
-	UpdatedAt primitive.DateTime  `bson:"updatedAt" json:"-"`
-	HasBan    bool                `bson:"hasBan" json:"-"`
-	IsGhost   bool                `bson:"isGhost" json:"-"`
-	Telegram  TelegramUserProfile `bson:"telegram" json:"telegram"`
-	Referral  *int64              `bson:"ref" json:"referral"`
-	JTI       *uuid.UUID          `bson:"jti" json:"-"`
+	Nickname  *string              `bson:"nickname" json:"nickname"`
+	CreatedAt primitive.DateTime   `bson:"createdAt" json:"-"`
+	UpdatedAt primitive.DateTime   `bson:"updatedAt" json:"-"`
+	HasBan    bool                 `bson:"hasBan" json:"-"`
+	IsGhost   bool                 `bson:"isGhost" json:"-"`
+	Telegram  TelegramUserProfile  `bson:"telegram" json:"telegram"`
+	Referral  *ReferralUserProfile `bson:"ref" json:"referral"`
+	JTI       *uuid.UUID           `bson:"jti" json:"-"`
+}
+
+type ReferralUserProfile struct {
+	ID       int64  `bson:"id" json:"id"`
+	Nickname string `bson:"nickname" json:"nickname"`
 }
 
 type TelegramUserProfile struct {

@@ -118,7 +118,7 @@ func (db DB) ReadFriendsLeaderboardPlayers(ctx context.Context, uid int64, limit
 
 	c, err := db.users.Find(ctx, bson.M{
 		"$or": bson.A{
-			bson.M{"profile.ref": uid},
+			bson.M{"profile.ref.id": uid},
 			bson.M{"profile.telegram.id": uid},
 		},
 		"profile.isGhost":  false,
@@ -158,7 +158,7 @@ func (db DB) ReadFriendsLeaderboardPlayers(ctx context.Context, uid int64, limit
 func (db DB) ReadFriendsLeaderboardTotalPlayers(ctx context.Context, uid int64) (int64, error) {
 	return db.users.CountDocuments(ctx, bson.M{
 		"$or": bson.A{
-			bson.M{"profile.ref": uid},
+			bson.M{"profile.ref.id": uid},
 			bson.M{"profile.telegram.id": uid},
 		},
 		"profile.isGhost":  false,

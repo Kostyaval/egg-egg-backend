@@ -30,6 +30,12 @@ func NewMongoDB(cfg *config.Config) (*DB, error) {
 		Options: options.Index().SetUnique(true),
 	}
 
+	// create unique referral id index
+	indexReferralID := mongo.IndexModel{
+		Keys:    bson.M{"profile.ref.id": 1},
+		Options: options.Index().SetUnique(false),
+	}
+
 	// create unique user nickname index
 	indexUserNickname := mongo.IndexModel{
 		Keys: bson.M{"profile.nickname": 1},
@@ -44,6 +50,7 @@ func NewMongoDB(cfg *config.Config) (*DB, error) {
 
 	_, err = usersCol.Indexes().CreateMany(context.Background(), []mongo.IndexModel{
 		indexUserID,
+		indexReferralID,
 		indexUserNickname,
 	})
 	if err != nil {

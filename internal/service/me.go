@@ -90,7 +90,7 @@ func (s Service) CreateUserNickname(ctx context.Context, uid int64, nickname str
 
 	if len(s.cfg.Rules.Referral) > 0 {
 		if user.Profile.Referral != nil {
-			refUser, err := s.db.GetUserDocumentWithID(ctx, *user.Profile.Referral)
+			refUser, err := s.db.GetUserDocumentWithID(ctx, user.Profile.Referral.ID)
 			if err != nil {
 				return token, &user, nil, err
 			}

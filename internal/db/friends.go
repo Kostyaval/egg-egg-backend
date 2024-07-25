@@ -21,7 +21,7 @@ func (db DB) ReadUserFriends(ctx context.Context, uid int64, limit int64, skip i
 	opts.SetSort(bson.M{"profile.createdAt": -1})
 
 	c, err := db.users.Find(ctx, bson.M{
-		"profile.ref":      uid,
+		"profile.ref.id":   uid,
 		"profile.nickname": bson.D{{Key: "$ne", Value: nil}},
 	}, opts)
 	if err != nil {
@@ -56,7 +56,7 @@ func (db DB) ReadUserFriends(ctx context.Context, uid int64, limit int64, skip i
 	}
 
 	count, err := db.users.CountDocuments(ctx, bson.M{
-		"profile.ref":      uid,
+		"profile.ref.id":   uid,
 		"profile.nickname": bson.D{{Key: "$ne", Value: nil}},
 	})
 	if err != nil {
