@@ -16,13 +16,18 @@ type middlewareJWTConfig struct {
 
 func middlewareJWT(mw *middlewareJWTConfig) fiber.Handler {
 	return func(c *fiber.Ctx) error {
+		log := mw.log.HTTPRequest(c)
+
 		// the middleware used twice, so no need to decode the jwt again
-		_, ok := c.Locals("jwt").(*domain.JWTClaims)
+		_claims, ok := c.Locals("jwt").(*domain.JWTClaims)
 		if ok {
+			if mw.mustNickname && _claims.Nickname == nil {
+				log.Error("no nickname", slog.Int64("uid", _claims.UID))
+				return newHTTPError(fiber.StatusForbidden, "no nickname")
+			}
+
 			return c.Next()
 		}
-
-		log := mw.log.HTTPRequest(c)
 
 		token := strings.TrimPrefix(c.Get(fiber.HeaderAuthorization), "Bearer ")
 		if token == "" {
