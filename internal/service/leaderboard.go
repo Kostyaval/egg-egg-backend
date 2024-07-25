@@ -41,27 +41,12 @@ func (s Service) ReadLeaderboard(ctx context.Context, uid int64, tab string, lim
 			return me, nil, 0, err
 		}
 
-		var isMeInRange, isMeFound bool
-
-		for i := int64(0); i < int64(len(list)); i++ {
-			if i == 0 {
-				isMeInRange = me.Points <= list[0].Points && me.Points >= list[int64(len(list)-1)].Points
-			}
-
-			if isMeInRange {
-				if isMeFound {
-					list[i].Rank = skip + i + 2
-				} else {
-					if me.Points >= list[i].Points {
-						isMeFound = true
-						me.Rank = skip + i + 1
-						list[i].Rank = skip + i + 2
-					} else {
-						list[i].Rank = skip + i + 1
-					}
+		if len(list) > 1 {
+			for i := int64(0); i < int64(len(list)); i++ {
+				list[i].Rank = i + skip + 1
+				if list[i].Nickname == me.Nickname {
+					me.Rank = list[i].Rank
 				}
-			} else {
-				list[i].Rank = skip + i + 1
 			}
 		}
 

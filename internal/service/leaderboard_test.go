@@ -38,22 +38,31 @@ func (s *Suite) readLeaderboardFriendsTab(count int, limit int64, skip int64, pl
 		players       = make([]domain.LeaderboardPlayer, count)
 	)
 
-	for i := 0; i < count; i++ {
-		players[i] = domain.LeaderboardPlayer{
-			Nickname:  fmt.Sprintf("nick%d", i),
-			Points:    count - i,
-			Rank:      0,
-			Level:     0,
-			IsPremium: false,
-		}
-	}
-
 	player := domain.LeaderboardPlayer{
 		Nickname:  "me",
 		Points:    playerPoints,
 		Rank:      0,
 		Level:     0,
 		IsPremium: false,
+	}
+
+	if count > 1 {
+		for i := 0; i < count; i++ {
+			points := count - i
+			if points == playerPoints {
+				players[i] = player
+			} else {
+				players[i] = domain.LeaderboardPlayer{
+					Nickname:  fmt.Sprintf("nick%d", i),
+					Points:    points,
+					Rank:      0,
+					Level:     0,
+					IsPremium: false,
+				}
+			}
+		}
+	} else {
+		players[0] = player
 	}
 
 	ctx := context.Background()
@@ -85,13 +94,9 @@ func (s *Suite) readLeaderboardFriendsTab(count int, limit int64, skip int64, pl
 		s.Len(l, int(limit))
 	}
 
-	if p.Rank != 0 {
+	if len(l) > 1 {
 		for i := 0; i < len(l); i++ {
-			if p.Points >= l[i].Points {
-				s.Less(p.Rank, l[i].Rank)
-			} else {
-				s.Greater(p.Rank, l[i].Rank)
-			}
+			s.Equal(l[i].Rank, int64(i+1)+skip)
 		}
 	}
 
@@ -99,26 +104,55 @@ func (s *Suite) readLeaderboardFriendsTab(count int, limit int64, skip int64, pl
 }
 
 func (s *Suite) TestReadLeaderboard_FriendsTab() {
+	// me in fetched players list range
 	rank := s.readLeaderboardFriendsTab(10, 10, 0, 5)
 	s.Equal(rank, int64(6))
 
 	s.SetupTest()
 
-	rank = s.readLeaderboardFriendsTab(0, 10, 0, 5)
+	// me in range of fetched players list (on current page)
+	rank = s.readLeaderboardFriendsTab(10, 5, 5, 3)
+	s.Equal(rank, int64(8))
+
+	s.SetupTest()
+
+	// me out of fetched players list range (2 page but me on 1)
+	rank = s.readLeaderboardFriendsTab(10, 5, 5, 9)
 	s.Equal(rank, int64(0))
 
 	s.SetupTest()
 
-	rank = s.readLeaderboardFriendsTab(10, 10, 10, 5)
-	s.Equal(rank, int64(0))
-
-	s.SetupTest()
-
+	// me out of fetched players list range (1 page but me on 2)
 	rank = s.readLeaderboardFriendsTab(10, 5, 0, 3)
 	s.Equal(rank, int64(0))
 
 	s.SetupTest()
 
-	rank = s.readLeaderboardFriendsTab(10, 5, 5, 3)
-	s.Equal(rank, int64(8))
+	// me out of fetched players list range (out of page range)
+	rank = s.readLeaderboardFriendsTab(10, 10, 10, 5)
+	s.Equal(rank, int64(0))
+
+	s.SetupTest()
+
+	// only me (no friends)
+	rank = s.readLeaderboardFriendsTab(1, 5, 0, 10)
+	s.Equal(rank, int64(0))
+
+	s.SetupTest()
+
+	// one friend and me
+	rank = s.readLeaderboardFriendsTab(2, 5, 0, 1)
+	s.Equal(rank, int64(2))
+
+	s.SetupTest()
+
+	// one friend and me
+	rank = s.readLeaderboardFriendsTab(2, 5, 0, 2)
+	s.Equal(rank, int64(1))
+
+	s.SetupTest()
+
+	// two friends and me
+	rank = s.readLeaderboardFriendsTab(3, 5, 0, 3)
+	s.Equal(rank, int64(1))
 }

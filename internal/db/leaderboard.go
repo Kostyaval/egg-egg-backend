@@ -117,7 +117,10 @@ func (db DB) ReadFriendsLeaderboardPlayers(ctx context.Context, uid int64, limit
 	opts.SetSort(bson.M{"points": -1})
 
 	c, err := db.users.Find(ctx, bson.M{
-		"profile.ref":      uid,
+		"$or": bson.A{
+			bson.M{"profile.ref": uid},
+			bson.M{"profile.telegram.id": uid},
+		},
 		"profile.isGhost":  false,
 		"profile.nickname": bson.D{{Key: "$ne", Value: nil}},
 	}, opts)
@@ -154,7 +157,10 @@ func (db DB) ReadFriendsLeaderboardPlayers(ctx context.Context, uid int64, limit
 
 func (db DB) ReadFriendsLeaderboardTotalPlayers(ctx context.Context, uid int64) (int64, error) {
 	return db.users.CountDocuments(ctx, bson.M{
-		"profile.ref":      uid,
+		"$or": bson.A{
+			bson.M{"profile.ref": uid},
+			bson.M{"profile.telegram.id": uid},
+		},
 		"profile.isGhost":  false,
 		"profile.nickname": bson.D{{Key: "$ne", Value: nil}},
 	})
