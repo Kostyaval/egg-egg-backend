@@ -44,11 +44,11 @@ func (s *Suite) SetupSuite() {
 		s.T().Fatal(err)
 	}
 
-	if err := os.Setenv("JWT_PRIVATE_KEY_PATH", "../../.data/private.jwk"); err != nil {
+	if err := os.Setenv("JWT_PRIVATE_KEY", `{"alg":"ES256","crv":"P-256","d":"oDCWjLaVOhbTdQsl-Q6MlsXRT1m2B12S2_2gOrPgPyc","key_ops":["sign","verify"],"kty":"EC","x":"pX9L5m15AKX-GohuANh_rNmIOguNJGMP8To_QM5e6Ks","y":"lRKZJTBz2TrDVxununJso42y17j81CQoNZMks7FTJYY"}`); err != nil {
 		s.T().Fatal(err)
 	}
 
-	if err := os.Setenv("JWT_PUBLIC_KEY_PATH", "../../.data/public.jwk"); err != nil {
+	if err := os.Setenv("JWT_PUBLIC_KEY", `{"alg":"ES256","crv":"P-256","key_ops":["verify"],"kty":"EC","x":"pX9L5m15AKX-GohuANh_rNmIOguNJGMP8To_QM5e6Ks","y":"lRKZJTBz2TrDVxununJso42y17j81CQoNZMks7FTJYY"}`); err != nil {
 		s.T().Fatal(err)
 	}
 
