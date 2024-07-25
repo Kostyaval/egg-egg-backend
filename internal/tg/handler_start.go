@@ -15,20 +15,22 @@ import (
 
 type startHandlerDB interface {
 	GetUserProfileWithID(ctx context.Context, uid int64) (domain.UserProfile, error)
-	RegisterUser(ctx context.Context, user *domain.UserProfile) error
+	CreateUser(ctx context.Context, user *domain.UserProfile) error
+	UpdateReferralUserProfile(ctx context.Context, uid int64, ref *domain.ReferralUserProfile) error
 }
 
 var regexpUserReferral = regexp.MustCompile(`^(?i)/start [0-9]+$`)
 
 func (h handler) start(c tele.Context) error {
 	log := h.log.Message(c)
+	ctx := context.Background()
 
 	if c.Sender().IsBot || c.Sender().IsForum {
 		log.Error(domain.ErrInvalidUserType.Error())
 		return c.Send("Invalid Telegram user type")
 	}
 
-	u, err := h.db.GetUserProfileWithID(context.Background(), c.Sender().ID)
+	u, err := h.db.GetUserProfileWithID(ctx, c.Sender().ID)
 	if err != nil {
 		// registration
 		if errors.Is(err, domain.ErrNoUser) {
@@ -55,7 +57,7 @@ func (h handler) start(c tele.Context) error {
 
 				refID, err := strconv.ParseInt(split[1], 10, 64)
 				if err == nil {
-					refUser, err := h.db.GetUserProfileWithID(context.Background(), refID)
+					refUser, err := h.db.GetUserProfileWithID(ctx, refID)
 					if err != nil {
 						log.Error("db.GetUserProfileWithID refUser", slog.String("error", err.Error()))
 					} else {
@@ -69,7 +71,7 @@ func (h handler) start(c tele.Context) error {
 				}
 			}
 
-			if err := h.db.RegisterUser(context.Background(), user); err != nil {
+			if err := h.db.CreateUser(ctx, user); err != nil {
 				log.Error("registration", slog.String("error", err.Error()))
 				return c.Send("Oops! Something went wrong. Please try again later")
 			}
@@ -92,6 +94,31 @@ func (h handler) start(c tele.Context) error {
 	if u.IsGhost {
 		log.Error(domain.ErrGhostUser.Error())
 		return c.Send("Your player profile was deleted")
+	}
+
+	if u.Nickname == nil && regexpUserReferral.MatchString(c.Text()) {
+		split := strings.Split(c.Text(), " ")
+
+		refID, err := strconv.ParseInt(split[1], 10, 64)
+		if err == nil {
+			if u.Referral == nil || (u.Referral != nil && u.Referral.ID != refID) {
+				refUser, err := h.db.GetUserProfileWithID(ctx, refID)
+				if err != nil {
+					log.Error("db.GetUserProfileWithID refUser", slog.String("error", err.Error()))
+				} else {
+					if !refUser.IsGhost && !refUser.HasBan && refUser.Nickname != nil {
+						u.Referral = &domain.ReferralUserProfile{
+							ID:       refUser.Telegram.ID,
+							Nickname: *refUser.Nickname,
+						}
+
+						if err := h.db.UpdateReferralUserProfile(ctx, u.Telegram.ID, u.Referral); err != nil {
+							log.Error("db.UpdateReferralUserProfile", slog.String("error", err.Error()))
+						}
+					}
+				}
+			}
+		}
 	}
 
 	log.Info("exists")
