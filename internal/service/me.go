@@ -35,10 +35,6 @@ func (s Service) GetMe(ctx context.Context, uid int64) (domain.UserDocument, []b
 		return u, nil, domain.ErrBannedUser
 	}
 
-	if u.Profile.JTI != nil {
-		return u, nil, domain.ErrMultipleDevices
-	}
-
 	jwtClaims, err := domain.NewJWTClaims(u.Profile.Telegram.ID, u.Profile.Nickname)
 	if err != nil {
 		return u, nil, err
