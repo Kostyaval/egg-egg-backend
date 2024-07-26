@@ -18,9 +18,10 @@ type ReferralRules []struct {
 }
 
 type TapRules []struct {
-	Points          int   `yaml:"points"`
-	Energy          int   `yaml:"energy"`
-	EnergyRecovery  int   `yaml:"energyRecovery"`
-	EnergyBoosts    []int `yaml:"energyBoosts"`
-	EnergyBoostCost int   `yaml:"energyBoostCost"`
+	Points                int   `yaml:"points"`
+	Energy                int   `yaml:"energy"`
+	EnergyRecovery        int   `yaml:"energyRecovery"`
+	EnergyBoosts          []int `yaml:"energyBoosts"`
+	EnergyBoostCost       int   `yaml:"energyBoostCost"`
+	EnergyRechargeSeconds int   `yaml:"energyRechargeSeconds"`
 }

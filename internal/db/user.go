@@ -121,7 +121,41 @@ func (db DB) UpdateUserTapCount(ctx context.Context, uid int64, count int) error
 		{Key: "profile.isGhost", Value: false},
 	}, bson.D{
 		{Key: "$inc", Value: bson.M{
-			"taps.count": count,
+			"taps.tapCount": count,
+		}},
+		{Key: "$set", Value: bson.M{
+			"playedAt": primitive.NewDateTimeFromTime(time.Now()),
+		}},
+		{Key: "$set", Value: bson.M{
+			"taps.playedAt": primitive.NewDateTimeFromTime(time.Now()),
+		}},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return domain.ErrNoUser
+	}
+
+	return nil
+}
+
+func (db DB) UpdateUserTapBoostCount(ctx context.Context, uid int64, cost int) error {
+	res, err := db.users.UpdateOne(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$inc", Value: bson.M{
+			"taps.levelTapBoosts": 1,
+		}},
+		{Key: "$inc", Value: bson.M{
+			"taps.tapBoosts": 1,
+		}},
+		{Key: "$inc", Value: bson.M{
+			"taps.tapCount": -cost,
 		}},
 		{Key: "$set", Value: bson.M{
 			"playedAt": primitive.NewDateTimeFromTime(time.Now()),
@@ -136,8 +170,57 @@ func (db DB) UpdateUserTapCount(ctx context.Context, uid int64, count int) error
 		return domain.ErrNoUser
 	}
 
-	if res.ModifiedCount != 1 {
-		return domain.ErrConflictNickname
+	return nil
+}
+
+func (db DB) UpdateUserEnergyBoostCount(ctx context.Context, uid int64, cost int) error {
+	res, err := db.users.UpdateOne(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$inc", Value: bson.M{
+			"taps.levelEnergyBoosts": 1,
+		}},
+		{Key: "$inc", Value: bson.M{
+			"taps.energyBoosts": 1,
+		}},
+		{Key: "$inc", Value: bson.M{
+			"taps.tapCount": -cost,
+		}},
+		{Key: "$set", Value: bson.M{
+			"playedAt": primitive.NewDateTimeFromTime(time.Now()),
+		}},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return domain.ErrNoUser
+	}
+
+	return nil
+}
+
+func (db DB) UpdateUserEnergyCount(ctx context.Context, uid int64, energyCount int) error {
+	res, err := db.users.UpdateOne(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$set", Value: bson.M{
+			"taps.energyCount": energyCount,
+		}},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return domain.ErrNoUser
 	}
 
 	return nil

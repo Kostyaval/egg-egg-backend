@@ -16,12 +16,13 @@ type UserDocument struct {
 
 // max count 24k
 type Taps struct {
-	TapCount          int `bson:"tapCount" json:"tapCount"`
-	TapBoostCount     int `bson:"boostCount" json:"boostCount"`
-	EnergyBoostCount  int `bson:"energyBoosts" json:"energyBoosts"`
-	LevelTapBoosts    int `bson:"levelTapBoosts" json:"levelTapBoosts"`
-	LevelEnergyBoosts int `bson:"levelEnergyBoosts" json:"levelEnergyBoosts"`
-	EnergyCount       int `bson:"energyCount" json:"energyCount"` // just for response, always 0
+	TapCount          int                `bson:"tapCount" json:"tapCount"`
+	TapBoostCount     int                `bson:"tapBoosts" json:"tapBoosts"`
+	EnergyBoostCount  int                `bson:"energyBoosts" json:"energyBoosts"`
+	LevelTapBoosts    int                `bson:"levelTapBoosts" json:"levelTapBoosts"`
+	LevelEnergyBoosts int                `bson:"levelEnergyBoosts" json:"levelEnergyBoosts"`
+	EnergyCount       int                `bson:"energyCount" json:"energyCount"` // just for response, always 0
+	PlayedAt          primitive.DateTime `bson:"playedAt" json:"playedAt"`
 }
 
 type UserProfile struct {

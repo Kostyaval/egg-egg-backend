@@ -17,6 +17,7 @@ type ServiceInterface interface {
 	tapService
 	friendsService
 	leaderboardService
+	boostService
 }
 
 func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fiber.App {
@@ -62,6 +63,7 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 
 	api.Use(middlewareJWT(&middlewareJWTConfig{log: h.log, cfg: cfg.JWT, mustNickname: true}))
 	api.Put("/me/tap", h.addTap)
+	api.Put("/me/boost", h.addBoost)
 
 	api.Use(middlewareJWT(&middlewareJWTConfig{log: h.log, cfg: cfg.JWT, mustNickname: true}))
 	api.Get("/me/friends", h.readUserFriends)

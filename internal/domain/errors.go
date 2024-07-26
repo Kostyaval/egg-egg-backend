@@ -15,4 +15,6 @@ var (
 	ErrCorruptJWT       = errors.New("jwt corrupt")
 	ErrTapOverLimit     = errors.New("tap over limit")
 	ErrTapTooFast       = errors.New("tap too fast")
+	ErrInsufficientEggs = errors.New("insufficient eggs")
+	ErrBoostOverLimit   = errors.New("boost over limit")
 )
