@@ -10,7 +10,7 @@ type UserDocument struct {
 	PlayedAt       primitive.DateTime `bson:"playedAt" json:"playedAt"`
 	Points         int                `bson:"points" json:"points"`
 	ReferralPoints int                `bson:"referralPoints" json:"referralPoints"`
-	Level          int                `bson:"level" json:"level"`
+	Level          Level              `bson:"level" json:"level"`
 	Taps           Taps               `bson:"taps" json:"taps"`
 }
 
@@ -25,14 +25,19 @@ type Taps struct {
 }
 
 type UserProfile struct {
-	Nickname  *string             `bson:"nickname" json:"nickname"`
-	CreatedAt primitive.DateTime  `bson:"createdAt" json:"-"`
-	UpdatedAt primitive.DateTime  `bson:"updatedAt" json:"-"`
-	HasBan    bool                `bson:"hasBan" json:"-"`
-	IsGhost   bool                `bson:"isGhost" json:"-"`
-	Telegram  TelegramUserProfile `bson:"telegram" json:"telegram"`
-	Referral  *int64              `bson:"ref" json:"referral"`
-	JTI       *uuid.UUID          `bson:"jti" json:"-"`
+	Nickname  *string              `bson:"nickname" json:"nickname"`
+	CreatedAt primitive.DateTime   `bson:"createdAt" json:"-"`
+	UpdatedAt primitive.DateTime   `bson:"updatedAt" json:"-"`
+	HasBan    bool                 `bson:"hasBan" json:"-"`
+	IsGhost   bool                 `bson:"isGhost" json:"-"`
+	Telegram  TelegramUserProfile  `bson:"telegram" json:"telegram"`
+	Referral  *ReferralUserProfile `bson:"ref" json:"referral"`
+	JTI       *uuid.UUID           `bson:"jti" json:"-"`
+}
+
+type ReferralUserProfile struct {
+	ID       int64  `bson:"id" json:"id"`
+	Nickname string `bson:"nickname" json:"nickname"`
 }
 
 type TelegramUserProfile struct {

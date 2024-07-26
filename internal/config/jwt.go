@@ -43,53 +43,71 @@ func newJWTConfig() (*JWTConfig, error) {
 	}
 
 	// Set private key
-	privateKeyPath, ok := os.LookupEnv("JWT_PRIVATE_KEY_PATH")
-	if !ok || privateKeyPath == "" {
-		return nil, errors.New("env JWT_PRIVATE_KEY_PATH is not set")
-	}
+	privateKey, ok := os.LookupEnv("JWT_PRIVATE_KEY")
+	if !ok || privateKey == "" {
+		// deprecated
+		privateKeyPath, ok := os.LookupEnv("JWT_PRIVATE_KEY_PATH")
+		if !ok || privateKeyPath == "" {
+			return nil, errors.New("env JWT_PRIVATE_KEY_PATH is not set")
+		}
 
-	privateKeyPath, err = filepath.Abs(privateKeyPath)
-	if err != nil {
-		return nil, err
-	}
+		privateKeyPath, err = filepath.Abs(privateKeyPath)
+		if err != nil {
+			return nil, err
+		}
 
-	privateKeyRaw, err := os.ReadFile(privateKeyPath)
-	if err != nil {
-		return nil, err
-	}
+		privateKeyRaw, err := os.ReadFile(privateKeyPath)
+		if err != nil {
+			return nil, err
+		}
 
-	if len(privateKeyRaw) == 0 {
-		return nil, errors.New(privateKeyPath + " is empty")
-	}
+		if len(privateKeyRaw) == 0 {
+			return nil, errors.New(privateKeyPath + " is empty")
+		}
 
-	cfg.PrivateKey, err = jwk.ParseKey(privateKeyRaw)
-	if err != nil {
-		return nil, err
+		cfg.PrivateKey, err = jwk.ParseKey(privateKeyRaw)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		cfg.PrivateKey, err = jwk.ParseKey([]byte(privateKey))
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Set public key
-	publicKeyPath, ok := os.LookupEnv("JWT_PUBLIC_KEY_PATH")
-	if !ok || publicKeyPath == "" {
-		return nil, errors.New("env JWT_PUBLIC_KEY_PATH is not set")
-	}
+	publicKey, ok := os.LookupEnv("JWT_PUBLIC_KEY")
+	if !ok || publicKey == "" {
+		// deprecated
+		publicKeyPath, ok := os.LookupEnv("JWT_PUBLIC_KEY_PATH")
+		if !ok || publicKeyPath == "" {
+			return nil, errors.New("env JWT_PUBLIC_KEY_PATH is not set")
+		}
 
-	publicKeyPath, err = filepath.Abs(publicKeyPath)
-	if err != nil {
-		return nil, err
-	}
+		publicKeyPath, err = filepath.Abs(publicKeyPath)
+		if err != nil {
+			return nil, err
+		}
 
-	publicKeyRaw, err := os.ReadFile(publicKeyPath)
-	if err != nil {
-		return nil, err
-	}
+		publicKeyRaw, err := os.ReadFile(publicKeyPath)
+		if err != nil {
+			return nil, err
+		}
 
-	if len(publicKeyRaw) == 0 {
-		return nil, errors.New(publicKeyPath + " is empty")
-	}
+		if len(publicKeyRaw) == 0 {
+			return nil, errors.New(publicKeyPath + " is empty")
+		}
 
-	cfg.PublicKey, err = jwk.ParseKey(publicKeyRaw)
-	if err != nil {
-		return nil, err
+		cfg.PublicKey, err = jwk.ParseKey(publicKeyRaw)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		cfg.PublicKey, err = jwk.ParseKey([]byte(publicKey))
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return cfg, nil

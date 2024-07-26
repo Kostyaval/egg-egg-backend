@@ -6,3 +6,5 @@ data:
   RUNTIME: "development"
   JWT_TTL: "24h"
   RULES_PATH: "/etc/egg/rules.yml"
+  REDIS_ENABLED: "true"
+  REDIS_URI: ${REDIS_URI}

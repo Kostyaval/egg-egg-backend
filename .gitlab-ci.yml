@@ -33,3 +33,6 @@ deploy:
   script:
     - kubectl set image deployment/egg-backend egg-backend=$DOCKER_REGISTRY/egg-backend:$CI_COMMIT_SHA -n $KUBE_NAMESPACE
     - kubectl rollout status deployment/egg-backend -n $KUBE_NAMESPACE
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev"
+  allow_failure: true

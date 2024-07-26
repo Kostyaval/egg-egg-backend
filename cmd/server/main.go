@@ -3,6 +3,7 @@ package main
 import (
 	"gitlab.com/egg-be/egg-backend/internal/config"
 	"gitlab.com/egg-be/egg-backend/internal/db"
+	"gitlab.com/egg-be/egg-backend/internal/rdb"
 	"gitlab.com/egg-be/egg-backend/internal/rest"
 	"gitlab.com/egg-be/egg-backend/internal/service"
 	"gitlab.com/egg-be/egg-backend/internal/tg"
@@ -48,7 +49,19 @@ func main() {
 	defer func() {
 		if err := mongodb.Disconnect(); err != nil {
 			logger.Error("mongodb disconnect", slog.String("error", err.Error()))
-			os.Exit(1)
+		}
+	}()
+
+	// Setup Redis
+	redis, err := rdb.NewRedis(cfg)
+	if err != nil {
+		logger.Error("new redis", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
+
+	defer func() {
+		if err := redis.Close(); err != nil {
+			logger.Error("redis close", slog.String("error", err.Error()))
 		}
 	}()
 
@@ -65,7 +78,7 @@ func main() {
 	}()
 
 	// Setup service
-	srv := service.NewService(cfg, mongodb)
+	srv := service.NewService(cfg, mongodb, redis)
 
 	// Setup REST
 	restApp := rest.NewREST(cfg, logger, srv)

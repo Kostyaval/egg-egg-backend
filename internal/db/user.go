@@ -54,15 +54,16 @@ func (db DB) GetUserProfileWithID(ctx context.Context, uid int64) (domain.UserPr
 	return result.Profile, nil
 }
 
-func (db DB) RegisterUser(ctx context.Context, user *domain.UserProfile, points int) error {
+func (db DB) CreateUser(ctx context.Context, user *domain.UserProfile) error {
 	_, err := db.users.InsertOne(ctx, bson.D{
 		{Key: "profile", Value: user},
+		{Key: "level", Value: domain.Lv0},
+		{Key: "points", Value: 0},
 		{Key: "level", Value: 0},
 		{Key: "taps", Value: &domain.Taps{
 			TapCount:         0,
 			EnergyBoostCount: 0,
 		}},
-		{Key: "points", Value: points},
 		{Key: "referralPoints", Value: 0},
 		{Key: "playedAt", Value: primitive.NewDateTimeFromTime(time.Now())},
 	})
@@ -137,6 +138,29 @@ func (db DB) UpdateUserTapCount(ctx context.Context, uid int64, count int) error
 
 	if res.ModifiedCount != 1 {
 		return domain.ErrConflictNickname
+	}
+
+	return nil
+}
+
+func (db DB) UpdateReferralUserProfile(ctx context.Context, uid int64, ref *domain.ReferralUserProfile) error {
+	res, err := db.users.UpdateOne(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$set", Value: bson.M{
+			"profile.updatedAt": primitive.NewDateTimeFromTime(time.Now()),
+			"profile.ref":       ref,
+		}},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return domain.ErrNoUser
 	}
 
 	return nil

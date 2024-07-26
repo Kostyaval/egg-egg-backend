@@ -7,6 +7,7 @@ ARG GID=24680
 
 RUN apk update && \
     apk add --no-cache make git && \
+    apk add --no-cache golangci-lint --repository=https://dl-cdn.alpinelinux.org/alpine/edge/community && \
     rm -rf /var/cache/apk/*
 
 RUN addgroup -g "$GID" "$USER" && \
@@ -23,6 +24,8 @@ WORKDIR /home/$USER
 COPY --chown=$USER:$USER ./ ./
 
 RUN go mod download
+RUN make lint
+RUN make test
 RUN make build
 
 
