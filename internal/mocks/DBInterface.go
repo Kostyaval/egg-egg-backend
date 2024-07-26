@@ -773,6 +773,55 @@ func (_c *DBInterface_ReadUserFriends_Call) RunAndReturn(run func(context.Contex
 	return _c
 }
 
+// SetDailyReward provides a mock function with given fields: ctx, uid, points, reward
+func (_m *DBInterface) SetDailyReward(ctx context.Context, uid int64, points int, reward *domain.DailyReward) error {
+	ret := _m.Called(ctx, uid, points, reward)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetDailyReward")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int, *domain.DailyReward) error); ok {
+		r0 = rf(ctx, uid, points, reward)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DBInterface_SetDailyReward_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetDailyReward'
+type DBInterface_SetDailyReward_Call struct {
+	*mock.Call
+}
+
+// SetDailyReward is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uid int64
+//   - points int
+//   - reward *domain.DailyReward
+func (_e *DBInterface_Expecter) SetDailyReward(ctx interface{}, uid interface{}, points interface{}, reward interface{}) *DBInterface_SetDailyReward_Call {
+	return &DBInterface_SetDailyReward_Call{Call: _e.mock.On("SetDailyReward", ctx, uid, points, reward)}
+}
+
+func (_c *DBInterface_SetDailyReward_Call) Run(run func(ctx context.Context, uid int64, points int, reward *domain.DailyReward)) *DBInterface_SetDailyReward_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64), args[2].(int), args[3].(*domain.DailyReward))
+	})
+	return _c
+}
+
+func (_c *DBInterface_SetDailyReward_Call) Return(_a0 error) *DBInterface_SetDailyReward_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *DBInterface_SetDailyReward_Call) RunAndReturn(run func(context.Context, int64, int, *domain.DailyReward) error) *DBInterface_SetDailyReward_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdateUserJWT provides a mock function with given fields: ctx, uid, jti
 func (_m *DBInterface) UpdateUserJWT(ctx context.Context, uid int64, jti uuid.UUID) error {
 	ret := _m.Called(ctx, uid, jti)

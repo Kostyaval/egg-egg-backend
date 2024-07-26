@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
+	"time"
 )
 
 type meDB interface {
@@ -13,6 +14,7 @@ type meDB interface {
 	UpdateUserNickname(ctx context.Context, uid int64, nickname string, jti uuid.UUID) error
 	IncPointsWithReferral(ctx context.Context, uid int64, points int) (int, error)
 	IncPoints(ctx context.Context, uid int64, points int) (int, error)
+	SetDailyReward(ctx context.Context, uid int64, points int, reward *domain.DailyReward) error
 }
 
 type meRedis interface {
@@ -47,11 +49,51 @@ func (s Service) GetMe(ctx context.Context, uid int64) (domain.UserDocument, []b
 		return u, nil, err
 	}
 
+	dailyReward, dailyRewardPoints := s.checkDailyReward(&u)
+	if dailyReward != nil {
+		if err := s.db.SetDailyReward(ctx, u.Profile.Telegram.ID, dailyRewardPoints, dailyReward); err != nil {
+			return u, nil, err
+		}
+
+		if u.Points != dailyRewardPoints {
+			if err := s.rdb.SetLeaderboardPlayerPoints(ctx, u.Profile.Telegram.ID, u.Level, dailyRewardPoints); err != nil {
+				return u, nil, err
+			}
+		}
+	}
+
 	if err := s.db.UpdateUserJWT(ctx, uid, jwtClaims.JTI); err != nil {
 		return u, nil, err
 	}
 
 	return u, jwtBytes, nil
+}
+
+func (s Service) checkDailyReward(u *domain.UserDocument) (*domain.DailyReward, int) {
+	now := time.Now().UTC()
+	startOfToday := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	startOfYesterday := startOfToday.AddDate(0, 0, -1)
+
+	if u.DailyReward.ReceivedAt.Time().After(startOfToday) || u.DailyReward.ReceivedAt.Time().Equal(startOfToday) {
+		return nil, u.Points
+	}
+
+	dr := &domain.DailyReward{Day: u.DailyReward.Day}
+	pts := u.Points
+
+	if u.DailyReward.ReceivedAt.Time().After(startOfYesterday) || u.DailyReward.ReceivedAt.Time().Equal(startOfYesterday) {
+		if u.DailyReward.Day >= len(s.cfg.Rules.DailyRewards) {
+			dr.Day = 1
+		} else {
+			dr.Day++
+		}
+
+		pts += s.cfg.Rules.DailyRewards[dr.Day-1]
+	} else {
+		dr.Day = 0
+	}
+
+	return dr, pts
 }
 
 func (s Service) CheckUserNickname(ctx context.Context, nickname string) (bool, error) {
