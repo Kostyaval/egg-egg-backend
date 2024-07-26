@@ -60,7 +60,11 @@ func (db DB) CreateUser(ctx context.Context, user *domain.UserProfile) error {
 		{Key: "level", Value: domain.Lv0},
 		{Key: "points", Value: 0},
 		{Key: "referralPoints", Value: 0},
-		{Key: "playedAt", Value: primitive.NewDateTimeFromTime(time.Now())},
+		{Key: "playedAt", Value: primitive.NewDateTimeFromTime(time.Now().UTC())},
+		{Key: "dailyReward", Value: domain.DailyReward{
+			ReceivedAt: primitive.NewDateTimeFromTime(time.Now().UTC()),
+			Day:        0,
+		}},
 	})
 	if err != nil {
 		return err
@@ -89,8 +93,12 @@ func (db DB) UpdateUserNickname(ctx context.Context, uid int64, nickname string,
 		{Key: "$set", Value: bson.M{
 			"profile.jti":       jti,
 			"profile.nickname":  nickname,
-			"profile.updatedAt": primitive.NewDateTimeFromTime(time.Now()),
-			"playedAt":          primitive.NewDateTimeFromTime(time.Now()),
+			"profile.updatedAt": primitive.NewDateTimeFromTime(time.Now().UTC()),
+			"playedAt":          primitive.NewDateTimeFromTime(time.Now().UTC()),
+			"dailyReward": domain.DailyReward{
+				ReceivedAt: primitive.NewDateTimeFromTime(time.Now().UTC()),
+				Day:        0,
+			},
 		}},
 	})
 
@@ -116,7 +124,7 @@ func (db DB) UpdateReferralUserProfile(ctx context.Context, uid int64, ref *doma
 		{Key: "profile.isGhost", Value: false},
 	}, bson.D{
 		{Key: "$set", Value: bson.M{
-			"profile.updatedAt": primitive.NewDateTimeFromTime(time.Now()),
+			"profile.updatedAt": primitive.NewDateTimeFromTime(time.Now().UTC()),
 			"profile.ref":       ref,
 		}},
 	})

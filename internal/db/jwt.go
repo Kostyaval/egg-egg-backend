@@ -18,7 +18,7 @@ func (db DB) UpdateUserJWT(ctx context.Context, uid int64, jti uuid.UUID) error 
 		},
 		bson.M{"$set": bson.M{
 			"profile.jti": jti,
-			"playedAt":    primitive.NewDateTimeFromTime(time.Now()),
+			"playedAt":    primitive.NewDateTimeFromTime(time.Now().UTC()),
 		}},
 	)
 
@@ -40,7 +40,7 @@ func (db DB) DeleteUserJWT(ctx context.Context, uid int64) error {
 		},
 		bson.M{"$set": bson.M{
 			"profile.jti": nil,
-			"playedAt":    primitive.NewDateTimeFromTime(time.Now()),
+			"playedAt":    primitive.NewDateTimeFromTime(time.Now().UTC()),
 		}},
 	)
 

@@ -36,8 +36,8 @@ func (h handler) start(c tele.Context) error {
 		if errors.Is(err, domain.ErrNoUser) {
 			user := &domain.UserProfile{
 				Nickname:  nil,
-				CreatedAt: primitive.NewDateTimeFromTime(time.Now()),
-				UpdatedAt: primitive.NewDateTimeFromTime(time.Now()),
+				CreatedAt: primitive.NewDateTimeFromTime(time.Now().UTC()),
+				UpdatedAt: primitive.NewDateTimeFromTime(time.Now().UTC()),
 				HasBan:    false,
 				IsGhost:   false,
 				Referral:  nil,

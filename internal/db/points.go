@@ -5,8 +5,10 @@ import (
 	"errors"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 func (db DB) IncPointsWithReferral(ctx context.Context, uid int64, points int) (int, error) {
@@ -59,4 +61,27 @@ func (db DB) IncPoints(ctx context.Context, uid int64, points int) (int, error) 
 	}
 
 	return result.Points, nil
+}
+
+func (db DB) SetDailyReward(ctx context.Context, uid int64, points int, reward *domain.DailyReward) error {
+	reward.ReceivedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
+
+	_, err := db.users.UpdateOne(ctx,
+		bson.D{
+			bson.E{Key: "profile.telegram.id", Value: uid},
+			{Key: "profile.hasBan", Value: false},
+			{Key: "profile.isGhost", Value: false},
+		},
+		bson.M{"$set": bson.M{
+			"dailyReward": reward,
+			"points":      points,
+			"playedAt":    primitive.NewDateTimeFromTime(time.Now().UTC()),
+		}},
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

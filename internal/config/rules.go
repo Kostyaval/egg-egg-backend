@@ -1,7 +1,8 @@
 package config
 
 type Rules struct {
-	Referral ReferralRules `yaml:"referral"`
+	Referral     ReferralRules `yaml:"referral"`
+	DailyRewards []int         `yaml:"dailyRewards"`
 }
 
 // ReferralRules has values of bonus points and index is an egg level.

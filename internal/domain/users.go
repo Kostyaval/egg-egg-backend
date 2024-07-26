@@ -11,6 +11,7 @@ type UserDocument struct {
 	Points         int                `bson:"points" json:"points"`
 	ReferralPoints int                `bson:"referralPoints" json:"referralPoints"`
 	Level          Level              `bson:"level" json:"level"`
+	DailyReward    DailyReward        `bson:"dailyReward" json:"dailyReward"`
 }
 
 type UserProfile struct {
@@ -36,4 +37,9 @@ type TelegramUserProfile struct {
 	Lastname  string `bson:"lastname" json:"-"`
 	Language  string `bson:"language" json:"language"`
 	Username  string `bson:"username" json:"-"`
+}
+
+type DailyReward struct {
+	ReceivedAt primitive.DateTime `bson:"receivedAt" json:"receivedAt"`
+	Day        int                `bson:"day" json:"day"`
 }
