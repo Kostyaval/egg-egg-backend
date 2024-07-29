@@ -93,8 +93,8 @@ func (s *Suite) TestGetMe() {
 	u, t, err := s.srv.GetMe(ctx, uid)
 	s.Nil(err)
 
-	claims := &domain.JWTClaims{}
-	if err := claims.Decode(s.cfg.JWT, t); err != nil {
+	claims, err := s.cfg.JWT.Decode(t)
+	if err != nil {
 		s.Fail(err.Error())
 	}
 
@@ -138,8 +138,8 @@ func (s *Suite) TestGetMe_DailyReward() {
 	u, t, err := s.srv.GetMe(ctx, uid)
 	s.Nil(err)
 
-	claims := &domain.JWTClaims{}
-	if err := claims.Decode(s.cfg.JWT, t); err != nil {
+	claims, err := s.cfg.JWT.Decode(t)
+	if err != nil {
 		s.Fail(err.Error())
 	}
 

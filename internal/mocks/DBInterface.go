@@ -81,6 +81,64 @@ func (_c *DBInterface_CheckUserNickname_Call) RunAndReturn(run func(context.Cont
 	return _c
 }
 
+// CreateUserAutoClicker provides a mock function with given fields: ctx, uid, cost
+func (_m *DBInterface) CreateUserAutoClicker(ctx context.Context, uid int64, cost int) (domain.UserDocument, error) {
+	ret := _m.Called(ctx, uid, cost)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateUserAutoClicker")
+	}
+
+	var r0 domain.UserDocument
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int) (domain.UserDocument, error)); ok {
+		return rf(ctx, uid, cost)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int) domain.UserDocument); ok {
+		r0 = rf(ctx, uid, cost)
+	} else {
+		r0 = ret.Get(0).(domain.UserDocument)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64, int) error); ok {
+		r1 = rf(ctx, uid, cost)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// DBInterface_CreateUserAutoClicker_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateUserAutoClicker'
+type DBInterface_CreateUserAutoClicker_Call struct {
+	*mock.Call
+}
+
+// CreateUserAutoClicker is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uid int64
+//   - cost int
+func (_e *DBInterface_Expecter) CreateUserAutoClicker(ctx interface{}, uid interface{}, cost interface{}) *DBInterface_CreateUserAutoClicker_Call {
+	return &DBInterface_CreateUserAutoClicker_Call{Call: _e.mock.On("CreateUserAutoClicker", ctx, uid, cost)}
+}
+
+func (_c *DBInterface_CreateUserAutoClicker_Call) Run(run func(ctx context.Context, uid int64, cost int)) *DBInterface_CreateUserAutoClicker_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64), args[2].(int))
+	})
+	return _c
+}
+
+func (_c *DBInterface_CreateUserAutoClicker_Call) Return(_a0 domain.UserDocument, _a1 error) *DBInterface_CreateUserAutoClicker_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *DBInterface_CreateUserAutoClicker_Call) RunAndReturn(run func(context.Context, int64, int) (domain.UserDocument, error)) *DBInterface_CreateUserAutoClicker_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeleteUserJWT provides a mock function with given fields: ctx, uid
 func (_m *DBInterface) DeleteUserJWT(ctx context.Context, uid int64) error {
 	ret := _m.Called(ctx, uid)

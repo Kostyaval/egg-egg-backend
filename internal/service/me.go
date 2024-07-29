@@ -15,6 +15,7 @@ type meDB interface {
 	IncPointsWithReferral(ctx context.Context, uid int64, points int) (int, error)
 	IncPoints(ctx context.Context, uid int64, points int) (int, error)
 	SetDailyReward(ctx context.Context, uid int64, points int, reward *domain.DailyReward) error
+	CreateUserAutoClicker(ctx context.Context, uid int64, cost int) (domain.UserDocument, error)
 }
 
 type meRedis interface {
@@ -40,7 +41,7 @@ func (s Service) GetMe(ctx context.Context, uid int64) (domain.UserDocument, []b
 		return u, nil, err
 	}
 
-	jwtBytes, err := jwtClaims.Encode(s.cfg.JWT)
+	jwtBytes, err := s.cfg.JWT.Encode(jwtClaims)
 	if err != nil {
 		return u, nil, err
 	}
@@ -112,7 +113,7 @@ func (s Service) CreateUserNickname(ctx context.Context, uid int64, nickname str
 		return nil, nil, nil, err
 	}
 
-	token, err := jwtClaims.Encode(s.cfg.JWT)
+	token, err := s.cfg.JWT.Encode(jwtClaims)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -170,4 +171,42 @@ func (s Service) CreateUserNickname(ctx context.Context, uid int64, nickname str
 	}
 
 	return token, &user, nil, nil
+}
+
+func (s Service) CreateAutoClicker(ctx context.Context, uid int64) (domain.UserDocument, error) {
+	user, err := s.db.GetUserDocumentWithID(ctx, uid)
+	if err != nil {
+		return user, err
+	}
+
+	if user.Profile.IsGhost {
+		return user, domain.ErrGhostUser
+	}
+
+	if user.Profile.HasBan {
+		return user, domain.ErrBannedUser
+	}
+
+	if user.AutoClicker.IsAvailable {
+		return user, domain.ErrHasAutoClicker
+	}
+
+	if user.Level < s.cfg.Rules.AutoClicker.MinLevel {
+		return user, domain.ErrNoLevel
+	}
+
+	if user.Points < s.cfg.Rules.AutoClicker.Cost {
+		return user, domain.ErrNoPoints
+	}
+
+	user, err = s.db.CreateUserAutoClicker(ctx, uid, s.cfg.Rules.AutoClicker.Cost)
+	if err != nil {
+		return user, err
+	}
+
+	if err := s.rdb.SetLeaderboardPlayerPoints(ctx, user.Profile.Telegram.ID, user.Level, user.Points); err != nil {
+		return user, err
+	}
+
+	return user, nil
 }

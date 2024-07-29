@@ -143,3 +143,32 @@ func (db DB) UpdateReferralUserProfile(ctx context.Context, uid int64, ref *doma
 
 	return nil
 }
+
+func (db DB) CreateUserAutoClicker(ctx context.Context, uid int64, cost int) (domain.UserDocument, error) {
+	var doc domain.UserDocument
+
+	opt := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	err := db.users.FindOneAndUpdate(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$inc", Value: bson.M{"points": -cost}},
+		{Key: "$set", Value: bson.M{
+			"playedAt":                primitive.NewDateTimeFromTime(time.Now().UTC()),
+			"autoClicker.isAvailable": true,
+			"autoClicker.isEnabled":   true,
+		}},
+	}, opt).Decode(&doc)
+
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return doc, domain.ErrNoUser
+		}
+
+		return doc, err
+	}
+
+	return doc, nil
+}

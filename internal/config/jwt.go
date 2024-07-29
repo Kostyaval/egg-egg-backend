@@ -2,8 +2,14 @@ package config
 
 import (
 	"errors"
+	"fmt"
+	"github.com/google/uuid"
+	"github.com/lestrrat-go/jwx/v2/jwa"
+	"github.com/lestrrat-go/jwx/v2/jwt"
+	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -111,4 +117,96 @@ func newJWTConfig() (*JWTConfig, error) {
 	}
 
 	return cfg, nil
+}
+
+func (cfg JWTConfig) Encode(c *domain.JWTClaims) ([]byte, error) {
+	now := time.Now().UTC().Truncate(time.Second)
+	exp := now.Add(cfg.TTL)
+
+	token, err := jwt.NewBuilder().
+		Issuer(cfg.Iss).
+		Subject(strconv.FormatInt(c.UID, 10)).
+		NotBefore(now).
+		IssuedAt(now).
+		Expiration(exp).
+		JwtID(c.JTI.String()).
+		Claim("nickname", c.Nickname).
+		Build()
+
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", domain.ErrJWTEncode, err)
+	}
+
+	signed, err := jwt.Sign(token, jwt.WithKey(jwa.ES256, cfg.PrivateKey))
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", domain.ErrJWTEncode, err)
+	}
+
+	return signed, nil
+}
+
+func (cfg JWTConfig) Decode(token []byte) (domain.JWTClaims, error) {
+	var (
+		c   domain.JWTClaims
+		now = time.Now().UTC().Truncate(time.Second)
+	)
+
+	verifiedToken, err := jwt.Parse(token, jwt.WithKey(jwa.ES256, cfg.PublicKey))
+	if err != nil {
+		return c, fmt.Errorf("%w: %v", domain.ErrJWTDecode, err)
+	}
+
+	// iss - issuer
+	if verifiedToken.Issuer() != cfg.Iss {
+		return c, fmt.Errorf("%w: %v", domain.ErrJWTDecode, errors.New("invalid iss"))
+	}
+
+	// ndf - not before
+	if !verifiedToken.NotBefore().Equal(now) && verifiedToken.NotBefore().After(now) {
+		return c, fmt.Errorf("%w: %v", domain.ErrJWTDecode, errors.New("invalid nbf"))
+	}
+
+	// exp - expiration
+	if !verifiedToken.Expiration().Equal(now) && verifiedToken.Expiration().Before(now) {
+		return c, fmt.Errorf("%w: %v", domain.ErrJWTDecode, errors.New("invalid exp"))
+	}
+
+	// sub - subject
+	if c.UID, err = strconv.ParseInt(verifiedToken.Subject(), 10, 64); err != nil {
+		return c, fmt.Errorf("%w: %v", domain.ErrJWTDecode, err)
+	}
+
+	// nickname
+	nickname, ok := verifiedToken.PrivateClaims()["nickname"]
+	if !ok {
+		return c, fmt.Errorf("%w: %v", domain.ErrJWTDecode, errors.New("no nickname"))
+	}
+
+	if nickname == nil {
+		c.Nickname = nil
+	} else {
+		if str, ok := nickname.(string); ok {
+			c.Nickname = &str
+		} else {
+			return c, fmt.Errorf("%w: %v", domain.ErrJWTDecode, errors.New("invalid nickname"))
+		}
+	}
+
+	// jti
+	jti, ok := verifiedToken.Get("jti")
+	if !ok {
+		return c, fmt.Errorf("%w: %v", domain.ErrJWTDecode, errors.New("no jti"))
+	}
+
+	jtiStr, ok := jti.(string)
+	if !ok {
+		return c, fmt.Errorf("%w: %v", domain.ErrJWTDecode, errors.New("invalid jti"))
+	}
+
+	c.JTI, err = uuid.Parse(jtiStr)
+	if err != nil {
+		return c, fmt.Errorf("%w: %v", domain.ErrJWTDecode, err)
+	}
+
+	return c, nil
 }

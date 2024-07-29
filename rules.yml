@@ -56,3 +56,9 @@ dailyRewards:
   - 30000
   - 40000
   - 50000
+
+autoClicker:
+  speed: 1800ms
+  ttl: 4h
+  cost: 500000
+  minLevel: 2
