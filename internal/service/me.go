@@ -86,7 +86,7 @@ func (s Service) checkDailyReward(u *domain.UserDocument) (*domain.DailyReward, 
 
 		pts += s.cfg.Rules.DailyRewards[dr.Day-1]
 	} else {
-		dr.Day = 0
+		dr.Day = 1
 	}
 
 	return dr, pts

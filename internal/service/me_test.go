@@ -191,7 +191,7 @@ func (s *Suite) TestGetMe_checkDailyReward() {
 	u.DailyReward.ReceivedAt = primitive.NewDateTimeFromTime(time.Date(now.Year(), now.Month(), now.Day()-2, 0, 0, 0, 0, time.UTC))
 	dr, _ = s.srv.checkDailyReward(u)
 	s.NotNil(dr)
-	s.Equal(dr.Day, 0)
+	s.Equal(dr.Day, 1)
 
 	// test reward points
 	for i, drp := range s.cfg.Rules.DailyRewards {
