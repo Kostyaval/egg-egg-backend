@@ -16,6 +16,7 @@ type meDB interface {
 	IncPoints(ctx context.Context, uid int64, points int) (int, error)
 	SetDailyReward(ctx context.Context, uid int64, points int, reward *domain.DailyReward) error
 	CreateUserAutoClicker(ctx context.Context, uid int64, cost int) (domain.UserDocument, error)
+	UpdateUserAutoClicker(ctx context.Context, uid int64, isEnabled bool) (domain.UserDocument, error)
 }
 
 type meRedis interface {
@@ -209,4 +210,25 @@ func (s Service) CreateAutoClicker(ctx context.Context, uid int64) (domain.UserD
 	}
 
 	return user, nil
+}
+
+func (s Service) UpdateAutoClicker(ctx context.Context, uid int64) (domain.UserDocument, error) {
+	user, err := s.db.GetUserDocumentWithID(ctx, uid)
+	if err != nil {
+		return user, err
+	}
+
+	if user.Profile.IsGhost {
+		return user, domain.ErrGhostUser
+	}
+
+	if user.Profile.HasBan {
+		return user, domain.ErrBannedUser
+	}
+
+	if !user.AutoClicker.IsAvailable {
+		return user, domain.ErrHasNoAutoClicker
+	}
+
+	return s.db.UpdateUserAutoClicker(ctx, uid, !user.AutoClicker.IsEnabled)
 }

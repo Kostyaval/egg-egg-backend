@@ -64,6 +64,7 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 	api.Get("/me/friends", h.readUserFriends)
 	api.Get("/leaderboard", h.leaderboard)
 	api.Post("/me/autoclicker", h.createAutoClicker)
+	api.Put("/me/autoclicker", h.updateAutoClicker)
 
 	return app
 }

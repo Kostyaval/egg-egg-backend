@@ -16,4 +16,5 @@ var (
 	ErrNoPoints         = errors.New("no points")
 	ErrNoLevel          = errors.New("no level")
 	ErrHasAutoClicker   = errors.New("has auto clicker")
+	ErrHasNoAutoClicker = errors.New("has no auto clicker")
 )

@@ -172,3 +172,30 @@ func (db DB) CreateUserAutoClicker(ctx context.Context, uid int64, cost int) (do
 
 	return doc, nil
 }
+
+func (db DB) UpdateUserAutoClicker(ctx context.Context, uid int64, isEnabled bool) (domain.UserDocument, error) {
+	var doc domain.UserDocument
+
+	opt := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	err := db.users.FindOneAndUpdate(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$set", Value: bson.M{
+			"playedAt":              primitive.NewDateTimeFromTime(time.Now().UTC()),
+			"autoClicker.isEnabled": isEnabled,
+		}},
+	}, opt).Decode(&doc)
+
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return doc, domain.ErrNoUser
+		}
+
+		return doc, err
+	}
+
+	return doc, nil
+}
