@@ -65,6 +65,10 @@ func (db DB) CreateUser(ctx context.Context, user *domain.UserProfile) error {
 			ReceivedAt: primitive.NewDateTimeFromTime(time.Now().UTC()),
 			Day:        0,
 		}},
+		{Key: "autoClicker", Value: domain.AutoClicker{
+			IsAvailable: false,
+			IsEnabled:   false,
+		}},
 	})
 	if err != nil {
 		return err
