@@ -257,7 +257,7 @@ func (db DB) ResetUserEnergyRechargeCount(ctx context.Context, uid int64) error 
 		{Key: "profile.hasBan", Value: false},
 		{Key: "profile.isGhost", Value: false},
 	}, bson.D{
-		{Key: "$inc", Value: bson.M{
+		{Key: "$set", Value: bson.M{
 			"taps.energyRechargeCount": 0,
 		}},
 	})

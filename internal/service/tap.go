@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
+	"math"
 	"time"
 )
 
@@ -48,7 +49,7 @@ func (s Service) AddTap(ctx context.Context, uid int64, tapCount int) (domain.Us
 
 	levelParams := s.cfg.Rules.Taps[u.Level]
 	userMaxEnergy := u.Taps.EnergyBoostCount*500 + 500
-	accumulatedEnergy := (int(inactiveTime.Seconds())*levelParams.EnergyRechargeSeconds*10)/10 + u.Taps.EnergyCount
+	accumulatedEnergy := (int(math.Floor(inactiveTime.Seconds() * levelParams.EnergyRechargeSeconds))) + u.Taps.EnergyCount
 
 	if accumulatedEnergy > userMaxEnergy {
 		accumulatedEnergy = userMaxEnergy
@@ -56,7 +57,7 @@ func (s Service) AddTap(ctx context.Context, uid int64, tapCount int) (domain.Us
 
 	if energyNeededForTaps > accumulatedEnergy {
 		energyNeededForTaps = accumulatedEnergy
-		tapCount = energyNeededForTaps / (levelParams.EnergyRechargeSeconds * 10) / 10
+		tapCount = int(math.Floor(float64(energyNeededForTaps) / (levelParams.EnergyRechargeSeconds)))
 	}
 
 	totalPoints := tapCount * pointsPerTap

@@ -28,6 +28,7 @@ func (s Service) RechargeEnergy(ctx context.Context, uid int64) (domain.UserDocu
 
 	if u.Taps.EnergyRechargedAt.Time().Day() != time.Now().Day() {
 		_ = s.db.ResetUserEnergyRechargeCount(ctx, uid)
+		u.Taps.EnergyRechargeCount = 0
 	}
 
 	if int(time.Since(u.Taps.EnergyRechargedAt.Time()).Seconds()) < levelParams.EnergyFullRechargeDelaySeconds {
@@ -39,6 +40,7 @@ func (s Service) RechargeEnergy(ctx context.Context, uid int64) (domain.UserDocu
 	}
 
 	_ = s.db.UpdateUserEnergyRechargeCount(ctx, uid)
+	_ = s.db.UpdateUserEnergyCount(ctx, uid, u.Taps.EnergyBoostCount*500+500)
 
 	u, err = s.db.GetUserDocumentWithID(ctx, uid)
 	if err != nil {
