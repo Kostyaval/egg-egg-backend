@@ -23,7 +23,7 @@ func (h handler) addTap(c *fiber.Ctx) error {
 	}
 
 	if err := c.BodyParser(&req); err != nil {
-		log.Error("failed to parse request body: ", err)
+		log.Error("failed to parse request body: ", slog.String("string", err.Error()))
 		return c.Status(fiber.StatusBadRequest).SendString("Invalid request body")
 	}
 

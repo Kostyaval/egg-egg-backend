@@ -14,7 +14,7 @@ type UserDocument struct {
 	Taps           Taps               `bson:"taps" json:"taps"`
 }
 
-// max count 24k
+// max count 24k.
 type Taps struct {
 	TapCount          int                `bson:"tapCount" json:"tapCount"`
 	TapBoostCount     int                `bson:"tapBoosts" json:"tapBoosts"`

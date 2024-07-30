@@ -34,11 +34,12 @@ func (s Service) BoostTap(ctx context.Context, uid int64) (domain.UserDocument, 
 	if u.Taps.LevelTapBoosts == len(levelParams.EnergyBoosts) {
 		return u, domain.ErrBoostOverLimit
 	}
+
 	if u.Taps.TapCount < levelParams.EnergyBoostCost {
 		return u, domain.ErrInsufficientEggs
 	}
 
-	err = s.db.UpdateUserTapBoostCount(ctx, uid, levelParams.EnergyBoostCost)
+	_ = s.db.UpdateUserTapBoostCount(ctx, uid, levelParams.EnergyBoostCost)
 
 	u, err = s.db.GetUserDocumentWithID(ctx, uid)
 	if err != nil {
@@ -71,11 +72,12 @@ func (s Service) BoostEnergy(ctx context.Context, uid int64) (domain.UserDocumen
 	if u.Taps.LevelTapBoosts == len(levelParams.EnergyBoosts) {
 		return u, domain.ErrBoostOverLimit
 	}
+
 	if u.Taps.TapCount < levelParams.EnergyBoostCost {
 		return u, domain.ErrInsufficientEggs
 	}
 
-	err = s.db.UpdateUserEnergyBoostCount(ctx, uid, levelParams.EnergyBoostCost)
+	_ = s.db.UpdateUserEnergyBoostCount(ctx, uid, levelParams.EnergyBoostCost)
 
 	u, err = s.db.GetUserDocumentWithID(ctx, uid)
 	if err != nil {

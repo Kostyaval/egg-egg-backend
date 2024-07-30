@@ -35,7 +35,7 @@ func (s Service) AddTap(ctx context.Context, uid int64, tapCount int) (domain.Us
 		return u, domain.ErrTapOverLimit
 	}
 
-	inactiveTime := time.Now().Sub(u.Taps.PlayedAt.Time())
+	inactiveTime := time.Since(u.Taps.PlayedAt.Time())
 	if inactiveTime.Seconds() == 0 {
 		return u, domain.ErrTapTooFast
 	}

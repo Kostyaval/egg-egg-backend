@@ -63,6 +63,7 @@ func (h handler) addBoost(c *fiber.Ctx) error {
 		}
 
 		log.Error("srv.Boost", slog.String("error", err.Error()))
+
 		return c.Status(fiber.StatusInternalServerError).Send(nil)
 	}
 
