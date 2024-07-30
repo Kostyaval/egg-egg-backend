@@ -9,7 +9,7 @@ type Rules struct {
 	Referral     ReferralRules    `yaml:"referral"`
 	DailyRewards []int            `yaml:"dailyRewards"`
 	AutoClicker  AutoClickerRules `yaml:"autoClicker"`
-	Taps     TapRules      `yaml:"taps"`
+	Taps         TapRules         `yaml:"taps"`
 }
 
 // ReferralRules has values of bonus points and index is an egg level.
