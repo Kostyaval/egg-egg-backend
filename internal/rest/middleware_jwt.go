@@ -34,8 +34,8 @@ func middlewareJWT(mw *middlewareJWTConfig) fiber.Handler {
 			return newHTTPError(fiber.StatusUnauthorized, "empty authorization header")
 		}
 
-		var claims domain.JWTClaims
-		if err := claims.Decode(mw.cfg, []byte(token)); err != nil {
+		claims, err := mw.cfg.Decode([]byte(token))
+		if err != nil {
 			log.Error(err.Error())
 			return newHTTPError(fiber.StatusUnauthorized, "not authorized")
 		}

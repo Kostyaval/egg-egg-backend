@@ -23,5 +23,7 @@ func (h handler) jwtDelete(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).Send(nil)
 	}
 
+	log.Info("jwt deleted")
+
 	return nil
 }

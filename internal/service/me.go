@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
+	"math"
 	"time"
 )
 
@@ -14,7 +15,10 @@ type meDB interface {
 	UpdateUserNickname(ctx context.Context, uid int64, nickname string, jti uuid.UUID) error
 	IncPointsWithReferral(ctx context.Context, uid int64, points int) (int, error)
 	IncPoints(ctx context.Context, uid int64, points int) (int, error)
+	SetPoints(ctx context.Context, uid int64, points int) error
 	SetDailyReward(ctx context.Context, uid int64, points int, reward *domain.DailyReward) error
+	CreateUserAutoClicker(ctx context.Context, uid int64, cost int) (domain.UserDocument, error)
+	UpdateUserAutoClicker(ctx context.Context, uid int64, isEnabled bool) (domain.UserDocument, error)
 }
 
 type meRedis interface {
@@ -40,21 +44,38 @@ func (s Service) GetMe(ctx context.Context, uid int64) (domain.UserDocument, []b
 		return u, nil, err
 	}
 
-	jwtBytes, err := jwtClaims.Encode(s.cfg.JWT)
+	jwtBytes, err := s.cfg.JWT.Encode(jwtClaims)
 	if err != nil {
 		return u, nil, err
 	}
 
-	dailyReward, dailyRewardPoints := s.checkDailyReward(&u)
+	// TODO optimize it for unite with autoclicker
+	dailyReward, withDailyRewardPoints := s.checkDailyReward(&u)
 	if dailyReward != nil {
-		if err := s.db.SetDailyReward(ctx, u.Profile.Telegram.ID, dailyRewardPoints, dailyReward); err != nil {
+		if err := s.db.SetDailyReward(ctx, u.Profile.Telegram.ID, withDailyRewardPoints, dailyReward); err != nil {
 			return u, nil, err
 		}
 
-		if u.Points != dailyRewardPoints {
-			if err := s.rdb.SetLeaderboardPlayerPoints(ctx, u.Profile.Telegram.ID, u.Level, dailyRewardPoints); err != nil {
+		if u.Points != withDailyRewardPoints {
+			u.Points = withDailyRewardPoints
+
+			if err := s.rdb.SetLeaderboardPlayerPoints(ctx, u.Profile.Telegram.ID, u.Level, withDailyRewardPoints); err != nil {
 				return u, nil, err
 			}
+		}
+	}
+
+	// TODO optimize it for unite with daily reward
+	withAutoclickerPoints := s.checkAutoClicker(&u)
+	if withAutoclickerPoints != u.Points {
+		u.Points = withAutoclickerPoints
+
+		if err := s.db.SetPoints(ctx, uid, withAutoclickerPoints); err != nil {
+			return u, nil, err
+		}
+
+		if err := s.rdb.SetLeaderboardPlayerPoints(ctx, u.Profile.Telegram.ID, u.Level, withAutoclickerPoints); err != nil {
+			return u, nil, err
 		}
 	}
 
@@ -92,6 +113,23 @@ func (s Service) checkDailyReward(u *domain.UserDocument) (*domain.DailyReward, 
 	return dr, pts
 }
 
+func (s Service) checkAutoClicker(u *domain.UserDocument) int {
+	if !u.AutoClicker.IsAvailable || !u.AutoClicker.IsEnabled {
+		return u.Points
+	}
+
+	delta := time.Now().Truncate(time.Second).UTC().Sub(u.PlayedAt.Time()).Seconds()
+	if delta <= 0 {
+		return u.Points
+	}
+
+	if delta >= s.cfg.Rules.AutoClicker.TTL.Seconds() {
+		return u.Points + int(math.Floor(s.cfg.Rules.AutoClicker.TTL.Seconds()/s.cfg.Rules.AutoClicker.Speed.Seconds()))
+	}
+
+	return u.Points + int(math.Floor(delta/s.cfg.Rules.AutoClicker.Speed.Seconds()))
+}
+
 func (s Service) CheckUserNickname(ctx context.Context, nickname string) (bool, error) {
 	return s.db.CheckUserNickname(ctx, nickname)
 }
@@ -112,7 +150,7 @@ func (s Service) CreateUserNickname(ctx context.Context, uid int64, nickname str
 		return nil, nil, nil, err
 	}
 
-	token, err := jwtClaims.Encode(s.cfg.JWT)
+	token, err := s.cfg.JWT.Encode(jwtClaims)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -170,4 +208,63 @@ func (s Service) CreateUserNickname(ctx context.Context, uid int64, nickname str
 	}
 
 	return token, &user, nil, nil
+}
+
+func (s Service) CreateAutoClicker(ctx context.Context, uid int64) (domain.UserDocument, error) {
+	user, err := s.db.GetUserDocumentWithID(ctx, uid)
+	if err != nil {
+		return user, err
+	}
+
+	if user.Profile.IsGhost {
+		return user, domain.ErrGhostUser
+	}
+
+	if user.Profile.HasBan {
+		return user, domain.ErrBannedUser
+	}
+
+	if user.AutoClicker.IsAvailable {
+		return user, domain.ErrHasAutoClicker
+	}
+
+	if user.Level < s.cfg.Rules.AutoClicker.MinLevel {
+		return user, domain.ErrNoLevel
+	}
+
+	if user.Points < s.cfg.Rules.AutoClicker.Cost {
+		return user, domain.ErrNoPoints
+	}
+
+	user, err = s.db.CreateUserAutoClicker(ctx, uid, s.cfg.Rules.AutoClicker.Cost)
+	if err != nil {
+		return user, err
+	}
+
+	if err := s.rdb.SetLeaderboardPlayerPoints(ctx, user.Profile.Telegram.ID, user.Level, user.Points); err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
+func (s Service) UpdateAutoClicker(ctx context.Context, uid int64) (domain.UserDocument, error) {
+	user, err := s.db.GetUserDocumentWithID(ctx, uid)
+	if err != nil {
+		return user, err
+	}
+
+	if user.Profile.IsGhost {
+		return user, domain.ErrGhostUser
+	}
+
+	if user.Profile.HasBan {
+		return user, domain.ErrBannedUser
+	}
+
+	if !user.AutoClicker.IsAvailable {
+		return user, domain.ErrHasNoAutoClicker
+	}
+
+	return s.db.UpdateUserAutoClicker(ctx, uid, !user.AutoClicker.IsEnabled)
 }

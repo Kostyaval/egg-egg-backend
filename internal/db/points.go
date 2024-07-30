@@ -63,6 +63,26 @@ func (db DB) IncPoints(ctx context.Context, uid int64, points int) (int, error) 
 	return result.Points, nil
 }
 
+func (db DB) SetPoints(ctx context.Context, uid int64, points int) error {
+	res, err := db.users.UpdateOne(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$set", Value: bson.M{"points": points}},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount != 1 {
+		return domain.ErrNoUser
+	}
+
+	return nil
+}
+
 func (db DB) SetDailyReward(ctx context.Context, uid int64, points int, reward *domain.DailyReward) error {
 	reward.ReceivedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
 

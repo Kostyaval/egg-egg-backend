@@ -13,4 +13,8 @@ var (
 	ErrJWTDecode        = errors.New("jwt decode")
 	ErrNoJWT            = errors.New("jwt is not found")
 	ErrCorruptJWT       = errors.New("jwt corrupt")
+	ErrNoPoints         = errors.New("no points")
+	ErrNoLevel          = errors.New("no level")
+	ErrHasAutoClicker   = errors.New("has auto clicker")
+	ErrHasNoAutoClicker = errors.New("has no auto clicker")
 )

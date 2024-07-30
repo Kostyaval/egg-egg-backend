@@ -81,6 +81,64 @@ func (_c *DBInterface_CheckUserNickname_Call) RunAndReturn(run func(context.Cont
 	return _c
 }
 
+// CreateUserAutoClicker provides a mock function with given fields: ctx, uid, cost
+func (_m *DBInterface) CreateUserAutoClicker(ctx context.Context, uid int64, cost int) (domain.UserDocument, error) {
+	ret := _m.Called(ctx, uid, cost)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateUserAutoClicker")
+	}
+
+	var r0 domain.UserDocument
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int) (domain.UserDocument, error)); ok {
+		return rf(ctx, uid, cost)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int) domain.UserDocument); ok {
+		r0 = rf(ctx, uid, cost)
+	} else {
+		r0 = ret.Get(0).(domain.UserDocument)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64, int) error); ok {
+		r1 = rf(ctx, uid, cost)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// DBInterface_CreateUserAutoClicker_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateUserAutoClicker'
+type DBInterface_CreateUserAutoClicker_Call struct {
+	*mock.Call
+}
+
+// CreateUserAutoClicker is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uid int64
+//   - cost int
+func (_e *DBInterface_Expecter) CreateUserAutoClicker(ctx interface{}, uid interface{}, cost interface{}) *DBInterface_CreateUserAutoClicker_Call {
+	return &DBInterface_CreateUserAutoClicker_Call{Call: _e.mock.On("CreateUserAutoClicker", ctx, uid, cost)}
+}
+
+func (_c *DBInterface_CreateUserAutoClicker_Call) Run(run func(ctx context.Context, uid int64, cost int)) *DBInterface_CreateUserAutoClicker_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64), args[2].(int))
+	})
+	return _c
+}
+
+func (_c *DBInterface_CreateUserAutoClicker_Call) Return(_a0 domain.UserDocument, _a1 error) *DBInterface_CreateUserAutoClicker_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *DBInterface_CreateUserAutoClicker_Call) RunAndReturn(run func(context.Context, int64, int) (domain.UserDocument, error)) *DBInterface_CreateUserAutoClicker_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // DeleteUserJWT provides a mock function with given fields: ctx, uid
 func (_m *DBInterface) DeleteUserJWT(ctx context.Context, uid int64) error {
 	ret := _m.Called(ctx, uid)
@@ -818,6 +876,112 @@ func (_c *DBInterface_SetDailyReward_Call) Return(_a0 error) *DBInterface_SetDai
 }
 
 func (_c *DBInterface_SetDailyReward_Call) RunAndReturn(run func(context.Context, int64, int, *domain.DailyReward) error) *DBInterface_SetDailyReward_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SetPoints provides a mock function with given fields: ctx, uid, points
+func (_m *DBInterface) SetPoints(ctx context.Context, uid int64, points int) error {
+	ret := _m.Called(ctx, uid, points)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetPoints")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int) error); ok {
+		r0 = rf(ctx, uid, points)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DBInterface_SetPoints_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetPoints'
+type DBInterface_SetPoints_Call struct {
+	*mock.Call
+}
+
+// SetPoints is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uid int64
+//   - points int
+func (_e *DBInterface_Expecter) SetPoints(ctx interface{}, uid interface{}, points interface{}) *DBInterface_SetPoints_Call {
+	return &DBInterface_SetPoints_Call{Call: _e.mock.On("SetPoints", ctx, uid, points)}
+}
+
+func (_c *DBInterface_SetPoints_Call) Run(run func(ctx context.Context, uid int64, points int)) *DBInterface_SetPoints_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64), args[2].(int))
+	})
+	return _c
+}
+
+func (_c *DBInterface_SetPoints_Call) Return(_a0 error) *DBInterface_SetPoints_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *DBInterface_SetPoints_Call) RunAndReturn(run func(context.Context, int64, int) error) *DBInterface_SetPoints_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateUserAutoClicker provides a mock function with given fields: ctx, uid, isEnabled
+func (_m *DBInterface) UpdateUserAutoClicker(ctx context.Context, uid int64, isEnabled bool) (domain.UserDocument, error) {
+	ret := _m.Called(ctx, uid, isEnabled)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateUserAutoClicker")
+	}
+
+	var r0 domain.UserDocument
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, bool) (domain.UserDocument, error)); ok {
+		return rf(ctx, uid, isEnabled)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64, bool) domain.UserDocument); ok {
+		r0 = rf(ctx, uid, isEnabled)
+	} else {
+		r0 = ret.Get(0).(domain.UserDocument)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64, bool) error); ok {
+		r1 = rf(ctx, uid, isEnabled)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// DBInterface_UpdateUserAutoClicker_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateUserAutoClicker'
+type DBInterface_UpdateUserAutoClicker_Call struct {
+	*mock.Call
+}
+
+// UpdateUserAutoClicker is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uid int64
+//   - isEnabled bool
+func (_e *DBInterface_Expecter) UpdateUserAutoClicker(ctx interface{}, uid interface{}, isEnabled interface{}) *DBInterface_UpdateUserAutoClicker_Call {
+	return &DBInterface_UpdateUserAutoClicker_Call{Call: _e.mock.On("UpdateUserAutoClicker", ctx, uid, isEnabled)}
+}
+
+func (_c *DBInterface_UpdateUserAutoClicker_Call) Run(run func(ctx context.Context, uid int64, isEnabled bool)) *DBInterface_UpdateUserAutoClicker_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64), args[2].(bool))
+	})
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserAutoClicker_Call) Return(_a0 domain.UserDocument, _a1 error) *DBInterface_UpdateUserAutoClicker_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserAutoClicker_Call) RunAndReturn(run func(context.Context, int64, bool) (domain.UserDocument, error)) *DBInterface_UpdateUserAutoClicker_Call {
 	_c.Call.Return(run)
 	return _c
 }
