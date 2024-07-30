@@ -8,3 +8,5 @@ data:
   RULES_PATH: "/etc/egg/rules.yml"
   REDIS_ENABLED: "true"
   REDIS_URI: ${REDIS_URI}
+  CORS_ALLOW_ORIGINS: "https://dev-api.egg.one"
+  CORS_MAX_AGE: "3600" 
