@@ -37,7 +37,7 @@ func (s Service) RefreshJWT(ctx context.Context, jwtClaims *domain.JWTClaims) ([
 		return nil, err
 	}
 
-	newJWTBytes, err := newJWTClaims.Encode(s.cfg.JWT)
+	newJWTBytes, err := s.cfg.JWT.Encode(newJWTClaims)
 	if err != nil {
 		return nil, err
 	}

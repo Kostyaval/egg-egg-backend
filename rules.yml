@@ -120,3 +120,22 @@ taps:
     energyRechargeSeconds: 3.6
     energyFullRechargeCount: 5
     energyFullRechargeDelaySeconds: 3600
+
+# daily rewards egg points
+dailyRewards:
+  - 1000
+  - 3000
+  - 6000
+  - 10000
+  - 15000
+  - 20000
+  - 25000
+  - 30000
+  - 40000
+  - 50000
+
+autoClicker:
+  speed: 1800ms
+  ttl: 4h
+  cost: 500000
+  minLevel: 2

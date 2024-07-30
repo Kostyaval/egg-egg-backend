@@ -65,7 +65,15 @@ func (db DB) CreateUser(ctx context.Context, user *domain.UserProfile) error {
 			EnergyBoostCount: 0,
 		}},
 		{Key: "referralPoints", Value: 0},
-		{Key: "playedAt", Value: primitive.NewDateTimeFromTime(time.Now())},
+		{Key: "playedAt", Value: primitive.NewDateTimeFromTime(time.Now().UTC())},
+		{Key: "dailyReward", Value: domain.DailyReward{
+			ReceivedAt: primitive.NewDateTimeFromTime(time.Now().UTC()),
+			Day:        0,
+		}},
+		{Key: "autoClicker", Value: domain.AutoClicker{
+			IsAvailable: false,
+			IsEnabled:   false,
+		}},
 	})
 	if err != nil {
 		return err
@@ -94,8 +102,12 @@ func (db DB) UpdateUserNickname(ctx context.Context, uid int64, nickname string,
 		{Key: "$set", Value: bson.M{
 			"profile.jti":       jti,
 			"profile.nickname":  nickname,
-			"profile.updatedAt": primitive.NewDateTimeFromTime(time.Now()),
-			"playedAt":          primitive.NewDateTimeFromTime(time.Now()),
+			"profile.updatedAt": primitive.NewDateTimeFromTime(time.Now().UTC()),
+			"playedAt":          primitive.NewDateTimeFromTime(time.Now().UTC()),
+			"dailyReward": domain.DailyReward{
+				ReceivedAt: primitive.NewDateTimeFromTime(time.Now().UTC()),
+				Day:        0,
+			},
 		}},
 	})
 
@@ -280,7 +292,7 @@ func (db DB) UpdateReferralUserProfile(ctx context.Context, uid int64, ref *doma
 		{Key: "profile.isGhost", Value: false},
 	}, bson.D{
 		{Key: "$set", Value: bson.M{
-			"profile.updatedAt": primitive.NewDateTimeFromTime(time.Now()),
+			"profile.updatedAt": primitive.NewDateTimeFromTime(time.Now().UTC()),
 			"profile.ref":       ref,
 		}},
 	})
@@ -294,4 +306,60 @@ func (db DB) UpdateReferralUserProfile(ctx context.Context, uid int64, ref *doma
 	}
 
 	return nil
+}
+
+func (db DB) CreateUserAutoClicker(ctx context.Context, uid int64, cost int) (domain.UserDocument, error) {
+	var doc domain.UserDocument
+
+	opt := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	err := db.users.FindOneAndUpdate(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$inc", Value: bson.M{"points": -cost}},
+		{Key: "$set", Value: bson.M{
+			"playedAt":                primitive.NewDateTimeFromTime(time.Now().UTC()),
+			"autoClicker.isAvailable": true,
+			"autoClicker.isEnabled":   true,
+		}},
+	}, opt).Decode(&doc)
+
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return doc, domain.ErrNoUser
+		}
+
+		return doc, err
+	}
+
+	return doc, nil
+}
+
+func (db DB) UpdateUserAutoClicker(ctx context.Context, uid int64, isEnabled bool) (domain.UserDocument, error) {
+	var doc domain.UserDocument
+
+	opt := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	err := db.users.FindOneAndUpdate(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$set", Value: bson.M{
+			"playedAt":              primitive.NewDateTimeFromTime(time.Now().UTC()),
+			"autoClicker.isEnabled": isEnabled,
+		}},
+	}, opt).Decode(&doc)
+
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return doc, domain.ErrNoUser
+		}
+
+		return doc, err
+	}
+
+	return doc, nil
 }

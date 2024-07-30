@@ -1,7 +1,14 @@
 package config
 
+import (
+	"gitlab.com/egg-be/egg-backend/internal/domain"
+	"time"
+)
+
 type Rules struct {
-	Referral ReferralRules `yaml:"referral"`
+	Referral     ReferralRules    `yaml:"referral"`
+	DailyRewards []int            `yaml:"dailyRewards"`
+	AutoClicker  AutoClickerRules `yaml:"autoClicker"`
 	Taps     TapRules      `yaml:"taps"`
 }
 
@@ -15,6 +22,13 @@ type ReferralRules []struct {
 		Plain   int `yaml:"plain"`
 		Premium int `yaml:"premium"`
 	} `yaml:"recipient"`
+}
+
+type AutoClickerRules struct {
+	Speed    time.Duration `yaml:"speed"`
+	TTL      time.Duration `yaml:"ttl"`
+	Cost     int           `yaml:"cost"`
+	MinLevel domain.Level  `yaml:"minLevel"`
 }
 
 type TapRules []struct {

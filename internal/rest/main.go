@@ -3,6 +3,7 @@ package rest
 import (
 	"errors"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"gitlab.com/egg-be/egg-backend/internal/config"
 	"log/slog"
@@ -19,6 +20,7 @@ type ServiceInterface interface {
 	leaderboardService
 	boostService
 	energyRechargeService
+	autoClickerService
 }
 
 func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fiber.App {
@@ -50,6 +52,15 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 		app.Use(recover.New())
 	}
 
+	if cfg.CORS.IsEnabled {
+		app.Use(cors.New(cors.Config{
+			AllowOrigins:     cfg.CORS.Origins,
+			AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
+			AllowCredentials: cfg.CORS.Origins != "*",
+			AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
+		}))
+	}
+
 	h := newHandler(cfg, logger, srv)
 	app.Get("/ping", h.ping)
 
@@ -69,6 +80,8 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 	api.Use(middlewareJWT(&middlewareJWTConfig{log: h.log, cfg: cfg.JWT, mustNickname: true}))
 	api.Get("/me/friends", h.readUserFriends)
 	api.Get("/leaderboard", h.leaderboard)
+	api.Post("/me/autoclicker", h.createAutoClicker)
+	api.Put("/me/autoclicker", h.updateAutoClicker)
 
 	api.Put("/me/recharge_energy", h.rechargeEnergy)
 

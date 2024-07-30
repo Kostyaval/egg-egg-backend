@@ -12,6 +12,8 @@ type UserDocument struct {
 	ReferralPoints int                `bson:"referralPoints" json:"referralPoints"`
 	Level          Level              `bson:"level" json:"level"`
 	Taps           Taps               `bson:"taps" json:"taps"`
+	DailyReward    DailyReward        `bson:"dailyReward" json:"dailyReward"`
+	AutoClicker    AutoClicker        `bson:"autoClicker" json:"autoClicker"`
 }
 
 // max count 24k.
@@ -50,4 +52,14 @@ type TelegramUserProfile struct {
 	Lastname  string `bson:"lastname" json:"-"`
 	Language  string `bson:"language" json:"language"`
 	Username  string `bson:"username" json:"-"`
+}
+
+type DailyReward struct {
+	ReceivedAt primitive.DateTime `bson:"receivedAt" json:"receivedAt"`
+	Day        int                `bson:"day" json:"day"`
+}
+
+type AutoClicker struct {
+	IsEnabled   bool `bson:"isEnabled" json:"isEnabled"`
+	IsAvailable bool `bson:"isAvailable" json:"isAvailable"`
 }

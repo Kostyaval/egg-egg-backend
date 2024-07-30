@@ -21,6 +21,7 @@ type Config struct {
 	TelegramToken string
 	Rules         *Rules
 	JWT           *JWTConfig
+	CORS          *CORSConfig
 }
 
 func NewConfig() (*Config, error) {
@@ -90,6 +91,12 @@ func NewConfig() (*Config, error) {
 
 	// Setup JWT config
 	cfg.JWT, err = newJWTConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	// Setup CORS config
+	cfg.CORS, err = newCORSConfig()
 	if err != nil {
 		return nil, err
 	}
