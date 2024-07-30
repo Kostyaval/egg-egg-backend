@@ -773,6 +773,53 @@ func (_c *DBInterface_ReadUserFriends_Call) RunAndReturn(run func(context.Contex
 	return _c
 }
 
+// ResetUserEnergyRechargeCount provides a mock function with given fields: ctx, uid
+func (_m *DBInterface) ResetUserEnergyRechargeCount(ctx context.Context, uid int64) error {
+	ret := _m.Called(ctx, uid)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ResetUserEnergyRechargeCount")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = rf(ctx, uid)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DBInterface_ResetUserEnergyRechargeCount_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ResetUserEnergyRechargeCount'
+type DBInterface_ResetUserEnergyRechargeCount_Call struct {
+	*mock.Call
+}
+
+// ResetUserEnergyRechargeCount is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uid int64
+func (_e *DBInterface_Expecter) ResetUserEnergyRechargeCount(ctx interface{}, uid interface{}) *DBInterface_ResetUserEnergyRechargeCount_Call {
+	return &DBInterface_ResetUserEnergyRechargeCount_Call{Call: _e.mock.On("ResetUserEnergyRechargeCount", ctx, uid)}
+}
+
+func (_c *DBInterface_ResetUserEnergyRechargeCount_Call) Run(run func(ctx context.Context, uid int64)) *DBInterface_ResetUserEnergyRechargeCount_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64))
+	})
+	return _c
+}
+
+func (_c *DBInterface_ResetUserEnergyRechargeCount_Call) Return(_a0 error) *DBInterface_ResetUserEnergyRechargeCount_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *DBInterface_ResetUserEnergyRechargeCount_Call) RunAndReturn(run func(context.Context, int64) error) *DBInterface_ResetUserEnergyRechargeCount_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdateUserEnergyBoostCount provides a mock function with given fields: ctx, uid, cost
 func (_m *DBInterface) UpdateUserEnergyBoostCount(ctx context.Context, uid int64, cost int) error {
 	ret := _m.Called(ctx, uid, cost)
@@ -865,6 +912,53 @@ func (_c *DBInterface_UpdateUserEnergyCount_Call) Return(_a0 error) *DBInterface
 }
 
 func (_c *DBInterface_UpdateUserEnergyCount_Call) RunAndReturn(run func(context.Context, int64, int) error) *DBInterface_UpdateUserEnergyCount_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateUserEnergyRechargeCount provides a mock function with given fields: ctx, uid
+func (_m *DBInterface) UpdateUserEnergyRechargeCount(ctx context.Context, uid int64) error {
+	ret := _m.Called(ctx, uid)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateUserEnergyRechargeCount")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = rf(ctx, uid)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DBInterface_UpdateUserEnergyRechargeCount_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateUserEnergyRechargeCount'
+type DBInterface_UpdateUserEnergyRechargeCount_Call struct {
+	*mock.Call
+}
+
+// UpdateUserEnergyRechargeCount is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uid int64
+func (_e *DBInterface_Expecter) UpdateUserEnergyRechargeCount(ctx interface{}, uid interface{}) *DBInterface_UpdateUserEnergyRechargeCount_Call {
+	return &DBInterface_UpdateUserEnergyRechargeCount_Call{Call: _e.mock.On("UpdateUserEnergyRechargeCount", ctx, uid)}
+}
+
+func (_c *DBInterface_UpdateUserEnergyRechargeCount_Call) Run(run func(ctx context.Context, uid int64)) *DBInterface_UpdateUserEnergyRechargeCount_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64))
+	})
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserEnergyRechargeCount_Call) Return(_a0 error) *DBInterface_UpdateUserEnergyRechargeCount_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserEnergyRechargeCount_Call) RunAndReturn(run func(context.Context, int64) error) *DBInterface_UpdateUserEnergyRechargeCount_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -11,6 +11,8 @@ type tapDB interface {
 	UpdateUserTapBoostCount(ctx context.Context, uid int64, cost int) error
 	UpdateUserEnergyBoostCount(ctx context.Context, uid int64, cost int) error
 	UpdateUserEnergyCount(ctx context.Context, uid int64, energyCount int) error
+	UpdateUserEnergyRechargeCount(ctx context.Context, uid int64) error
+	ResetUserEnergyRechargeCount(ctx context.Context, uid int64) error
 }
 
 func (s Service) AddTap(ctx context.Context, uid int64, tapCount int) (domain.UserDocument, error) {
@@ -45,15 +47,16 @@ func (s Service) AddTap(ctx context.Context, uid int64, tapCount int) (domain.Us
 	energyNeededForTaps := tapCount * pointsPerTap
 
 	levelParams := s.cfg.Rules.Taps[u.Level]
+	userMaxEnergy := u.Taps.EnergyBoostCount*500 + 500
 	accumulatedEnergy := (int(inactiveTime.Seconds())*levelParams.EnergyRechargeSeconds*10)/10 + u.Taps.EnergyCount
 
-	if accumulatedEnergy > levelParams.Energy {
-		accumulatedEnergy = levelParams.Energy
+	if accumulatedEnergy > userMaxEnergy {
+		accumulatedEnergy = userMaxEnergy
 	}
 
 	if energyNeededForTaps > accumulatedEnergy {
 		energyNeededForTaps = accumulatedEnergy
-		tapCount = energyNeededForTaps / (levelParams.EnergyRechargeSeconds / 10) * 10
+		tapCount = energyNeededForTaps / (levelParams.EnergyRechargeSeconds * 10) / 10
 	}
 
 	totalPoints := tapCount * pointsPerTap

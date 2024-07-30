@@ -53,6 +53,8 @@ taps:
     energyBoosts:
     energyBoostCost: 5000
     energyRechargeSeconds: 3.6
+    energyFullRechargeCount: 5
+    energyFullRechargeDelaySeconds: 3600
 
   # egg level: 1
   - points: 1
@@ -62,6 +64,8 @@ taps:
       - 500
     energyBoostCost: 5000
     energyRechargeSeconds: 3.6
+    energyFullRechargeCount: 5
+    energyFullRechargeDelaySeconds: 3600
 
   # egg level: 2
   - points: 1
@@ -72,6 +76,8 @@ taps:
       - 500
     energyBoostCost: 5000
     energyRechargeSeconds: 3.6
+    energyFullRechargeCount: 5
+    energyFullRechargeDelaySeconds: 3600
 
   # egg level: 3
   - points: 1
@@ -83,6 +89,8 @@ taps:
       - 500
     energyBoostCost: 5000
     energyRechargeSeconds: 3.6
+    energyFullRechargeCount: 5
+    energyFullRechargeDelaySeconds: 3600
 
   # egg level: 4
   - points: 1
@@ -95,6 +103,8 @@ taps:
       - 500
     energyBoostCost: 5000
     energyRechargeSeconds: 3.6
+    energyFullRechargeCount: 5
+    energyFullRechargeDelaySeconds: 3600
 
   # egg level: 5
   - points: 1
@@ -108,3 +118,5 @@ taps:
       - 500
     energyBoostCost: 5000
     energyRechargeSeconds: 3.6
+    energyFullRechargeCount: 5
+    energyFullRechargeDelaySeconds: 3600

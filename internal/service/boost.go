@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"github.com/gofiber/fiber/v2/log"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
 )
 
@@ -25,11 +24,6 @@ func (s Service) BoostTap(ctx context.Context, uid int64) (domain.UserDocument, 
 	}
 
 	levelParams := s.cfg.Rules.Taps[u.Level]
-
-	log.Info("tap boosts")
-	log.Info(u.Taps.LevelTapBoosts)
-	log.Info(u.Level)
-	log.Info(len(levelParams.EnergyBoosts))
 
 	if u.Taps.LevelTapBoosts == len(levelParams.EnergyBoosts) {
 		return u, domain.ErrBoostOverLimit

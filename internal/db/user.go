@@ -226,6 +226,53 @@ func (db DB) UpdateUserEnergyCount(ctx context.Context, uid int64, energyCount i
 	return nil
 }
 
+func (db DB) UpdateUserEnergyRechargeCount(ctx context.Context, uid int64) error {
+	res, err := db.users.UpdateOne(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$inc", Value: bson.M{
+			"taps.energyRechargeCount": 1,
+		}},
+		{Key: "$set", Value: bson.M{
+			"taps.energyRechargedAt": primitive.NewDateTimeFromTime(time.Now()),
+		}},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return domain.ErrNoUser
+	}
+
+	return nil
+}
+
+func (db DB) ResetUserEnergyRechargeCount(ctx context.Context, uid int64) error {
+	res, err := db.users.UpdateOne(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$inc", Value: bson.M{
+			"taps.energyRechargeCount": 0,
+		}},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return domain.ErrNoUser
+	}
+
+	return nil
+}
+
 func (db DB) UpdateReferralUserProfile(ctx context.Context, uid int64, ref *domain.ReferralUserProfile) error {
 	res, err := db.users.UpdateOne(ctx, bson.D{
 		{Key: "profile.telegram.id", Value: uid},
