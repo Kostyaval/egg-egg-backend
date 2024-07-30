@@ -45,12 +45,12 @@ spec:
               key: REDIS_URI
         - name: CORS_ALLOW_ORIGINS
           valueFrom:
-            secretKeyRef:
+            configMapKeyRef:
               name: egg-backend-config
               key: CORS_ALLOW_ORIGINS
         - name: CORS_ALLOW_ORIGINS
           valueFrom:
-            secretKeyRef:
+            configMapKeyRef:
               name: egg-backend-config
               key: CORS_ALLOW_ORIGINS
         - name: JWT_PRIVATE_KEY_PATH
