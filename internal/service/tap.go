@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"github.com/gofiber/fiber/v2/log"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"time"
 )
@@ -28,9 +27,9 @@ func (s Service) AddTap(ctx context.Context, uid int64, tapCount int) (domain.Us
 		return u, domain.ErrBannedUser
 	}
 
-	if u.Profile.JTI != nil {
-		return u, domain.ErrMultipleDevices
-	}
+	//if u.Profile.JTI != nil {
+	//	return u, domain.ErrMultipleDevices
+	//}
 
 	if u.Taps.TapCount == 24000 {
 		return u, domain.ErrTapOverLimit
@@ -44,12 +43,9 @@ func (s Service) AddTap(ctx context.Context, uid int64, tapCount int) (domain.Us
 	pointsPerTap := u.Taps.TapBoostCount + 1
 
 	energyNeededForTaps := tapCount * pointsPerTap
-	log.Info("Inactive time")
-	log.Info(inactiveTime.Seconds())
-	accumulatedEnergy := (int(inactiveTime.Seconds())*36)/10 + u.Taps.EnergyCount
+
 	levelParams := s.cfg.Rules.Taps[u.Level]
-	log.Info("Accumulated energy: ", accumulatedEnergy)
-	log.Info("Energy needed for taps: ", energyNeededForTaps)
+	accumulatedEnergy := (int(inactiveTime.Seconds())*levelParams.EnergyRechargeSeconds*10)/10 + u.Taps.EnergyCount
 
 	if accumulatedEnergy > levelParams.Energy {
 		accumulatedEnergy = levelParams.Energy
@@ -57,7 +53,7 @@ func (s Service) AddTap(ctx context.Context, uid int64, tapCount int) (domain.Us
 
 	if energyNeededForTaps > accumulatedEnergy {
 		energyNeededForTaps = accumulatedEnergy
-		tapCount = (energyNeededForTaps / levelParams.EnergyRechargeSeconds / 10) * 10
+		tapCount = energyNeededForTaps / (levelParams.EnergyRechargeSeconds / 10) * 10
 	}
 
 	totalPoints := tapCount * pointsPerTap
