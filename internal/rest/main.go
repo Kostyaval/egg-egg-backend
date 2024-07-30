@@ -3,6 +3,7 @@ package rest
 import (
 	"errors"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"gitlab.com/egg-be/egg-backend/internal/config"
 	"log/slog"
@@ -46,6 +47,15 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 
 	if cfg.Runtime == config.RuntimeProduction {
 		app.Use(recover.New())
+	}
+
+	if cfg.CORS.IsEnabled {
+		app.Use(cors.New(cors.Config{
+			AllowOrigins:     cfg.CORS.Origins,
+			AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
+			AllowCredentials: cfg.CORS.Origins != "*",
+			AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
+		}))
 	}
 
 	h := newHandler(cfg, logger, srv)
