@@ -23,6 +23,10 @@ func (r Redis) SetLeaderboardPlayerPoints(ctx context.Context, uid int64, level 
 	return nil
 }
 
+func (r Redis) DeleteAllUsers(ctx context.Context) error {
+	return r.leaderboardClient.FlushDB(ctx).Err()
+}
+
 func (r Redis) ReadLevelLeaderboardPlayerRank(ctx context.Context, uid int64, level domain.Level) (int64, error) {
 	rank, err := r.leaderboardClient.ZRevRank(ctx, level.String(), strconv.FormatInt(uid, 10)).Result()
 	if err != nil {

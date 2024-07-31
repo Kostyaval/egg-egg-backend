@@ -66,7 +66,7 @@ func main() {
 	}()
 
 	// Setup Telegram bot
-	bot, err := tg.NewTelegramBot(cfg, logger, mongodb)
+	bot, err := tg.NewTelegramBot(cfg, logger, mongodb, redis)
 	if err != nil {
 		logger.Error("new telegram bot", slog.String("error", err.Error()))
 		os.Exit(1)

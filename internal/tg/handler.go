@@ -23,12 +23,14 @@ type handler struct {
 	log   *handlerLogger
 	rules *config.Rules
 	db    DBInterface
+	rdb   RedisInterface
 }
 
-func newHandler(logger *slog.Logger, rules *config.Rules, db DBInterface) *handler {
+func newHandler(logger *slog.Logger, rules *config.Rules, db DBInterface, rdb RedisInterface) *handler {
 	return &handler{
 		log:   &handlerLogger{log: logger},
 		rules: rules,
 		db:    db,
+		rdb:   rdb,
 	}
 }

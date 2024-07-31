@@ -199,3 +199,23 @@ func (db DB) UpdateUserAutoClicker(ctx context.Context, uid int64, isEnabled boo
 
 	return doc, nil
 }
+
+func (db DB) DeleteAllUsers(ctx context.Context) error {
+	_, err := db.users.DeleteMany(ctx, bson.D{})
+	return err
+}
+
+func (db DB) CreateUsers(ctx context.Context, users []domain.UserDocument) error {
+	if len(users) == 0 {
+		return nil
+	}
+
+	docs := make([]interface{}, len(users))
+	for i, v := range users {
+		docs[i] = v
+	}
+
+	_, err := db.users.InsertMany(ctx, docs)
+
+	return err
+}
