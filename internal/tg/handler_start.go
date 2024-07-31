@@ -15,7 +15,7 @@ import (
 
 type startHandlerDB interface {
 	GetUserProfileWithID(ctx context.Context, uid int64) (domain.UserProfile, error)
-	CreateUser(ctx context.Context, user *domain.UserProfile) error
+	CreateUser(ctx context.Context, user *domain.UserProfile, levelCount int) error
 	UpdateReferralUserProfile(ctx context.Context, uid int64, ref *domain.ReferralUserProfile) error
 }
 
@@ -71,7 +71,7 @@ func (h handler) start(c tele.Context) error {
 				}
 			}
 
-			if err := h.db.CreateUser(ctx, user); err != nil {
+			if err := h.db.CreateUser(ctx, user, len(h.cfg.Rules.Taps)+1); err != nil {
 				log.Error("registration", slog.String("error", err.Error()))
 				return c.Send("Oops! Something went wrong. Please try again later")
 			}

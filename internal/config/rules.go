@@ -32,12 +32,15 @@ type AutoClickerRules struct {
 }
 
 type TapRules []struct {
-	Points                         int     `yaml:"points"`
-	Energy                         int     `yaml:"energy"`
-	EnergyRecovery                 int     `yaml:"energyRecovery"`
-	EnergyBoosts                   []int   `yaml:"energyBoosts"`
-	EnergyBoostCost                int     `yaml:"energyBoostCost"`
-	EnergyRechargeSeconds          float64 `yaml:"energyRechargeSeconds"`
-	EnergyFullRechargeCount        int     `yaml:"energyFullRechargeCount"`
-	EnergyFullRechargeDelaySeconds int     `yaml:"energyFullRechargeDelaySeconds"`
+	Points int `yaml:"points"`
+	Energy struct {
+		Max                      int     `yaml:"max"`
+		RecoverySeconds          int     `yaml:"recoverySeconds"`
+		BoostLimit               int     `yaml:"boostLimit"`
+		BoostPackage             int     `yaml:"boostPackage"`
+		BoostCost                int     `yaml:"boostCost"`
+		RechargeSeconds          float64 `yaml:"rechargeSeconds"`
+		FullRechargeCount        int     `yaml:"fullRechargeCount"`
+		FullRechargeDelaySeconds int     `yaml:"fullRechargeDelaySeconds"`
+	} `yaml:"energy"`
 }

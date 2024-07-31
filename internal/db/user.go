@@ -54,14 +54,14 @@ func (db DB) GetUserProfileWithID(ctx context.Context, uid int64) (domain.UserPr
 	return result.Profile, nil
 }
 
-func (db DB) CreateUser(ctx context.Context, user *domain.UserProfile) error {
+func (db DB) CreateUser(ctx context.Context, user *domain.UserProfile, levelCount int) error {
 	_, err := db.users.InsertOne(ctx, bson.D{
 		{Key: "profile", Value: user},
 		{Key: "level", Value: domain.Lv0},
 		{Key: "points", Value: 0},
 		{Key: "taps", Value: &domain.Taps{
-			TapCount:         0,
-			EnergyBoostCount: 0,
+			TapCount:          0,
+			TotalEnergyBoosts: make([]int, levelCount),
 		}},
 		{Key: "referralPoints", Value: 0},
 		{Key: "playedAt", Value: primitive.NewDateTimeFromTime(time.Now().UTC())},
@@ -204,16 +204,15 @@ func (db DB) UpdateUserTapBoostCount(ctx context.Context, uid int64, cost int) e
 	return nil
 }
 
-func (db DB) UpdateUserEnergyBoostCount(ctx context.Context, uid int64, cost int) error {
+func (db DB) UpdateUserEnergyBoostCount(ctx context.Context, uid int64, cost int, level domain.Level) error {
 	res, err := db.users.UpdateOne(ctx, bson.D{
 		{Key: "profile.telegram.id", Value: uid},
 		{Key: "profile.hasBan", Value: false},
 		{Key: "profile.isGhost", Value: false},
 	}, bson.D{
 		{Key: "$inc", Value: bson.M{
-			"taps.levelEnergyBoosts": 1,
-			"taps.energyBoosts":      1,
-			"taps.tapCount":          -cost,
+			fmt.Sprintf("taps.energyBoosts.%d", level): 1,
+			"points": -cost,
 		}},
 		{Key: "$set", Value: bson.M{
 			"playedAt": primitive.NewDateTimeFromTime(time.Now()),

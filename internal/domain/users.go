@@ -16,13 +16,11 @@ type UserDocument struct {
 	AutoClicker    AutoClicker        `bson:"autoClicker" json:"autoClicker"`
 }
 
-// max count 24k.
 type Taps struct {
 	TapCount            int                `bson:"tapCount" json:"tapCount"`
-	TapBoostCount       int                `bson:"tapBoosts" json:"tapBoosts"`
-	EnergyBoostCount    int                `bson:"energyBoosts" json:"energyBoosts"`
+	TotalTapBoosts      int                `bson:"tapBoosts" json:"tapBoosts"`
+	TotalEnergyBoosts   []int              `bson:"energyBoosts" json:"energyBoosts"`
 	LevelTapBoosts      int                `bson:"levelTapBoosts" json:"levelTapBoosts"`
-	LevelEnergyBoosts   int                `bson:"levelEnergyBoosts" json:"levelEnergyBoosts"`
 	EnergyCount         int                `bson:"energyCount" json:"energyCount"`
 	PlayedAt            primitive.DateTime `bson:"playedAt" json:"playedAt"`
 	EnergyRechargeCount int                `bson:"energyRechargeCount" json:"energyRechargeCount"`
