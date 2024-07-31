@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func (s Service) RechargeEnergy(ctx context.Context, uid int64) (domain.UserDocument, error) {
+func (s Service) RechargeTapEnergy(ctx context.Context, uid int64) (domain.UserDocument, error) {
 	u, err := s.db.GetUserDocumentWithID(ctx, uid)
 	if err != nil {
 		return u, err
@@ -20,18 +20,14 @@ func (s Service) RechargeEnergy(ctx context.Context, uid int64) (domain.UserDocu
 		return u, domain.ErrBannedUser
 	}
 
-	//if u.Profile.JTI != nil {
-	//	return u, domain.ErrMultipleDevices
-	//}
-
 	levelParams := s.cfg.Rules.Taps[u.Level]
 
-	if u.Taps.EnergyRechargedAt.Time().Day() != time.Now().Day() {
+	if u.Taps.EnergyRechargedAt.Time().UTC().Day() != time.Now().UTC().Day() {
 		_ = s.db.ResetUserEnergyRechargeCount(ctx, uid)
 		u.Taps.EnergyRechargeCount = 0
 	}
 
-	if int(time.Since(u.Taps.EnergyRechargedAt.Time()).Seconds()) < levelParams.EnergyFullRechargeDelaySeconds {
+	if int(time.Since(u.Taps.EnergyRechargedAt.Time().UTC()).Seconds()) < levelParams.EnergyFullRechargeDelaySeconds {
 		return u, domain.ErrEnergyRechargeTooFast
 	}
 

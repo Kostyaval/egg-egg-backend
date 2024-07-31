@@ -30,15 +30,11 @@ func (s Service) AddTap(ctx context.Context, uid int64, tapCount int) (domain.Us
 		return u, domain.ErrBannedUser
 	}
 
-	//if u.Profile.JTI != nil {
-	//	return u, domain.ErrMultipleDevices
-	//}
-
 	if u.Taps.TapCount == 24000 {
 		return u, domain.ErrTapOverLimit
 	}
 
-	inactiveTime := time.Since(u.Taps.PlayedAt.Time())
+	inactiveTime := time.Since(u.Taps.PlayedAt.Time().UTC())
 	if inactiveTime.Seconds() == 0 {
 		return u, domain.ErrTapTooFast
 	}

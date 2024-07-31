@@ -59,7 +59,6 @@ func (db DB) CreateUser(ctx context.Context, user *domain.UserProfile) error {
 		{Key: "profile", Value: user},
 		{Key: "level", Value: domain.Lv0},
 		{Key: "points", Value: 0},
-		{Key: "level", Value: 0},
 		{Key: "taps", Value: &domain.Taps{
 			TapCount:         0,
 			EnergyBoostCount: 0,
@@ -136,10 +135,8 @@ func (db DB) UpdateUserTapCount(ctx context.Context, uid int64, count int) error
 			"taps.tapCount": count,
 		}},
 		{Key: "$set", Value: bson.M{
-			"playedAt": primitive.NewDateTimeFromTime(time.Now()),
-		}},
-		{Key: "$set", Value: bson.M{
 			"taps.playedAt": primitive.NewDateTimeFromTime(time.Now()),
+			"playedAt":      primitive.NewDateTimeFromTime(time.Now()),
 		}},
 	})
 
@@ -162,12 +159,8 @@ func (db DB) UpdateUserTapBoostCount(ctx context.Context, uid int64, cost int) e
 	}, bson.D{
 		{Key: "$inc", Value: bson.M{
 			"taps.levelTapBoosts": 1,
-		}},
-		{Key: "$inc", Value: bson.M{
-			"taps.tapBoosts": 1,
-		}},
-		{Key: "$inc", Value: bson.M{
-			"taps.tapCount": -cost,
+			"taps.tapBoosts":      1,
+			"taps.tapCount":       -cost,
 		}},
 		{Key: "$set", Value: bson.M{
 			"playedAt": primitive.NewDateTimeFromTime(time.Now()),
@@ -193,12 +186,8 @@ func (db DB) UpdateUserEnergyBoostCount(ctx context.Context, uid int64, cost int
 	}, bson.D{
 		{Key: "$inc", Value: bson.M{
 			"taps.levelEnergyBoosts": 1,
-		}},
-		{Key: "$inc", Value: bson.M{
-			"taps.energyBoosts": 1,
-		}},
-		{Key: "$inc", Value: bson.M{
-			"taps.tapCount": -cost,
+			"taps.energyBoosts":      1,
+			"taps.tapCount":          -cost,
 		}},
 		{Key: "$set", Value: bson.M{
 			"playedAt": primitive.NewDateTimeFromTime(time.Now()),

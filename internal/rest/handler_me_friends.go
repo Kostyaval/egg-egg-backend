@@ -2,6 +2,7 @@ package rest
 
 import (
 	"context"
+	"errors"
 	"github.com/gofiber/fiber/v2"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"log/slog"
@@ -49,6 +50,11 @@ func (h handler) readUserFriends(c *fiber.Ctx) error {
 	resp.List, resp.Total, err = h.srv.ReadUserFriends(c.Context(), jwt.UID, req.Limit, req.Skip)
 	if err != nil {
 		log.Error("ReadUserFriends", slog.String("error", err.Error()))
+
+		if errors.Is(err, domain.ErrNoUser) || errors.Is(err, domain.ErrGhostUser) || errors.Is(err, domain.ErrBannedUser) {
+			return newHTTPError(fiber.StatusForbidden, err.Error())
+		}
+
 		return newHTTPError(fiber.StatusInternalServerError, "read error").withDetails(err)
 	}
 

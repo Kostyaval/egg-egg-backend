@@ -5,7 +5,7 @@ import (
 	"gitlab.com/egg-be/egg-backend/internal/domain"
 )
 
-func (s Service) BoostTap(ctx context.Context, uid int64) (domain.UserDocument, error) {
+func (s Service) AddTapBoost(ctx context.Context, uid int64) (domain.UserDocument, error) {
 	u, err := s.db.GetUserDocumentWithID(ctx, uid)
 	if err != nil {
 		return u, err
@@ -17,10 +17,6 @@ func (s Service) BoostTap(ctx context.Context, uid int64) (domain.UserDocument, 
 
 	if u.Profile.HasBan {
 		return u, domain.ErrBannedUser
-	}
-
-	if u.Profile.JTI != nil {
-		return u, domain.ErrMultipleDevices
 	}
 
 	levelParams := s.cfg.Rules.Taps[u.Level]
@@ -43,7 +39,7 @@ func (s Service) BoostTap(ctx context.Context, uid int64) (domain.UserDocument, 
 	return u, nil
 }
 
-func (s Service) BoostEnergy(ctx context.Context, uid int64) (domain.UserDocument, error) {
+func (s Service) AddEnergyBoost(ctx context.Context, uid int64) (domain.UserDocument, error) {
 	u, err := s.db.GetUserDocumentWithID(ctx, uid)
 	if err != nil {
 		return u, err
@@ -55,10 +51,6 @@ func (s Service) BoostEnergy(ctx context.Context, uid int64) (domain.UserDocumen
 
 	if u.Profile.HasBan {
 		return u, domain.ErrBannedUser
-	}
-
-	if u.Profile.JTI != nil {
-		return u, domain.ErrMultipleDevices
 	}
 
 	levelParams := s.cfg.Rules.Taps[u.Level]

@@ -2,6 +2,7 @@ package rest
 
 import (
 	"context"
+	"errors"
 	"github.com/gofiber/fiber/v2"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"log/slog"
@@ -9,6 +10,9 @@ import (
 
 type tapService interface {
 	AddTap(ctx context.Context, uid int64, tapCount int) (domain.UserDocument, error)
+	AddTapBoost(ctx context.Context, uid int64) (domain.UserDocument, error)
+	AddEnergyBoost(ctx context.Context, uid int64) (domain.UserDocument, error)
+	RechargeTapEnergy(ctx context.Context, uid int64) (domain.UserDocument, error)
 }
 
 func (h handler) addTap(c *fiber.Ctx) error {
@@ -35,7 +39,14 @@ func (h handler) addTap(c *fiber.Ctx) error {
 	u, err := h.srv.AddTap(c.Context(), jwt.UID, req.Count)
 	if err != nil {
 		log.Error("srv.AddTap", slog.String("error", err.Error()))
-		return c.Status(fiber.StatusInternalServerError).Send(nil)
+
+		if errors.Is(err, domain.ErrNoUser) || errors.Is(err, domain.ErrGhostUser) || errors.Is(err, domain.ErrBannedUser) {
+			return newHTTPError(fiber.StatusForbidden, err.Error())
+		}
+
+		if !errors.Is(err, domain.ErrTapOverLimit) && !errors.Is(err, domain.ErrTapTooFast) {
+			return newHTTPError(fiber.StatusInternalServerError, "add tap").withDetails(err)
+		}
 	}
 
 	var res struct {
