@@ -2,6 +2,7 @@ package tg
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
 	"github.com/speps/go-hashids/v2"
 	"github.com/urfave/cli/v2"
@@ -9,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	tele "gopkg.in/telebot.v3"
 	"log/slog"
-	"math/rand"
+	"math/big"
 	"strings"
 	"time"
 	"unicode"
@@ -95,8 +96,12 @@ func (h handler) reset(c tele.Context) error {
 							return false
 						}
 
-						r := rand.New(rand.NewSource(time.Now().UnixNano()))
-						b := r.Intn(2) == 0
+						n, err := rand.Int(rand.Reader, big.NewInt(2))
+						if err != nil {
+							return false
+						}
+
+						b := n.Int64() == 1
 						if b {
 							premiumUsersCount--
 						}
@@ -108,24 +113,34 @@ func (h handler) reset(c tele.Context) error {
 					language := func() string {
 						l := []string{"en", "ru", "uk", "de", "es", "fr", "it", "pt", "zh", "ja"}
 
-						r := rand.New(rand.NewSource(time.Now().UnixNano()))
-						i := r.Intn(len(l))
-						return l[i]
+						n, err := rand.Int(rand.Reader, big.NewInt(int64(len(l))))
+						if err != nil {
+							return l[0]
+						}
+
+						return l[int(n.Int64())]
 					}
 
 					// utils -- random user level
 					level := func() domain.Level {
 						l := []domain.Level{domain.Lv0, domain.Lv1, domain.Lv2, domain.Lv3, domain.Lv4, domain.Lv5}
 
-						r := rand.New(rand.NewSource(time.Now().UnixNano()))
-						i := r.Intn(len(l))
-						return l[i]
+						n, err := rand.Int(rand.Reader, big.NewInt(int64(len(l))))
+						if err != nil {
+							return l[0]
+						}
+
+						return l[int(n.Int64())]
 					}
 
 					// utils -- random int
 					randInt := func(min, max int) int {
-						r := rand.New(rand.NewSource(time.Now().UnixNano()))
-						return r.Intn(max-min) + min
+						n, err := rand.Int(rand.Reader, big.NewInt(int64(max-min)))
+						if err != nil {
+							return 0
+						}
+
+						return int(n.Int64()) + min
 					}
 
 					// utils -- random time from range
@@ -136,16 +151,22 @@ func (h handler) reset(c tele.Context) error {
 
 						duration := end.Sub(start)
 
-						r := rand.New(rand.NewSource(time.Now().UnixNano()))
-						randomDuration := time.Duration(r.Int63n(int64(duration)))
+						n, err := rand.Int(rand.Reader, big.NewInt(duration.Nanoseconds()))
+						if err != nil {
+							return time.Now().UTC()
+						}
 
-						return start.Add(randomDuration)
+						return start.Add(time.Duration(n.Int64()))
 					}
 
 					// utils -- random bool
 					randBool := func() bool {
-						r := rand.New(rand.NewSource(time.Now().UnixNano()))
-						return r.Intn(2) == 0
+						n, err := rand.Int(rand.Reader, big.NewInt(2))
+						if err != nil {
+							return false
+						}
+
+						return n.Int64() == 1
 					}
 
 					// utils -- random nickname based on id

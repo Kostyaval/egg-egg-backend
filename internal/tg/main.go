@@ -69,6 +69,7 @@ func (tw *tgWriter) Write(p []byte) (n int, err error) {
 	defer tw.mu.Unlock()
 
 	tw.resetTimer()
+
 	return tw.buf.Write(p)
 }
 
