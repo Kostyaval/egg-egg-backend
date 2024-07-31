@@ -25,7 +25,7 @@ func (s Service) AddTapBoost(ctx context.Context, uid int64) (domain.UserDocumen
 		return u, domain.ErrBoostOverLimit
 	}
 
-	if u.Taps.TapCount < levelParams.EnergyBoostCost {
+	if u.Points < levelParams.EnergyBoostCost {
 		return u, domain.ErrInsufficientEggs
 	}
 
@@ -59,7 +59,7 @@ func (s Service) AddEnergyBoost(ctx context.Context, uid int64) (domain.UserDocu
 		return u, domain.ErrBoostOverLimit
 	}
 
-	if u.Taps.TapCount < levelParams.EnergyBoostCost {
+	if u.Points < levelParams.EnergyBoostCost {
 		return u, domain.ErrInsufficientEggs
 	}
 

@@ -151,6 +151,32 @@ func (db DB) UpdateUserTapCount(ctx context.Context, uid int64, count int) error
 	return nil
 }
 
+func (db DB) UpdateUserPointsCount(ctx context.Context, uid int64, count int) error {
+	res, err := db.users.UpdateOne(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$inc", Value: bson.M{
+			"points": count,
+		}},
+		{Key: "$set", Value: bson.M{
+			"taps.playedAt": primitive.NewDateTimeFromTime(time.Now()),
+			"playedAt":      primitive.NewDateTimeFromTime(time.Now()),
+		}},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return domain.ErrNoUser
+	}
+
+	return nil
+}
+
 func (db DB) UpdateUserTapBoostCount(ctx context.Context, uid int64, cost int) error {
 	res, err := db.users.UpdateOne(ctx, bson.D{
 		{Key: "profile.telegram.id", Value: uid},

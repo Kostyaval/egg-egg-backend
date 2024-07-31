@@ -9,6 +9,7 @@ import (
 
 type tapDB interface {
 	UpdateUserTapCount(ctx context.Context, uid int64, count int) error
+	UpdateUserPointsCount(ctx context.Context, uid int64, count int) error
 	UpdateUserTapBoostCount(ctx context.Context, uid int64, cost int) error
 	UpdateUserEnergyBoostCount(ctx context.Context, uid int64, cost int) error
 	UpdateUserEnergyCount(ctx context.Context, uid int64, energyCount int) error
@@ -58,7 +59,12 @@ func (s Service) AddTap(ctx context.Context, uid int64, tapCount int) (domain.Us
 
 	totalPoints := tapCount * pointsPerTap
 
-	err = s.db.UpdateUserTapCount(ctx, uid, totalPoints)
+	err = s.db.UpdateUserTapCount(ctx, uid, tapCount)
+	if err != nil {
+		return u, err
+	}
+
+	err = s.db.UpdateUserPointsCount(ctx, uid, totalPoints)
 	if err != nil {
 		return u, err
 	}
