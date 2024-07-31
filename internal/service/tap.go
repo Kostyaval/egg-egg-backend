@@ -62,6 +62,7 @@ func (s Service) AddTap(ctx context.Context, uid int64, tapCount int) (domain.Us
 	energyNeededForTaps := tapCount * pointsPerTap
 
 	levelParams := s.cfg.Rules.Taps[u.Level]
+
 	userMaxEnergy, err := getUserMaxEnergy(u, levelParams.Energy.BoostPackage)
 	if err != nil {
 		return u, err
@@ -223,7 +224,7 @@ func (s Service) AddEnergyBoost(ctx context.Context, uid int64) (domain.UserDocu
 	}
 
 	if u.Points < levelParams.Energy.BoostCost {
-		return u, domain.ErrInsufficientEggs
+		return u, domain.ErrNoPoints
 	}
 
 	err = s.db.UpdateUserEnergyBoostCount(ctx, uid, levelParams.Energy.BoostCost, u.Level)

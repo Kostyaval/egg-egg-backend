@@ -186,7 +186,7 @@ func (db DB) UpdateUserTapBoostCount(ctx context.Context, uid int64, cost int) e
 		{Key: "$inc", Value: bson.M{
 			"taps.levelTapBoosts": 1,
 			"taps.tapBoosts":      1,
-			"taps.tapCount":       -cost,
+			"points":              -cost,
 		}},
 		{Key: "$set", Value: bson.M{
 			"playedAt": primitive.NewDateTimeFromTime(time.Now()),
