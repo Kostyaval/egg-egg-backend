@@ -20,6 +20,7 @@ func (l handlerLogger) Message(c tele.Context) *slog.Logger {
 }
 
 type handler struct {
+	cfg   *config.Config
 	log   *handlerLogger
 	rules *config.Rules
 	db    DBInterface

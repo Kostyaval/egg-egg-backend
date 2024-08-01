@@ -11,8 +11,20 @@ type UserDocument struct {
 	Points         int                `bson:"points" json:"points"`
 	ReferralPoints int                `bson:"referralPoints" json:"referralPoints"`
 	Level          Level              `bson:"level" json:"level"`
+	Taps           Taps               `bson:"taps" json:"taps"`
 	DailyReward    DailyReward        `bson:"dailyReward" json:"dailyReward"`
 	AutoClicker    AutoClicker        `bson:"autoClicker" json:"autoClicker"`
+}
+
+type Taps struct {
+	TapCount            int                `bson:"tapCount" json:"tapCount"`
+	TotalTapBoosts      int                `bson:"tapBoosts" json:"tapBoosts"`
+	TotalEnergyBoosts   []int              `bson:"energyBoosts" json:"energyBoosts"`
+	LevelTapBoosts      int                `bson:"levelTapBoosts" json:"levelTapBoosts"`
+	EnergyCount         int                `bson:"energyCount" json:"energyCount"`
+	PlayedAt            primitive.DateTime `bson:"playedAt" json:"playedAt"`
+	EnergyRechargeCount int                `bson:"energyRechargeCount" json:"energyRechargeCount"`
+	EnergyRechargedAt   primitive.DateTime `bson:"energyRechargedAt" json:"energyRechargedAt"`
 }
 
 type UserProfile struct {

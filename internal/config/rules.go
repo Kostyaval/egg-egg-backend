@@ -9,6 +9,7 @@ type Rules struct {
 	Referral     ReferralRules    `yaml:"referral"`
 	DailyRewards []int            `yaml:"dailyRewards"`
 	AutoClicker  AutoClickerRules `yaml:"autoClicker"`
+	Taps         TapRules         `yaml:"taps"`
 }
 
 // ReferralRules has values of bonus points and index is an egg level.
@@ -28,4 +29,18 @@ type AutoClickerRules struct {
 	TTL      time.Duration `yaml:"ttl"`
 	Cost     int           `yaml:"cost"`
 	MinLevel domain.Level  `yaml:"minLevel"`
+}
+
+type TapRules []struct {
+	Points int `yaml:"points"`
+	Energy struct {
+		Max                      int     `yaml:"max"`
+		RecoverySeconds          int     `yaml:"recoverySeconds"`
+		BoostLimit               int     `yaml:"boostLimit"`
+		BoostPackage             int     `yaml:"boostPackage"`
+		BoostCost                int     `yaml:"boostCost"`
+		RechargeSeconds          float64 `yaml:"rechargeSeconds"`
+		FullRechargeCount        int     `yaml:"fullRechargeCount"`
+		FullRechargeDelaySeconds int     `yaml:"fullRechargeDelaySeconds"`
+	} `yaml:"energy"`
 }

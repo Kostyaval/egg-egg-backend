@@ -15,6 +15,7 @@ type ServiceInterface interface {
 	jwtRefreshService
 	jwtDeleteService
 	nicknameService
+	tapService
 	friendsService
 	leaderboardService
 	autoClickerService
@@ -71,10 +72,14 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 	api.Post("/me/nickname", h.createUserNickname)
 
 	api.Use(middlewareJWT(&middlewareJWTConfig{log: h.log, cfg: cfg.JWT, mustNickname: true}))
+	api.Put("/me/tap", h.addTap)
+	api.Put("/me/tap/energy", h.rechargeTapEnergy)
+	api.Put("/me/tap/boost", h.addTapBoost)
+	api.Post("/me/tap/autoclicker", h.createAutoClicker)
+	api.Put("/me/tap/autoclicker", h.updateAutoClicker)
+
 	api.Get("/me/friends", h.readUserFriends)
 	api.Get("/leaderboard", h.leaderboard)
-	api.Post("/me/autoclicker", h.createAutoClicker)
-	api.Put("/me/autoclicker", h.updateAutoClicker)
 
 	return app
 }

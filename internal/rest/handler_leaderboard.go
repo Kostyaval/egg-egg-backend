@@ -60,8 +60,8 @@ func (h handler) leaderboard(c *fiber.Ctx) error {
 	if err != nil {
 		log.Error("ReadLeaderboard", slog.String("error", err.Error()))
 
-		if errors.Is(err, domain.ErrNoUser) {
-			return c.Status(fiber.StatusForbidden).Send(nil)
+		if errors.Is(err, domain.ErrNoUser) || errors.Is(err, domain.ErrGhostUser) || errors.Is(err, domain.ErrBannedUser) {
+			return newHTTPError(fiber.StatusForbidden, err.Error())
 		}
 
 		return newHTTPError(fiber.StatusInternalServerError, "read leaderboard").withDetails(err)

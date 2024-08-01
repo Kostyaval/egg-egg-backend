@@ -831,6 +831,53 @@ func (_c *DBInterface_ReadUserFriends_Call) RunAndReturn(run func(context.Contex
 	return _c
 }
 
+// ResetUserEnergyRechargeCount provides a mock function with given fields: ctx, uid
+func (_m *DBInterface) ResetUserEnergyRechargeCount(ctx context.Context, uid int64) error {
+	ret := _m.Called(ctx, uid)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ResetUserEnergyRechargeCount")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = rf(ctx, uid)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DBInterface_ResetUserEnergyRechargeCount_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ResetUserEnergyRechargeCount'
+type DBInterface_ResetUserEnergyRechargeCount_Call struct {
+	*mock.Call
+}
+
+// ResetUserEnergyRechargeCount is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uid int64
+func (_e *DBInterface_Expecter) ResetUserEnergyRechargeCount(ctx interface{}, uid interface{}) *DBInterface_ResetUserEnergyRechargeCount_Call {
+	return &DBInterface_ResetUserEnergyRechargeCount_Call{Call: _e.mock.On("ResetUserEnergyRechargeCount", ctx, uid)}
+}
+
+func (_c *DBInterface_ResetUserEnergyRechargeCount_Call) Run(run func(ctx context.Context, uid int64)) *DBInterface_ResetUserEnergyRechargeCount_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64))
+	})
+	return _c
+}
+
+func (_c *DBInterface_ResetUserEnergyRechargeCount_Call) Return(_a0 error) *DBInterface_ResetUserEnergyRechargeCount_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *DBInterface_ResetUserEnergyRechargeCount_Call) RunAndReturn(run func(context.Context, int64) error) *DBInterface_ResetUserEnergyRechargeCount_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // SetDailyReward provides a mock function with given fields: ctx, uid, points, reward
 func (_m *DBInterface) SetDailyReward(ctx context.Context, uid int64, points int, reward *domain.DailyReward) error {
 	ret := _m.Called(ctx, uid, points, reward)
@@ -986,6 +1033,150 @@ func (_c *DBInterface_UpdateUserAutoClicker_Call) RunAndReturn(run func(context.
 	return _c
 }
 
+// UpdateUserEnergyBoostCount provides a mock function with given fields: ctx, uid, cost, level
+func (_m *DBInterface) UpdateUserEnergyBoostCount(ctx context.Context, uid int64, cost int, level domain.Level) error {
+	ret := _m.Called(ctx, uid, cost, level)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateUserEnergyBoostCount")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int, domain.Level) error); ok {
+		r0 = rf(ctx, uid, cost, level)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DBInterface_UpdateUserEnergyBoostCount_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateUserEnergyBoostCount'
+type DBInterface_UpdateUserEnergyBoostCount_Call struct {
+	*mock.Call
+}
+
+// UpdateUserEnergyBoostCount is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uid int64
+//   - cost int
+//   - level domain.Level
+func (_e *DBInterface_Expecter) UpdateUserEnergyBoostCount(ctx interface{}, uid interface{}, cost interface{}, level interface{}) *DBInterface_UpdateUserEnergyBoostCount_Call {
+	return &DBInterface_UpdateUserEnergyBoostCount_Call{Call: _e.mock.On("UpdateUserEnergyBoostCount", ctx, uid, cost, level)}
+}
+
+func (_c *DBInterface_UpdateUserEnergyBoostCount_Call) Run(run func(ctx context.Context, uid int64, cost int, level domain.Level)) *DBInterface_UpdateUserEnergyBoostCount_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64), args[2].(int), args[3].(domain.Level))
+	})
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserEnergyBoostCount_Call) Return(_a0 error) *DBInterface_UpdateUserEnergyBoostCount_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserEnergyBoostCount_Call) RunAndReturn(run func(context.Context, int64, int, domain.Level) error) *DBInterface_UpdateUserEnergyBoostCount_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateUserEnergyCount provides a mock function with given fields: ctx, uid, energyCount
+func (_m *DBInterface) UpdateUserEnergyCount(ctx context.Context, uid int64, energyCount int) error {
+	ret := _m.Called(ctx, uid, energyCount)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateUserEnergyCount")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int) error); ok {
+		r0 = rf(ctx, uid, energyCount)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DBInterface_UpdateUserEnergyCount_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateUserEnergyCount'
+type DBInterface_UpdateUserEnergyCount_Call struct {
+	*mock.Call
+}
+
+// UpdateUserEnergyCount is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uid int64
+//   - energyCount int
+func (_e *DBInterface_Expecter) UpdateUserEnergyCount(ctx interface{}, uid interface{}, energyCount interface{}) *DBInterface_UpdateUserEnergyCount_Call {
+	return &DBInterface_UpdateUserEnergyCount_Call{Call: _e.mock.On("UpdateUserEnergyCount", ctx, uid, energyCount)}
+}
+
+func (_c *DBInterface_UpdateUserEnergyCount_Call) Run(run func(ctx context.Context, uid int64, energyCount int)) *DBInterface_UpdateUserEnergyCount_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64), args[2].(int))
+	})
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserEnergyCount_Call) Return(_a0 error) *DBInterface_UpdateUserEnergyCount_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserEnergyCount_Call) RunAndReturn(run func(context.Context, int64, int) error) *DBInterface_UpdateUserEnergyCount_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateUserEnergyRechargeCount provides a mock function with given fields: ctx, uid
+func (_m *DBInterface) UpdateUserEnergyRechargeCount(ctx context.Context, uid int64) error {
+	ret := _m.Called(ctx, uid)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateUserEnergyRechargeCount")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
+		r0 = rf(ctx, uid)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DBInterface_UpdateUserEnergyRechargeCount_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateUserEnergyRechargeCount'
+type DBInterface_UpdateUserEnergyRechargeCount_Call struct {
+	*mock.Call
+}
+
+// UpdateUserEnergyRechargeCount is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uid int64
+func (_e *DBInterface_Expecter) UpdateUserEnergyRechargeCount(ctx interface{}, uid interface{}) *DBInterface_UpdateUserEnergyRechargeCount_Call {
+	return &DBInterface_UpdateUserEnergyRechargeCount_Call{Call: _e.mock.On("UpdateUserEnergyRechargeCount", ctx, uid)}
+}
+
+func (_c *DBInterface_UpdateUserEnergyRechargeCount_Call) Run(run func(ctx context.Context, uid int64)) *DBInterface_UpdateUserEnergyRechargeCount_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64))
+	})
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserEnergyRechargeCount_Call) Return(_a0 error) *DBInterface_UpdateUserEnergyRechargeCount_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserEnergyRechargeCount_Call) RunAndReturn(run func(context.Context, int64) error) *DBInterface_UpdateUserEnergyRechargeCount_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdateUserJWT provides a mock function with given fields: ctx, uid, jti
 func (_m *DBInterface) UpdateUserJWT(ctx context.Context, uid int64, jti uuid.UUID) error {
 	ret := _m.Called(ctx, uid, jti)
@@ -1079,6 +1270,150 @@ func (_c *DBInterface_UpdateUserNickname_Call) Return(_a0 error) *DBInterface_Up
 }
 
 func (_c *DBInterface_UpdateUserNickname_Call) RunAndReturn(run func(context.Context, int64, string, uuid.UUID) error) *DBInterface_UpdateUserNickname_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateUserPointsCount provides a mock function with given fields: ctx, uid, count
+func (_m *DBInterface) UpdateUserPointsCount(ctx context.Context, uid int64, count int) error {
+	ret := _m.Called(ctx, uid, count)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateUserPointsCount")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int) error); ok {
+		r0 = rf(ctx, uid, count)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DBInterface_UpdateUserPointsCount_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateUserPointsCount'
+type DBInterface_UpdateUserPointsCount_Call struct {
+	*mock.Call
+}
+
+// UpdateUserPointsCount is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uid int64
+//   - count int
+func (_e *DBInterface_Expecter) UpdateUserPointsCount(ctx interface{}, uid interface{}, count interface{}) *DBInterface_UpdateUserPointsCount_Call {
+	return &DBInterface_UpdateUserPointsCount_Call{Call: _e.mock.On("UpdateUserPointsCount", ctx, uid, count)}
+}
+
+func (_c *DBInterface_UpdateUserPointsCount_Call) Run(run func(ctx context.Context, uid int64, count int)) *DBInterface_UpdateUserPointsCount_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64), args[2].(int))
+	})
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserPointsCount_Call) Return(_a0 error) *DBInterface_UpdateUserPointsCount_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserPointsCount_Call) RunAndReturn(run func(context.Context, int64, int) error) *DBInterface_UpdateUserPointsCount_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateUserTapBoostCount provides a mock function with given fields: ctx, uid, cost
+func (_m *DBInterface) UpdateUserTapBoostCount(ctx context.Context, uid int64, cost int) error {
+	ret := _m.Called(ctx, uid, cost)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateUserTapBoostCount")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int) error); ok {
+		r0 = rf(ctx, uid, cost)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DBInterface_UpdateUserTapBoostCount_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateUserTapBoostCount'
+type DBInterface_UpdateUserTapBoostCount_Call struct {
+	*mock.Call
+}
+
+// UpdateUserTapBoostCount is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uid int64
+//   - cost int
+func (_e *DBInterface_Expecter) UpdateUserTapBoostCount(ctx interface{}, uid interface{}, cost interface{}) *DBInterface_UpdateUserTapBoostCount_Call {
+	return &DBInterface_UpdateUserTapBoostCount_Call{Call: _e.mock.On("UpdateUserTapBoostCount", ctx, uid, cost)}
+}
+
+func (_c *DBInterface_UpdateUserTapBoostCount_Call) Run(run func(ctx context.Context, uid int64, cost int)) *DBInterface_UpdateUserTapBoostCount_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64), args[2].(int))
+	})
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserTapBoostCount_Call) Return(_a0 error) *DBInterface_UpdateUserTapBoostCount_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserTapBoostCount_Call) RunAndReturn(run func(context.Context, int64, int) error) *DBInterface_UpdateUserTapBoostCount_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateUserTapCount provides a mock function with given fields: ctx, uid, count
+func (_m *DBInterface) UpdateUserTapCount(ctx context.Context, uid int64, count int) error {
+	ret := _m.Called(ctx, uid, count)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateUserTapCount")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int) error); ok {
+		r0 = rf(ctx, uid, count)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DBInterface_UpdateUserTapCount_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateUserTapCount'
+type DBInterface_UpdateUserTapCount_Call struct {
+	*mock.Call
+}
+
+// UpdateUserTapCount is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uid int64
+//   - count int
+func (_e *DBInterface_Expecter) UpdateUserTapCount(ctx interface{}, uid interface{}, count interface{}) *DBInterface_UpdateUserTapCount_Call {
+	return &DBInterface_UpdateUserTapCount_Call{Call: _e.mock.On("UpdateUserTapCount", ctx, uid, count)}
+}
+
+func (_c *DBInterface_UpdateUserTapCount_Call) Run(run func(ctx context.Context, uid int64, count int)) *DBInterface_UpdateUserTapCount_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64), args[2].(int))
+	})
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserTapCount_Call) Return(_a0 error) *DBInterface_UpdateUserTapCount_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserTapCount_Call) RunAndReturn(run func(context.Context, int64, int) error) *DBInterface_UpdateUserTapCount_Call {
 	_c.Call.Return(run)
 	return _c
 }

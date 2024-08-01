@@ -44,6 +44,80 @@ referral:
       plain: 0
       premium: 0
 
+# taps
+taps:
+  # egg level: 0
+  - points: 1
+    energy:
+      max: 500
+      recoverySeconds: 1800
+      boostLimit: 0
+      boostPackage: 500
+      boostCost: 5000
+      rechargeSeconds: 3.6
+      fullRechargeCount: 5
+      fullRechargeDelaySeconds: 3600
+
+  # egg level: 1
+  - points: 1
+    energy:
+      max: 1000
+      recoverySeconds: 3600
+      boostLimit: 1
+      boostPackage: 500
+      boostCost: 5000
+      rechargeSeconds: 3.6
+      fullRechargeCount: 5
+      fullRechargeDelaySeconds: 3600
+
+  # egg level: 2
+  - points: 1
+    energy:
+      max: 2000
+      recoverySeconds: 7200
+      boostLimit: 2
+      boostPackage: 500
+      boostCost: 5000
+      rechargeSeconds: 3.6
+      fullRechargeCount: 5
+      fullRechargeDelaySeconds: 3600
+
+  # egg level: 3
+  - points: 1
+    energy:
+      max: 3500
+      recoverySeconds: 12600
+      boostLimit: 3
+      boostPackage: 500
+      boostCost: 5000
+      rechargeSeconds: 3.6
+      fullRechargeCount: 5
+      fullRechargeDelaySeconds: 3600
+
+  # egg level: 4
+  - points: 1
+    energy:
+      max: 5500
+      recoverySeconds: 19800
+      boostLimit: 4
+      boostPackage: 500
+      boostCost: 5000
+      rechargeSeconds: 3.6
+      fullRechargeCount: 5
+      fullRechargeDelaySeconds: 3600
+
+  # egg level: 5
+  - points: 1
+    energy:
+      max: 8000
+      recoverySeconds: 28800
+      boostLimit: 5
+      boostPackage: 500
+      boostCost: 5000
+      rechargeSeconds: 3.6
+      fullRechargeCount: 5
+      fullRechargeDelaySeconds: 3600
+
 # daily rewards egg points
 dailyRewards:
   - 1000

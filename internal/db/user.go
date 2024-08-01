@@ -54,11 +54,15 @@ func (db DB) GetUserProfileWithID(ctx context.Context, uid int64) (domain.UserPr
 	return result.Profile, nil
 }
 
-func (db DB) CreateUser(ctx context.Context, user *domain.UserProfile) error {
+func (db DB) CreateUser(ctx context.Context, user *domain.UserProfile, levelCount int) error {
 	_, err := db.users.InsertOne(ctx, bson.D{
 		{Key: "profile", Value: user},
 		{Key: "level", Value: domain.Lv0},
 		{Key: "points", Value: 0},
+		{Key: "taps", Value: &domain.Taps{
+			TapCount:          0,
+			TotalEnergyBoosts: make([]int, levelCount),
+		}},
 		{Key: "referralPoints", Value: 0},
 		{Key: "playedAt", Value: primitive.NewDateTimeFromTime(time.Now().UTC())},
 		{Key: "dailyReward", Value: domain.DailyReward{
@@ -116,6 +120,180 @@ func (db DB) UpdateUserNickname(ctx context.Context, uid int64, nickname string,
 
 	if res.ModifiedCount != 1 {
 		return domain.ErrConflictNickname
+	}
+
+	return nil
+}
+
+func (db DB) UpdateUserTapCount(ctx context.Context, uid int64, count int) error {
+	res, err := db.users.UpdateOne(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$inc", Value: bson.M{
+			"taps.tapCount": count,
+		}},
+		{Key: "$set", Value: bson.M{
+			"taps.playedAt": primitive.NewDateTimeFromTime(time.Now()),
+			"playedAt":      primitive.NewDateTimeFromTime(time.Now()),
+		}},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return domain.ErrNoUser
+	}
+
+	return nil
+}
+
+func (db DB) UpdateUserPointsCount(ctx context.Context, uid int64, count int) error {
+	res, err := db.users.UpdateOne(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$inc", Value: bson.M{
+			"points": count,
+		}},
+		{Key: "$set", Value: bson.M{
+			"taps.playedAt": primitive.NewDateTimeFromTime(time.Now()),
+			"playedAt":      primitive.NewDateTimeFromTime(time.Now()),
+		}},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return domain.ErrNoUser
+	}
+
+	return nil
+}
+
+func (db DB) UpdateUserTapBoostCount(ctx context.Context, uid int64, cost int) error {
+	res, err := db.users.UpdateOne(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$inc", Value: bson.M{
+			"taps.levelTapBoosts": 1,
+			"taps.tapBoosts":      1,
+			"points":              -cost,
+		}},
+		{Key: "$set", Value: bson.M{
+			"playedAt": primitive.NewDateTimeFromTime(time.Now()),
+		}},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return domain.ErrNoUser
+	}
+
+	return nil
+}
+
+func (db DB) UpdateUserEnergyBoostCount(ctx context.Context, uid int64, cost int, level domain.Level) error {
+	res, err := db.users.UpdateOne(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$inc", Value: bson.M{
+			fmt.Sprintf("taps.energyBoosts.%d", level): 1,
+			"points": -cost,
+		}},
+		{Key: "$set", Value: bson.M{
+			"playedAt": primitive.NewDateTimeFromTime(time.Now()),
+		}},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return domain.ErrNoUser
+	}
+
+	return nil
+}
+
+func (db DB) UpdateUserEnergyCount(ctx context.Context, uid int64, energyCount int) error {
+	res, err := db.users.UpdateOne(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$set", Value: bson.M{
+			"taps.energyCount": energyCount,
+		}},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return domain.ErrNoUser
+	}
+
+	return nil
+}
+
+func (db DB) UpdateUserEnergyRechargeCount(ctx context.Context, uid int64) error {
+	res, err := db.users.UpdateOne(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$inc", Value: bson.M{
+			"taps.energyRechargeCount": 1,
+		}},
+		{Key: "$set", Value: bson.M{
+			"taps.energyRechargedAt": primitive.NewDateTimeFromTime(time.Now()),
+		}},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return domain.ErrNoUser
+	}
+
+	return nil
+}
+
+func (db DB) ResetUserEnergyRechargeCount(ctx context.Context, uid int64) error {
+	res, err := db.users.UpdateOne(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$set", Value: bson.M{
+			"taps.energyRechargeCount": 0,
+		}},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return domain.ErrNoUser
 	}
 
 	return nil
