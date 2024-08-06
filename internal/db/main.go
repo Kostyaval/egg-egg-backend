@@ -11,6 +11,7 @@ import (
 type DB struct {
 	users *mongo.Collection
 	cli   *mongo.Client
+	cfg   *config.Config
 }
 
 func NewMongoDB(cfg *config.Config) (*DB, error) {
@@ -116,6 +117,7 @@ func NewMongoDB(cfg *config.Config) (*DB, error) {
 	return &DB{
 		users: usersCol,
 		cli:   cli,
+		cfg:   cfg,
 	}, nil
 }
 

@@ -79,6 +79,24 @@ func (s Service) GetMe(ctx context.Context, uid int64) (domain.UserDocument, []b
 		}
 	}
 
+	charge, _ := s.userTapEnergy(&u)
+	u.Tap.Energy.Charge = charge
+
+	if u.Tap.Energy.RechargedAt.Time().UTC().Day() != time.Now().UTC().Day() {
+		u, err = s.db.UpdateUserTapEnergyRecharge(
+			ctx,
+			uid,
+			s.cfg.Rules.Taps[u.Level].Energy.RechargeAvailable,
+			u.Tap.Energy.RechargedAt.Time(), // last time is not changed
+			charge,
+			u.Points,
+		)
+
+		if err != nil {
+			return u, nil, err
+		}
+	}
+
 	if err := s.db.UpdateUserJWT(ctx, uid, jwtClaims.JTI); err != nil {
 		return u, nil, err
 	}

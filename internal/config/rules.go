@@ -6,10 +6,11 @@ import (
 )
 
 type Rules struct {
-	Referral     ReferralRules    `yaml:"referral"`
-	DailyRewards []int            `yaml:"dailyRewards"`
-	AutoClicker  AutoClickerRules `yaml:"autoClicker"`
-	Taps         TapRules         `yaml:"taps"`
+	Referral             ReferralRules    `yaml:"referral"`
+	DailyRewards         []int            `yaml:"dailyRewards"`
+	AutoClicker          AutoClickerRules `yaml:"autoClicker"`
+	TapsBaseEnergyCharge int              `yaml:"tapsBaseEnergyCharge"`
+	Taps                 TapRules         `yaml:"taps"`
 }
 
 // ReferralRules has values of bonus points and index is an egg level.
@@ -32,15 +33,14 @@ type AutoClickerRules struct {
 }
 
 type TapRules []struct {
-	Points int `yaml:"points"`
-	Energy struct {
-		Max                      int     `yaml:"max"`
-		RecoverySeconds          int     `yaml:"recoverySeconds"`
-		BoostLimit               int     `yaml:"boostLimit"`
-		BoostPackage             int     `yaml:"boostPackage"`
-		BoostCost                int     `yaml:"boostCost"`
-		RechargeSeconds          float64 `yaml:"rechargeSeconds"`
-		FullRechargeCount        int     `yaml:"fullRechargeCount"`
-		FullRechargeDelaySeconds int     `yaml:"fullRechargeDelaySeconds"`
+	BoostCost      int `yaml:"boostCost"`
+	BoostAvailable int `yaml:"boostAvailable"`
+	Energy         struct {
+		ChargeTimeSegment      time.Duration `yaml:"chargeTimeSegment"`
+		BoostCharge            int           `yaml:"boostCharge"`
+		BoostChargeCost        int           `yaml:"boostChargeCost"`
+		BoostChargeAvailable   int           `yaml:"boostChargeAvailable"`
+		RechargeAvailable      int           `yaml:"rechargeAvailable"`
+		RechargeAvailableAfter time.Duration `yaml:"rechargeAvailableAfter"`
 	} `yaml:"energy"`
 }

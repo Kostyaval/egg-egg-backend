@@ -25,6 +25,11 @@ func (s *Suite) TestGetMe_GhostUser() {
 				ReceivedAt: primitive.NewDateTimeFromTime(time.Now().UTC()),
 				Day:        1,
 			},
+			Tap: domain.UserTap{
+				Energy: domain.UserTapEnergy{
+					RechargedAt: primitive.NewDateTimeFromTime(time.Now().UTC()),
+				},
+			},
 		}
 	)
 
@@ -54,6 +59,11 @@ func (s *Suite) TestGetMe_BannedUser() {
 				ReceivedAt: primitive.NewDateTimeFromTime(time.Now().UTC()),
 				Day:        1,
 			},
+			Tap: domain.UserTap{
+				Energy: domain.UserTapEnergy{
+					RechargedAt: primitive.NewDateTimeFromTime(time.Now().UTC()),
+				},
+			},
 		}
 	)
 
@@ -81,6 +91,11 @@ func (s *Suite) TestGetMe() {
 			DailyReward: domain.DailyReward{
 				ReceivedAt: primitive.NewDateTimeFromTime(time.Now().UTC()),
 				Day:        1,
+			},
+			Tap: domain.UserTap{
+				Energy: domain.UserTapEnergy{
+					RechargedAt: primitive.NewDateTimeFromTime(time.Now().UTC()),
+				},
 			},
 		}
 	)
@@ -122,6 +137,11 @@ func (s *Suite) TestGetMe_DailyReward() {
 			DailyReward: domain.DailyReward{
 				ReceivedAt: primitive.NewDateTimeFromTime(time.Date(now.Year(), now.Month(), now.Day()-1, 0, 0, 0, 0, time.UTC)),
 				Day:        1,
+			},
+			Tap: domain.UserTap{
+				Energy: domain.UserTapEnergy{
+					RechargedAt: primitive.NewDateTimeFromTime(time.Now().UTC()),
+				},
 			},
 		}
 		dailyRewardPoints = doc.Points + s.cfg.Rules.DailyRewards[1]
@@ -235,6 +255,11 @@ func (s *Suite) TestGetMe_AutoClicker() {
 				IsAvailable: true,
 				IsEnabled:   true,
 			},
+			Tap: domain.UserTap{
+				Energy: domain.UserTapEnergy{
+					RechargedAt: primitive.NewDateTimeFromTime(time.Now().UTC()),
+				},
+			},
 		}
 		autoClickerPoints = doc.Points + int(math.Floor(time.Hour.Seconds()/s.cfg.Rules.AutoClicker.Speed.Seconds()))
 	)
@@ -286,6 +311,11 @@ func (s *Suite) TestGetMe_DailyRewardWithAutoClicker() {
 			AutoClicker: domain.AutoClicker{
 				IsAvailable: true,
 				IsEnabled:   true,
+			},
+			Tap: domain.UserTap{
+				Energy: domain.UserTapEnergy{
+					RechargedAt: primitive.NewDateTimeFromTime(time.Now().UTC()),
+				},
 			},
 		}
 		dailyReward       = &domain.DailyReward{Day: 2}
@@ -357,4 +387,80 @@ func (s *Suite) TestGetMe_checkAutoClicker() {
 	// played `cfg.Rules.AutoClicker.TTL - 1 hour` ago
 	u.PlayedAt = primitive.NewDateTimeFromTime(now.Add(-s.cfg.Rules.AutoClicker.TTL).Add(-time.Hour))
 	s.Equal(s.srv.checkAutoClicker(u), startPoints+int(math.Floor(s.cfg.Rules.AutoClicker.TTL.Seconds()/s.cfg.Rules.AutoClicker.Speed.Seconds())))
+}
+
+func (s *Suite) TestGetMe_ResetTapEnergyRechargeAvailable() {
+	var (
+		uid int64 = 1
+		now       = time.Now().UTC().Truncate(time.Second)
+		doc       = domain.UserDocument{
+			Profile: domain.UserProfile{
+				Telegram: domain.TelegramUserProfile{
+					ID: uid,
+				},
+			},
+			PlayedAt: primitive.NewDateTimeFromTime(now.Add(-time.Hour)),
+			Points:   1000,
+			DailyReward: domain.DailyReward{
+				ReceivedAt: primitive.NewDateTimeFromTime(now),
+				Day:        1,
+			},
+			AutoClicker: domain.AutoClicker{
+				IsAvailable: false,
+				IsEnabled:   false,
+			},
+			Tap: domain.UserTap{
+				Energy: domain.UserTapEnergy{
+					Charge:            s.cfg.Rules.TapsBaseEnergyCharge,
+					RechargeAvailable: 0,
+					RechargedAt:       primitive.NewDateTimeFromTime(now.Add(-24 * time.Hour)),
+				},
+			},
+		}
+	)
+
+	ctx := context.Background()
+	jti := mock.MatchedBy(func(_ uuid.UUID) bool { return true })
+
+	s.dbMocks.On("GetUserDocumentWithID", ctx, uid).Return(doc, nil)
+
+	energyRechargeDoc := doc
+	energyRechargeDoc.Tap.Energy.RechargeAvailable = s.cfg.Rules.Taps[doc.Level].Energy.RechargeAvailable
+	s.dbMocks.On(
+		"UpdateUserTapEnergyRecharge",
+		ctx,
+		uid,
+		s.cfg.Rules.Taps[doc.Level].Energy.RechargeAvailable,
+		doc.Tap.Energy.RechargedAt.Time(),
+		s.cfg.Rules.TapsBaseEnergyCharge,
+		doc.Points).Return(energyRechargeDoc, nil)
+
+	s.dbMocks.On("UpdateUserJWT", ctx, uid, jti).Return(nil)
+
+	u, t, err := s.srv.GetMe(ctx, uid)
+	s.Nil(err)
+
+	claims, err := s.cfg.JWT.Decode(t)
+	if err != nil {
+		s.Fail(err.Error())
+	}
+
+	s.Equal(u.Profile.Telegram.ID, claims.UID)
+	s.Equal(u.Profile.Nickname, claims.Nickname)
+	s.Equal(u.Tap.Energy.RechargeAvailable, energyRechargeDoc.Tap.Energy.RechargeAvailable)
+	s.Equal(u.Tap.Energy.RechargedAt, energyRechargeDoc.Tap.Energy.RechargedAt)
+
+	s.dbMocks.AssertExpectations(s.T())
+	s.dbMocks.AssertCalled(s.T(), "GetUserDocumentWithID", ctx, doc.Profile.Telegram.ID)
+	s.dbMocks.AssertNotCalled(s.T(), "SetDailyReward")
+	s.rdbMocks.AssertNotCalled(s.T(), "SetLeaderboardPlayerPoints")
+	s.dbMocks.AssertNotCalled(s.T(), "SetPoints")
+	s.rdbMocks.AssertNotCalled(s.T(), "SetLeaderboardPlayerPoints")
+	s.dbMocks.AssertCalled(s.T(), "UpdateUserTapEnergyRecharge", ctx,
+		u.Profile.Telegram.ID,
+		u.Tap.Energy.RechargeAvailable,
+		u.Tap.Energy.RechargedAt.Time(),
+		u.Tap.Energy.Charge,
+		u.Points)
+	s.dbMocks.AssertCalled(s.T(), "UpdateUserJWT", ctx, doc.Profile.Telegram.ID, jti)
 }

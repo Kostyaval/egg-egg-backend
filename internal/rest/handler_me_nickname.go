@@ -34,7 +34,7 @@ func (h handler) checkUserNickname(c *fiber.Ctx) error {
 
 	if err := c.QueryParser(&req); err != nil {
 		log.Error("QueryParser", slog.String("error", err.Error()))
-		return newHTTPError(fiber.StatusBadRequest, "query string parse error").withDetails(err)
+		return newHTTPError(fiber.StatusBadRequest, "query string parser").withDetails(err)
 	}
 
 	if err := validate.Struct(req); err != nil {

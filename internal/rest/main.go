@@ -73,8 +73,9 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 
 	api.Use(middlewareJWT(&middlewareJWTConfig{log: h.log, cfg: cfg.JWT, mustNickname: true}))
 	api.Put("/me/tap", h.addTap)
-	api.Put("/me/tap/energy", h.rechargeTapEnergy)
 	api.Put("/me/tap/boost", h.addTapBoost)
+	api.Put("/me/tap/energy", h.rechargeTapEnergy)
+	api.Put("/me/tap/energy/boost", h.addTapEnergyBoost)
 	api.Post("/me/tap/autoclicker", h.createAutoClicker)
 	api.Put("/me/tap/autoclicker", h.updateAutoClicker)
 
