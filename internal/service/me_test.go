@@ -431,7 +431,6 @@ func (s *Suite) TestGetMe_ResetTapEnergyRechargeAvailable() {
 		ctx,
 		uid,
 		s.cfg.Rules.Taps[doc.Level].Energy.RechargeAvailable,
-		doc.Tap.Energy.RechargedAt.Time(),
 		s.cfg.Rules.TapsBaseEnergyCharge,
 		doc.Points).Return(energyRechargeDoc, nil)
 
@@ -459,7 +458,6 @@ func (s *Suite) TestGetMe_ResetTapEnergyRechargeAvailable() {
 	s.dbMocks.AssertCalled(s.T(), "UpdateUserTapEnergyRecharge", ctx,
 		u.Profile.Telegram.ID,
 		u.Tap.Energy.RechargeAvailable,
-		u.Tap.Energy.RechargedAt.Time(),
 		u.Tap.Energy.Charge,
 		u.Points)
 	s.dbMocks.AssertCalled(s.T(), "UpdateUserJWT", ctx, doc.Profile.Telegram.ID, jti)

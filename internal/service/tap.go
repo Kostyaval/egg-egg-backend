@@ -11,7 +11,7 @@ type tapDB interface {
 	UpdateUserTap(ctx context.Context, uid int64, tap domain.UserTap, points int) (domain.UserDocument, error)
 	UpdateUserTapBoost(ctx context.Context, uid int64, boost []int, points int) (domain.UserDocument, error)
 	UpdateUserTapEnergyBoost(ctx context.Context, uid int64, boost []int, charge int, points int) (domain.UserDocument, error)
-	UpdateUserTapEnergyRecharge(ctx context.Context, uid int64, available int, at time.Time, chargeMax int, points int) (domain.UserDocument, error)
+	UpdateUserTapEnergyRecharge(ctx context.Context, uid int64, available int, chargeMax int, points int) (domain.UserDocument, error)
 }
 
 func (s Service) AddTap(ctx context.Context, uid int64, tapCount int) (domain.UserDocument, error) {
@@ -117,6 +117,7 @@ func (s Service) RechargeTapEnergy(ctx context.Context, uid int64) (domain.UserD
 	}
 
 	if s.cfg.Rules.Taps[u.Level].Energy.RechargeAvailableAfter.Seconds() > 0 &&
+		u.Tap.Energy.RechargeAvailable < s.cfg.Rules.Taps[u.Level].Energy.RechargeAvailable &&
 		now.Sub(u.Tap.Energy.RechargedAt.Time().UTC()).Seconds() < s.cfg.Rules.Taps[u.Level].Energy.RechargeAvailableAfter.Seconds() {
 		return u, domain.ErrNoEnergyRecharge
 	}
@@ -130,7 +131,7 @@ func (s Service) RechargeTapEnergy(ctx context.Context, uid int64) (domain.UserD
 		}
 	}
 
-	return s.db.UpdateUserTapEnergyRecharge(ctx, uid, u.Tap.Energy.RechargeAvailable-1, now, chargeMax, pts)
+	return s.db.UpdateUserTapEnergyRecharge(ctx, uid, u.Tap.Energy.RechargeAvailable-1, chargeMax, pts)
 }
 
 func (s Service) AddTapBoost(ctx context.Context, uid int64) (domain.UserDocument, error) {

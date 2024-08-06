@@ -328,7 +328,7 @@ func (s *Suite) TestRechargeTapEnergy_NotAvailableAfter() {
 		Level: 0,
 		Tap: domain.UserTap{
 			Energy: domain.UserTapEnergy{
-				RechargeAvailable: 5,
+				RechargeAvailable: s.cfg.Rules.Taps[0].Energy.RechargeAvailable - 1,
 				RechargedAt:       primitive.NewDateTimeFromTime(now),
 			},
 		},
@@ -344,6 +344,45 @@ func (s *Suite) TestRechargeTapEnergy_NotAvailableAfter() {
 	s.dbMocks.AssertCalled(s.T(), "GetUserDocumentWithID", ctx, doc.Profile.Telegram.ID)
 	s.rdbMocks.AssertNotCalled(s.T(), "SetLeaderboardPlayerPoints")
 	s.dbMocks.AssertNotCalled(s.T(), "UpdateUserTapEnergyRecharge")
+}
+
+func (s *Suite) TestRechargeTapEnergy_AvailableNoDelay() {
+	now := time.Now().UTC().Truncate(time.Second)
+	doc := domain.UserDocument{
+		Profile: domain.UserProfile{
+			Telegram: domain.TelegramUserProfile{
+				ID: 1,
+			},
+		},
+		Points: 10,
+		Level:  0,
+		Tap: domain.UserTap{
+			Energy: domain.UserTapEnergy{
+				Charge:            4,
+				RechargeAvailable: s.cfg.Rules.Taps[0].Energy.RechargeAvailable,
+				RechargedAt:       primitive.NewDateTimeFromTime(now),
+			},
+		},
+	}
+
+	ctx := context.Background()
+	s.dbMocks.On("GetUserDocumentWithID", ctx, doc.Profile.Telegram.ID).Return(doc, nil)
+
+	doc.Tap.Energy.RechargeAvailable--
+	doc.Tap.Energy.Charge = s.cfg.Rules.TapsBaseEnergyCharge
+	s.dbMocks.On("UpdateUserTapEnergyRecharge", ctx, doc.Profile.Telegram.ID, doc.Tap.Energy.RechargeAvailable, s.cfg.Rules.TapsBaseEnergyCharge, 10).Return(doc, nil)
+
+	u, err := s.srv.RechargeTapEnergy(ctx, doc.Profile.Telegram.ID)
+	s.NoError(err)
+
+	s.Equal(u.Points, 10)
+	s.Equal(u.Tap.Energy.Charge, s.cfg.Rules.TapsBaseEnergyCharge)
+	s.Equal(u.Tap.Energy.RechargeAvailable, doc.Tap.Energy.RechargeAvailable)
+
+	s.dbMocks.AssertExpectations(s.T())
+	s.dbMocks.AssertCalled(s.T(), "GetUserDocumentWithID", ctx, doc.Profile.Telegram.ID)
+	s.rdbMocks.AssertNotCalled(s.T(), "SetLeaderboardPlayerPoints")
+	s.dbMocks.AssertCalled(s.T(), "UpdateUserTapEnergyRecharge", ctx, doc.Profile.Telegram.ID, doc.Tap.Energy.RechargeAvailable, s.cfg.Rules.TapsBaseEnergyCharge, 10)
 }
 
 func (s *Suite) TestRechargeTapEnergy() {
@@ -372,7 +411,7 @@ func (s *Suite) TestRechargeTapEnergy() {
 	d.Tap.Energy.RechargedAt = primitive.NewDateTimeFromTime(now)
 	d.Tap.Energy.Charge = s.cfg.Rules.TapsBaseEnergyCharge
 	s.dbMocks.On("GetUserDocumentWithID", ctx, doc.Profile.Telegram.ID).Return(doc, nil)
-	s.dbMocks.On("UpdateUserTapEnergyRecharge", ctx, doc.Profile.Telegram.ID, d.Tap.Energy.RechargeAvailable, now, s.cfg.Rules.TapsBaseEnergyCharge, 100).Return(d, nil)
+	s.dbMocks.On("UpdateUserTapEnergyRecharge", ctx, doc.Profile.Telegram.ID, d.Tap.Energy.RechargeAvailable, s.cfg.Rules.TapsBaseEnergyCharge, 100).Return(d, nil)
 
 	u, err := s.srv.RechargeTapEnergy(ctx, doc.Profile.Telegram.ID)
 	s.NoError(err)
@@ -382,7 +421,7 @@ func (s *Suite) TestRechargeTapEnergy() {
 	s.dbMocks.AssertExpectations(s.T())
 	s.dbMocks.AssertCalled(s.T(), "GetUserDocumentWithID", ctx, doc.Profile.Telegram.ID)
 	// TODO fix error Should have called with given arguments
-	//s.dbMocks.AssertCalled(s.T(), "UpdateUserTapEnergyRecharge", ctx, u.Profile.Telegram.ID, u.Tap.Energy.RechargeAvailable, u.Tap.Energy.RechargedAt.Time(), u.Tap.Energy.Charge, u.Points)
+	//s.dbMocks.AssertCalled(s.T(), "UpdateUserTapEnergyRecharge", ctx, u.Profile.Telegram.ID, u.Tap.Energy.RechargeAvailable, u.Tap.Energy.Charge, u.Points)
 	s.rdbMocks.AssertNotCalled(s.T(), "SetLeaderboardPlayerPoints")
 }
 
@@ -442,7 +481,6 @@ func (s *Suite) TestRechargeTapEnergy_AutoClicker() {
 		ctx,
 		uDoc.Profile.Telegram.ID,
 		uDoc.Tap.Energy.RechargeAvailable,
-		now,
 		s.cfg.Rules.TapsBaseEnergyCharge,
 		2100,
 	).Return(uDoc, nil)
@@ -456,6 +494,6 @@ func (s *Suite) TestRechargeTapEnergy_AutoClicker() {
 	s.dbMocks.AssertExpectations(s.T())
 	s.dbMocks.AssertCalled(s.T(), "GetUserDocumentWithID", ctx, doc.Profile.Telegram.ID)
 	// TODO fix error Should have called with given arguments
-	//s.dbMocks.AssertCalled(s.T(), "UpdateUserTapEnergyRecharge", ctx, u.Profile.Telegram.ID, u.Tap.Energy.RechargeAvailable, u.Tap.Energy.RechargedAt.Time(), u.Tap.Energy.Charge, u.Points)
+	//s.dbMocks.AssertCalled(s.T(), "UpdateUserTapEnergyRecharge", ctx, u.Profile.Telegram.ID, u.Tap.Energy.RechargeAvailable, u.Tap.Energy.Charge, u.Points)
 	s.rdbMocks.AssertCalled(s.T(), "SetLeaderboardPlayerPoints", ctx, doc.Profile.Telegram.ID, u.Level, u.Points)
 }
