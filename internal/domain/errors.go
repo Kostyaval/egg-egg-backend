@@ -13,7 +13,6 @@ var (
 	ErrJWTDecode        = errors.New("jwt decode")
 	ErrNoJWT            = errors.New("jwt is not found")
 	ErrCorruptJWT       = errors.New("jwt corrupt")
-	ErrCorruptTapEnergy = errors.New("corrupt tap energy")
 	ErrTapOverLimit     = errors.New("tap over limit")
 	ErrNoTapEnergy      = errors.New("no tap energy")
 	ErrNoBoost          = errors.New("no boost")
