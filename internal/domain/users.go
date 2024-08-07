@@ -14,6 +14,7 @@ type UserDocument struct {
 	Tap            UserTap            `bson:"tap" json:"tap"`
 	DailyReward    DailyReward        `bson:"dailyReward" json:"dailyReward"`
 	AutoClicker    AutoClicker        `bson:"autoClicker" json:"autoClicker"`
+	Tasks          UserTasks          `bson:"tasks" json:"tasks"`
 }
 
 type UserTap struct {
@@ -64,4 +65,10 @@ type DailyReward struct {
 type AutoClicker struct {
 	IsEnabled   bool `bson:"isEnabled" json:"isEnabled"`
 	IsAvailable bool `bson:"isAvailable" json:"isAvailable"`
+}
+
+type UserTasks struct {
+	Telegram []int `yaml:"telegram"`
+	Twitter  []int `yaml:"twitter"`
+	Youtube  []int `yaml:"youtube"`
 }

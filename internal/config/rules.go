@@ -1,8 +1,9 @@
 package config
 
 import (
-	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"time"
+
+	"gitlab.com/egg-be/egg-backend/internal/domain"
 )
 
 type Rules struct {
@@ -11,6 +12,7 @@ type Rules struct {
 	AutoClicker          AutoClickerRules `yaml:"autoClicker"`
 	TapsBaseEnergyCharge int              `yaml:"tapsBaseEnergyCharge"`
 	Taps                 TapRules         `yaml:"taps"`
+	Tasks                TasksRules       `yaml:"tasks"`
 }
 
 // ReferralRules has values of bonus points and index is an egg level.
@@ -43,4 +45,10 @@ type TapRules []struct {
 		RechargeAvailable      int           `yaml:"rechargeAvailable"`
 		RechargeAvailableAfter time.Duration `yaml:"rechargeAvailableAfter"`
 	} `yaml:"energy"`
+}
+
+type TasksRules struct {
+	Telegram []int64 `yaml:"telegram"`
+	Twitter  []int   `yaml:"twitter"`
+	Youtube  []int   `yaml:"youtube"`
 }

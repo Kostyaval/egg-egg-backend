@@ -81,6 +81,11 @@ func (db DB) CreateUser(ctx context.Context, user *domain.UserProfile) error {
 			IsAvailable: false,
 			IsEnabled:   false,
 		}},
+		{Key: "tasks", Value: domain.UserTasks{
+			Telegram: []int{},
+			Twitter:  []int{},
+			Youtube:  []int{},
+		}},
 	})
 	if err != nil {
 		return err
@@ -210,6 +215,58 @@ func (db DB) UpdateUserAutoClicker(ctx context.Context, uid int64, isEnabled boo
 	}
 
 	return doc, nil
+}
+
+func (db DB) SetUserIsTelegramChannelMember(ctx context.Context, uid int64, channelID int64) error {
+	var doc domain.UserDocument
+
+	opt := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	err := db.users.FindOneAndUpdate(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$addToSet", Value: bson.M{
+			"tasks.telegram": channelID,
+		}},
+	}, opt).Decode(&doc)
+
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return domain.ErrNoUser
+		}
+
+		return err
+	}
+
+	return nil
+}
+
+func (db DB) SetUserIsTelegramChannelLeft(ctx context.Context, uid int64, channelID int64) error {
+	var doc domain.UserDocument
+
+	opt := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	err := db.users.FindOneAndUpdate(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$pull", Value: bson.M{
+			"tasks.telegram": channelID,
+		}},
+	}, opt).Decode(&doc)
+
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return domain.ErrNoUser
+		}
+
+		return err
+	}
+
+	return nil
 }
 
 func (db DB) DeleteAllUsers(ctx context.Context) error {
