@@ -19,6 +19,8 @@ type meDB interface {
 	SetDailyReward(ctx context.Context, uid int64, points int, reward *domain.DailyReward) error
 	CreateUserAutoClicker(ctx context.Context, uid int64, cost int) (domain.UserDocument, error)
 	UpdateUserAutoClicker(ctx context.Context, uid int64, isEnabled bool) (domain.UserDocument, error)
+	ReadTotalUserReferrals(ctx context.Context, uid int64) (int64, error)
+	UpdateUserLevel(ctx context.Context, uid int64, level int, cost int) (domain.UserDocument, error)
 }
 
 type meRedis interface {
@@ -287,4 +289,60 @@ func (s Service) UpdateAutoClicker(ctx context.Context, uid int64) (domain.UserD
 	}
 
 	return s.db.UpdateUserAutoClicker(ctx, uid, !user.AutoClicker.IsEnabled)
+}
+
+func (s Service) UpgradeLevel(ctx context.Context, uid int64) (domain.UserDocument, error) {
+	user, err := s.db.GetUserDocumentWithID(ctx, uid)
+	if err != nil {
+		return user, err
+	}
+
+	if user.Profile.IsGhost {
+		return user, domain.ErrGhostUser
+	}
+
+	if user.Profile.HasBan {
+		return user, domain.ErrBannedUser
+	}
+
+	if int(user.Level)+1 >= len(s.cfg.Rules.Taps) {
+		return user, domain.ErrReachedLevelLimit
+	}
+
+	if user.Points < s.cfg.Rules.Taps[user.Level].NextLevel.Cost {
+		return user, domain.ErrNoPoints
+	}
+
+	if len(s.cfg.Rules.Taps[user.Level].NextLevel.Tasks.Telegram) > 0 {
+		if len(user.Tasks.Telegram) != len(s.cfg.Rules.Taps[user.Level].NextLevel.Tasks.Telegram) {
+			return user, domain.ErrNotFollowedTelegramChannel
+		}
+
+		telegramTasksMap := make(map[int]bool)
+		for _, value := range s.cfg.Rules.Taps[user.Level].NextLevel.Tasks.Telegram {
+			telegramTasksMap[value] = true
+		}
+		for _, value := range user.Tasks.Telegram {
+			if !telegramTasksMap[value] {
+				return user, domain.ErrNotFollowedTelegramChannel
+			}
+		}
+	}
+
+	totalReferrals, err := s.db.ReadTotalUserReferrals(ctx, uid)
+	if err != nil {
+		return user, err
+	}
+
+	if totalReferrals < int64(s.cfg.Rules.Taps[user.Level].NextLevel.Tasks.Referral) {
+		return user, domain.ErrNotEnoughReferrals
+	}
+
+	user, err = s.db.UpdateUserLevel(ctx, uid, int(user.Level)+1, s.cfg.Rules.Taps[user.Level].NextLevel.Cost)
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
+
 }

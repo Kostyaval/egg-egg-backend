@@ -21,4 +21,8 @@ var (
 	ErrNoLevel          = errors.New("no level")
 	ErrHasAutoClicker   = errors.New("has auto clicker")
 	ErrHasNoAutoClicker = errors.New("has no auto clicker")
+	ErrNotAllowedTelegramChat     = errors.New("not allowed telegram chat")
+	ErrNotEnoughReferrals         = errors.New("not enough referrals")
+	ErrNotFollowedTelegramChannel = errors.New("not followed telegram channel")
+	ErrReachedLevelLimit          = errors.New("reached level limit")
 )

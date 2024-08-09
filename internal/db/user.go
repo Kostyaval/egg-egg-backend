@@ -81,6 +81,9 @@ func (db DB) CreateUser(ctx context.Context, user *domain.UserProfile) error {
 			IsAvailable: false,
 			IsEnabled:   false,
 		}},
+		{Key: "tasks", Value: domain.UserTasks{
+			Telegram: []int{},
+		}},
 	})
 	if err != nil {
 		return err
@@ -199,6 +202,92 @@ func (db DB) UpdateUserAutoClicker(ctx context.Context, uid int64, isEnabled boo
 			"playedAt":              primitive.NewDateTimeFromTime(time.Now().UTC()),
 			"autoClicker.isEnabled": isEnabled,
 		}},
+	}, opt).Decode(&doc)
+
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return doc, domain.ErrNoUser
+		}
+
+		return doc, err
+	}
+
+	return doc, nil
+}
+
+func (db DB) SetUserIsTelegramChannelMember(ctx context.Context, uid int64, channelID int64) error {
+	var doc domain.UserDocument
+
+	opt := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	err := db.users.FindOneAndUpdate(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$addToSet", Value: bson.M{
+			"tasks.telegram": channelID,
+		}},
+	}, opt).Decode(&doc)
+
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return domain.ErrNoUser
+		}
+
+		return err
+	}
+
+	return nil
+}
+
+func (db DB) SetUserIsTelegramChannelLeft(ctx context.Context, uid int64, channelID int64) error {
+	var doc domain.UserDocument
+
+	opt := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	err := db.users.FindOneAndUpdate(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$pull", Value: bson.M{
+			"tasks.telegram": channelID,
+		}},
+	}, opt).Decode(&doc)
+
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return domain.ErrNoUser
+		}
+
+		return err
+	}
+
+	return nil
+}
+
+func (db DB) ReadTotalUserReferrals(ctx context.Context, uid int64) (int64, error) {
+	return db.users.CountDocuments(ctx, bson.M{
+		"profile.referral.id": uid,
+	})
+}
+
+func (db DB) UpdateUserLevel(ctx context.Context, uid int64, level int, cost int) (domain.UserDocument, error) {
+	var doc domain.UserDocument
+
+	opt := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	err := db.users.FindOneAndUpdate(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$set", Value: bson.M{
+			"playedAt": primitive.NewDateTimeFromTime(time.Now().UTC()),
+			"level":    level,
+		}},
+		{Key: "$inc", Value: bson.M{"points": -cost}},
 	}, opt).Decode(&doc)
 
 	if err != nil {

@@ -11,6 +11,8 @@ type Rules struct {
 	AutoClicker          AutoClickerRules `yaml:"autoClicker" json:"autoClicker"`
 	TapsBaseEnergyCharge int              `yaml:"tapsBaseEnergyCharge" json:"tapsBaseEnergyCharge"`
 	Taps                 TapRules         `yaml:"taps" json:"taps"`
+	Tasks                      LevelTasks       `yaml:"tasks" json:"tasks"`
+	TelegramBotAllowedChannels []int            `yaml:"telegramBotAllowedChannels" json:"telegramBotAllowedChannels"`
 }
 
 // ReferralRules has values of bonus points and index is an egg level.
@@ -43,4 +45,8 @@ type TapRules []struct {
 		RechargeAvailable      int           `yaml:"rechargeAvailable" json:"rechargeAvailable"`
 		RechargeAvailableAfter time.Duration `yaml:"rechargeAvailableAfter" json:"rechargeAvailableAfter"`
 	} `yaml:"energy" json:"energy"`
+	NextLevel struct {
+		Tasks LevelTasks `yaml:"tasks" json:"tasks"`
+		Cost  int        `yaml:"cost" json:"cost"`
+	} `yaml:"nextLevel" json:"nextLevel"`
 }

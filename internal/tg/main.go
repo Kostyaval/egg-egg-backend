@@ -37,6 +37,7 @@ func NewTelegramBot(cfg *config.Config, logger *slog.Logger, db DBInterface, rdb
 
 	h := newHandler(logger, cfg.Rules, db, rdb)
 	bot.Handle("/start", h.start)
+	bot.Handle(tele.OnChatMember, h.onChatMemberUpdate)
 
 	if cfg.Runtime == config.RuntimeDevelopment {
 		bot.Handle("/reset", h.reset)
