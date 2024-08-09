@@ -68,7 +68,5 @@ type AutoClicker struct {
 }
 
 type UserTasks struct {
-	Telegram []int `yaml:"telegram"`
-	Twitter  []int `yaml:"twitter"`
-	Youtube  []int `yaml:"youtube"`
+	Telegram []int `yaml:"telegram" json:"telegram"`
 }

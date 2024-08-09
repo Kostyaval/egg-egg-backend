@@ -83,8 +83,6 @@ func (db DB) CreateUser(ctx context.Context, user *domain.UserProfile) error {
 		}},
 		{Key: "tasks", Value: domain.UserTasks{
 			Telegram: []int{},
-			Twitter:  []int{},
-			Youtube:  []int{},
 		}},
 	})
 	if err != nil {
@@ -267,6 +265,40 @@ func (db DB) SetUserIsTelegramChannelLeft(ctx context.Context, uid int64, channe
 	}
 
 	return nil
+}
+
+func (db DB) ReadTotalUserReferrals(ctx context.Context, uid int64) (int64, error) {
+	return db.users.CountDocuments(ctx, bson.M{
+		"profile.referral.id": uid,
+	})
+}
+
+func (db DB) UpdateUserLevel(ctx context.Context, uid int64, level int, cost int) (domain.UserDocument, error) {
+	var doc domain.UserDocument
+
+	opt := options.FindOneAndUpdate().SetReturnDocument(options.After)
+
+	err := db.users.FindOneAndUpdate(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$set", Value: bson.M{
+			"playedAt": primitive.NewDateTimeFromTime(time.Now().UTC()),
+			"level":    level,
+		}},
+		{Key: "$inc", Value: bson.M{"points": -cost}},
+	}, opt).Decode(&doc)
+
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return doc, domain.ErrNoUser
+		}
+
+		return doc, err
+	}
+
+	return doc, nil
 }
 
 func (db DB) DeleteAllUsers(ctx context.Context) error {

@@ -7,12 +7,13 @@ import (
 )
 
 type Rules struct {
-	Referral             ReferralRules    `yaml:"referral"`
-	DailyRewards         []int            `yaml:"dailyRewards"`
-	AutoClicker          AutoClickerRules `yaml:"autoClicker"`
-	TapsBaseEnergyCharge int              `yaml:"tapsBaseEnergyCharge"`
-	Taps                 TapRules         `yaml:"taps"`
-	Tasks                TasksRules       `yaml:"tasks"`
+	Referral                   ReferralRules    `yaml:"referral"`
+	DailyRewards               []int            `yaml:"dailyRewards"`
+	AutoClicker                AutoClickerRules `yaml:"autoClicker"`
+	TapsBaseEnergyCharge       int              `yaml:"tapsBaseEnergyCharge"`
+	Taps                       TapRules         `yaml:"taps"`
+	Tasks                      LevelTasks       `yaml:"tasks"`
+	TelegramBotAllowedChannels []int            `yaml:"telegramBotAllowedChannels"`
 }
 
 // ReferralRules has values of bonus points and index is an egg level.
@@ -45,10 +46,13 @@ type TapRules []struct {
 		RechargeAvailable      int           `yaml:"rechargeAvailable"`
 		RechargeAvailableAfter time.Duration `yaml:"rechargeAvailableAfter"`
 	} `yaml:"energy"`
+	NextLevel struct {
+		Tasks LevelTasks `yaml:"tasks"`
+		Cost  int        `yaml:"cost"`
+	} `yaml:"nextLevel"`
 }
 
-type TasksRules struct {
-	Telegram []int64 `yaml:"telegram"`
-	Twitter  []int   `yaml:"twitter"`
-	Youtube  []int   `yaml:"youtube"`
+type LevelTasks struct {
+	Telegram []int `yaml:"telegram"`
+	Referral int   `yaml:"referral"`
 }

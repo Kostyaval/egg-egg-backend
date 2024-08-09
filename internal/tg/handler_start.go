@@ -134,8 +134,8 @@ func (h handler) onChatMemberUpdate(c tele.Context) error {
 
 	isAllowedChat := false
 
-	for _, v := range h.rules.Tasks.Telegram {
-		if v == c.Chat().ID {
+	for _, v := range h.rules.TelegramBotAllowedChannels {
+		if int64(v) == c.Chat().ID {
 			isAllowedChat = true
 			break
 		}
@@ -167,7 +167,7 @@ func (h handler) onChatMemberUpdate(c tele.Context) error {
 		return nil
 	}
 
-	if c.ChatMember().NewChatMember.Role == "member" {
+	if c.ChatMember().NewChatMember.Role == tele.Member {
 		log.Info("new channel member")
 
 		if err := h.db.SetUserIsTelegramChannelMember(ctx, c.Sender().ID, c.Chat().ID); err != nil {
@@ -175,7 +175,7 @@ func (h handler) onChatMemberUpdate(c tele.Context) error {
 		}
 	}
 
-	if c.ChatMember().NewChatMember.Role == "left" {
+	if c.ChatMember().NewChatMember.Role == tele.Left {
 		log.Info("member left channel")
 
 		if err := h.db.SetUserIsTelegramChannelLeft(ctx, c.Sender().ID, c.Chat().ID); err != nil {

@@ -19,6 +19,7 @@ type ServiceInterface interface {
 	friendsService
 	leaderboardService
 	autoClickerService
+	levelService
 }
 
 func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fiber.App {
@@ -70,6 +71,7 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 	api.Delete("/me/token", h.jwtDelete)
 	api.Get("/me/nickname", h.checkUserNickname)
 	api.Post("/me/nickname", h.createUserNickname)
+	api.Put("/me/level", h.upgradeLevel)
 
 	api.Use(middlewareJWT(&middlewareJWTConfig{log: h.log, cfg: cfg.JWT, mustNickname: true}))
 	api.Put("/me/tap", h.addTap)

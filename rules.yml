@@ -58,8 +58,10 @@ taps:
       rechargeAvailable: 5
       rechargeAvailableAfter: 1h
     nextLevel:
-      followTelegram: true
-      minReferral: 1
+      tasks:
+        telegram:
+          - -1002241888670
+        referral: 1
       cost: 100000
 
   # egg level: 1
@@ -73,8 +75,10 @@ taps:
       rechargeAvailable: 5
       rechargeAvailableAfter: 1h
     nextLevel:
-      followTelegram: true
-      minReferral: 2
+      tasks:
+        telegram:
+          - -1002241888670
+        referral: 2
       cost: 250000
 
   # egg level: 2
@@ -88,8 +92,10 @@ taps:
       rechargeAvailable: 5
       rechargeAvailableAfter: 1h
     nextLevel:
-      followTelegram: true
-      minReferral: 3
+      tasks:
+        telegram:
+          - -1002241888670
+        referral: 3
       cost: 500000
 
   # egg level: 3
@@ -103,8 +109,9 @@ taps:
       rechargeAvailable: 5
       rechargeAvailableAfter: 1h
     nextLevel:
-      followTelegram: true
-      minReferral: 4
+      telegram:
+        - -1002241888670
+      referral: 4
       cost: 1000000
 
   # egg level: 4
@@ -118,9 +125,11 @@ taps:
       rechargeAvailable: 5
       rechargeAvailableAfter: 1h
     nextLevel:
-      followTelegram: true
-      minReferral: 5
-      cost: 25000000
+      tasks:
+        telegram:
+          - -1002241888670
+        referral: 5
+      cost: 2500000
 
   # egg level: 5
   - boostCost: 5000
@@ -133,8 +142,9 @@ taps:
       rechargeAvailable: 5
       rechargeAvailableAfter: 1h
     nextLevel:
-      followTelegram: false
-      minReferral: 0
+      tasks:
+        telegram:
+        referral: 0
       cost: 0
 
 # daily rewards egg points
@@ -156,8 +166,5 @@ autoClicker:
   cost: 500000
   minLevel: 2
 
-tasks:
-  telegram:
+telegramBotAllowedChannels:
     - -1002241888670
-  twitter:
-  youtube:
