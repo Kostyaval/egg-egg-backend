@@ -1,4 +1,11 @@
 ---
+issues:
+  exclude-dirs:
+    - data
+    - .data
+    - .git
+    - .idea
+    - infra
 linters:
   disable-all: true
   enable:
@@ -8,7 +15,6 @@ linters:
     - govet
     - ineffassign
     - staticcheck
-    - typecheck
     - unused
     # additional
     - gofmt

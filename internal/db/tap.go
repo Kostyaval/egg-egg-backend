@@ -107,7 +107,7 @@ func (db DB) UpdateUserTapEnergyBoost(ctx context.Context, uid int64, boost []in
 	return doc, nil
 }
 
-func (db DB) UpdateUserTapEnergyRecharge(ctx context.Context, uid int64, available int, at time.Time, charge int, points int) (domain.UserDocument, error) {
+func (db DB) UpdateUserTapEnergyRecharge(ctx context.Context, uid int64, available int, charge int, points int) (domain.UserDocument, error) {
 	var (
 		doc domain.UserDocument
 		now = primitive.NewDateTimeFromTime(time.Now().UTC())
@@ -124,7 +124,7 @@ func (db DB) UpdateUserTapEnergyRecharge(ctx context.Context, uid int64, availab
 			"tap.playedAt":                 now,
 			"tap.energy.charge":            charge,
 			"tap.energy.rechargeAvailable": available,
-			"tap.energy.rechargedAt":       primitive.NewDateTimeFromTime(at),
+			"tap.energy.rechargedAt":       now,
 			"points":                       points,
 		}},
 	}, opt).Decode(&doc)

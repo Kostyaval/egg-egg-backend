@@ -8,8 +8,6 @@ import (
 	mock "github.com/stretchr/testify/mock"
 	domain "gitlab.com/egg-be/egg-backend/internal/domain"
 
-	time "time"
-
 	uuid "github.com/google/uuid"
 )
 
@@ -1263,9 +1261,9 @@ func (_c *DBInterface_UpdateUserTapEnergyBoost_Call) RunAndReturn(run func(conte
 	return _c
 }
 
-// UpdateUserTapEnergyRecharge provides a mock function with given fields: ctx, uid, available, at, chargeMax, points
-func (_m *DBInterface) UpdateUserTapEnergyRecharge(ctx context.Context, uid int64, available int, at time.Time, chargeMax int, points int) (domain.UserDocument, error) {
-	ret := _m.Called(ctx, uid, available, at, chargeMax, points)
+// UpdateUserTapEnergyRecharge provides a mock function with given fields: ctx, uid, available, chargeMax, points
+func (_m *DBInterface) UpdateUserTapEnergyRecharge(ctx context.Context, uid int64, available int, chargeMax int, points int) (domain.UserDocument, error) {
+	ret := _m.Called(ctx, uid, available, chargeMax, points)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdateUserTapEnergyRecharge")
@@ -1273,17 +1271,17 @@ func (_m *DBInterface) UpdateUserTapEnergyRecharge(ctx context.Context, uid int6
 
 	var r0 domain.UserDocument
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64, int, time.Time, int, int) (domain.UserDocument, error)); ok {
-		return rf(ctx, uid, available, at, chargeMax, points)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int, int, int) (domain.UserDocument, error)); ok {
+		return rf(ctx, uid, available, chargeMax, points)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int64, int, time.Time, int, int) domain.UserDocument); ok {
-		r0 = rf(ctx, uid, available, at, chargeMax, points)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int, int, int) domain.UserDocument); ok {
+		r0 = rf(ctx, uid, available, chargeMax, points)
 	} else {
 		r0 = ret.Get(0).(domain.UserDocument)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, int64, int, time.Time, int, int) error); ok {
-		r1 = rf(ctx, uid, available, at, chargeMax, points)
+	if rf, ok := ret.Get(1).(func(context.Context, int64, int, int, int) error); ok {
+		r1 = rf(ctx, uid, available, chargeMax, points)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1300,16 +1298,15 @@ type DBInterface_UpdateUserTapEnergyRecharge_Call struct {
 //   - ctx context.Context
 //   - uid int64
 //   - available int
-//   - at time.Time
 //   - chargeMax int
 //   - points int
-func (_e *DBInterface_Expecter) UpdateUserTapEnergyRecharge(ctx interface{}, uid interface{}, available interface{}, at interface{}, chargeMax interface{}, points interface{}) *DBInterface_UpdateUserTapEnergyRecharge_Call {
-	return &DBInterface_UpdateUserTapEnergyRecharge_Call{Call: _e.mock.On("UpdateUserTapEnergyRecharge", ctx, uid, available, at, chargeMax, points)}
+func (_e *DBInterface_Expecter) UpdateUserTapEnergyRecharge(ctx interface{}, uid interface{}, available interface{}, chargeMax interface{}, points interface{}) *DBInterface_UpdateUserTapEnergyRecharge_Call {
+	return &DBInterface_UpdateUserTapEnergyRecharge_Call{Call: _e.mock.On("UpdateUserTapEnergyRecharge", ctx, uid, available, chargeMax, points)}
 }
 
-func (_c *DBInterface_UpdateUserTapEnergyRecharge_Call) Run(run func(ctx context.Context, uid int64, available int, at time.Time, chargeMax int, points int)) *DBInterface_UpdateUserTapEnergyRecharge_Call {
+func (_c *DBInterface_UpdateUserTapEnergyRecharge_Call) Run(run func(ctx context.Context, uid int64, available int, chargeMax int, points int)) *DBInterface_UpdateUserTapEnergyRecharge_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int64), args[2].(int), args[3].(time.Time), args[4].(int), args[5].(int))
+		run(args[0].(context.Context), args[1].(int64), args[2].(int), args[3].(int), args[4].(int))
 	})
 	return _c
 }
@@ -1319,7 +1316,7 @@ func (_c *DBInterface_UpdateUserTapEnergyRecharge_Call) Return(_a0 domain.UserDo
 	return _c
 }
 
-func (_c *DBInterface_UpdateUserTapEnergyRecharge_Call) RunAndReturn(run func(context.Context, int64, int, time.Time, int, int) (domain.UserDocument, error)) *DBInterface_UpdateUserTapEnergyRecharge_Call {
+func (_c *DBInterface_UpdateUserTapEnergyRecharge_Call) RunAndReturn(run func(context.Context, int64, int, int, int) (domain.UserDocument, error)) *DBInterface_UpdateUserTapEnergyRecharge_Call {
 	_c.Call.Return(run)
 	return _c
 }

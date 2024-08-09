@@ -84,5 +84,8 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 	api.Get("/me/friends", h.readUserFriends)
 	api.Get("/leaderboard", h.leaderboard)
 
+	app.Use(middlewareAPIKey(&middlewareAPIKeyConfig{log: h.log, key: cfg.APIKey}))
+	app.Get("/rules", h.rules)
+
 	return app
 }

@@ -6,6 +6,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -22,6 +23,7 @@ type Config struct {
 	Rules         *Rules
 	JWT           *JWTConfig
 	CORS          *CORSConfig
+	APIKey        string
 }
 
 func NewConfig() (*Config, error) {
@@ -100,6 +102,9 @@ func NewConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// Setup API key
+	cfg.APIKey = strings.TrimSpace(os.Getenv("API_KEY"))
 
 	return cfg, nil
 }

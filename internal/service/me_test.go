@@ -110,10 +110,7 @@ func (s *Suite) TestGetMe() {
 	s.Nil(err)
 
 	claims, err := s.cfg.JWT.Decode(t)
-	if err != nil {
-		s.Fail(err.Error())
-	}
-
+	s.NoError(err)
 	s.Equal(u.Profile.Telegram.ID, claims.UID)
 	s.Equal(u.Profile.Nickname, claims.Nickname)
 
@@ -160,10 +157,7 @@ func (s *Suite) TestGetMe_DailyReward() {
 	s.Nil(err)
 
 	claims, err := s.cfg.JWT.Decode(t)
-	if err != nil {
-		s.Fail(err.Error())
-	}
-
+	s.NoError(err)
 	s.Equal(u.Profile.Telegram.ID, claims.UID)
 	s.Equal(u.Profile.Nickname, claims.Nickname)
 	s.Equal(u.Points, dailyRewardPoints)
@@ -276,10 +270,7 @@ func (s *Suite) TestGetMe_AutoClicker() {
 	s.Nil(err)
 
 	claims, err := s.cfg.JWT.Decode(t)
-	if err != nil {
-		s.Fail(err.Error())
-	}
-
+	s.NoError(err)
 	s.Equal(u.Profile.Telegram.ID, claims.UID)
 	s.Equal(u.Profile.Nickname, claims.Nickname)
 	s.Equal(u.Points, autoClickerPoints)
@@ -337,10 +328,7 @@ func (s *Suite) TestGetMe_DailyRewardWithAutoClicker() {
 	s.Nil(err)
 
 	claims, err := s.cfg.JWT.Decode(t)
-	if err != nil {
-		s.Fail(err.Error())
-	}
-
+	s.NoError(err)
 	s.Equal(u.Profile.Telegram.ID, claims.UID)
 	s.Equal(u.Profile.Nickname, claims.Nickname)
 	s.Equal(u.Points, autoClickerPoints)
@@ -431,7 +419,6 @@ func (s *Suite) TestGetMe_ResetTapEnergyRechargeAvailable() {
 		ctx,
 		uid,
 		s.cfg.Rules.Taps[doc.Level].Energy.RechargeAvailable,
-		doc.Tap.Energy.RechargedAt.Time(),
 		s.cfg.Rules.TapsBaseEnergyCharge,
 		doc.Points).Return(energyRechargeDoc, nil)
 
@@ -441,10 +428,7 @@ func (s *Suite) TestGetMe_ResetTapEnergyRechargeAvailable() {
 	s.Nil(err)
 
 	claims, err := s.cfg.JWT.Decode(t)
-	if err != nil {
-		s.Fail(err.Error())
-	}
-
+	s.NoError(err)
 	s.Equal(u.Profile.Telegram.ID, claims.UID)
 	s.Equal(u.Profile.Nickname, claims.Nickname)
 	s.Equal(u.Tap.Energy.RechargeAvailable, energyRechargeDoc.Tap.Energy.RechargeAvailable)
@@ -459,7 +443,6 @@ func (s *Suite) TestGetMe_ResetTapEnergyRechargeAvailable() {
 	s.dbMocks.AssertCalled(s.T(), "UpdateUserTapEnergyRecharge", ctx,
 		u.Profile.Telegram.ID,
 		u.Tap.Energy.RechargeAvailable,
-		u.Tap.Energy.RechargedAt.Time(),
 		u.Tap.Energy.Charge,
 		u.Points)
 	s.dbMocks.AssertCalled(s.T(), "UpdateUserJWT", ctx, doc.Profile.Telegram.ID, jti)
