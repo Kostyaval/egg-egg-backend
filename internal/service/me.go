@@ -322,6 +322,7 @@ func (s Service) UpgradeLevel(ctx context.Context, uid int64) (domain.UserDocume
 		for _, value := range s.cfg.Rules.Taps[user.Level].NextLevel.Tasks.Telegram {
 			telegramTasksMap[value] = true
 		}
+
 		for _, value := range user.Tasks.Telegram {
 			if !telegramTasksMap[value] {
 				return user, domain.ErrNotFollowedTelegramChannel
@@ -344,5 +345,4 @@ func (s Service) UpgradeLevel(ctx context.Context, uid int64) (domain.UserDocume
 	}
 
 	return user, nil
-
 }

@@ -763,6 +763,63 @@ func (_c *DBInterface_ReadLevelLeaderboardTotalPlayers_Call) RunAndReturn(run fu
 	return _c
 }
 
+// ReadTotalUserReferrals provides a mock function with given fields: ctx, uid
+func (_m *DBInterface) ReadTotalUserReferrals(ctx context.Context, uid int64) (int64, error) {
+	ret := _m.Called(ctx, uid)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ReadTotalUserReferrals")
+	}
+
+	var r0 int64
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64) (int64, error)); ok {
+		return rf(ctx, uid)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64) int64); ok {
+		r0 = rf(ctx, uid)
+	} else {
+		r0 = ret.Get(0).(int64)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
+		r1 = rf(ctx, uid)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// DBInterface_ReadTotalUserReferrals_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ReadTotalUserReferrals'
+type DBInterface_ReadTotalUserReferrals_Call struct {
+	*mock.Call
+}
+
+// ReadTotalUserReferrals is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uid int64
+func (_e *DBInterface_Expecter) ReadTotalUserReferrals(ctx interface{}, uid interface{}) *DBInterface_ReadTotalUserReferrals_Call {
+	return &DBInterface_ReadTotalUserReferrals_Call{Call: _e.mock.On("ReadTotalUserReferrals", ctx, uid)}
+}
+
+func (_c *DBInterface_ReadTotalUserReferrals_Call) Run(run func(ctx context.Context, uid int64)) *DBInterface_ReadTotalUserReferrals_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64))
+	})
+	return _c
+}
+
+func (_c *DBInterface_ReadTotalUserReferrals_Call) Return(_a0 int64, _a1 error) *DBInterface_ReadTotalUserReferrals_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *DBInterface_ReadTotalUserReferrals_Call) RunAndReturn(run func(context.Context, int64) (int64, error)) *DBInterface_ReadTotalUserReferrals_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // ReadUserFriends provides a mock function with given fields: ctx, uid, limit, skip
 func (_m *DBInterface) ReadUserFriends(ctx context.Context, uid int64, limit int64, skip int64) ([]domain.Friend, int64, error) {
 	ret := _m.Called(ctx, uid, limit, skip)
@@ -1030,6 +1087,65 @@ func (_c *DBInterface_UpdateUserJWT_Call) Return(_a0 error) *DBInterface_UpdateU
 }
 
 func (_c *DBInterface_UpdateUserJWT_Call) RunAndReturn(run func(context.Context, int64, uuid.UUID) error) *DBInterface_UpdateUserJWT_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// UpdateUserLevel provides a mock function with given fields: ctx, uid, level, cost
+func (_m *DBInterface) UpdateUserLevel(ctx context.Context, uid int64, level int, cost int) (domain.UserDocument, error) {
+	ret := _m.Called(ctx, uid, level, cost)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateUserLevel")
+	}
+
+	var r0 domain.UserDocument
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int, int) (domain.UserDocument, error)); ok {
+		return rf(ctx, uid, level, cost)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int, int) domain.UserDocument); ok {
+		r0 = rf(ctx, uid, level, cost)
+	} else {
+		r0 = ret.Get(0).(domain.UserDocument)
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, int64, int, int) error); ok {
+		r1 = rf(ctx, uid, level, cost)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// DBInterface_UpdateUserLevel_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateUserLevel'
+type DBInterface_UpdateUserLevel_Call struct {
+	*mock.Call
+}
+
+// UpdateUserLevel is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uid int64
+//   - level int
+//   - cost int
+func (_e *DBInterface_Expecter) UpdateUserLevel(ctx interface{}, uid interface{}, level interface{}, cost interface{}) *DBInterface_UpdateUserLevel_Call {
+	return &DBInterface_UpdateUserLevel_Call{Call: _e.mock.On("UpdateUserLevel", ctx, uid, level, cost)}
+}
+
+func (_c *DBInterface_UpdateUserLevel_Call) Run(run func(ctx context.Context, uid int64, level int, cost int)) *DBInterface_UpdateUserLevel_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64), args[2].(int), args[3].(int))
+	})
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserLevel_Call) Return(_a0 domain.UserDocument, _a1 error) *DBInterface_UpdateUserLevel_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserLevel_Call) RunAndReturn(run func(context.Context, int64, int, int) (domain.UserDocument, error)) *DBInterface_UpdateUserLevel_Call {
 	_c.Call.Return(run)
 	return _c
 }
