@@ -6,11 +6,11 @@ import (
 )
 
 type Rules struct {
-	Referral             ReferralRules    `yaml:"referral" json:"referral"`
-	DailyRewards         []int            `yaml:"dailyRewards" json:"dailyRewards"`
-	AutoClicker          AutoClickerRules `yaml:"autoClicker" json:"autoClicker"`
-	TapsBaseEnergyCharge int              `yaml:"tapsBaseEnergyCharge" json:"tapsBaseEnergyCharge"`
-	Taps                 TapRules         `yaml:"taps" json:"taps"`
+	Referral                   ReferralRules    `yaml:"referral" json:"referral"`
+	DailyRewards               []int            `yaml:"dailyRewards" json:"dailyRewards"`
+	AutoClicker                AutoClickerRules `yaml:"autoClicker" json:"autoClicker"`
+	TapsBaseEnergyCharge       int              `yaml:"tapsBaseEnergyCharge" json:"tapsBaseEnergyCharge"`
+	Taps                       TapRules         `yaml:"taps" json:"taps"`
 	Tasks                      LevelTasks       `yaml:"tasks" json:"tasks"`
 	TelegramBotAllowedChannels []int            `yaml:"telegramBotAllowedChannels" json:"telegramBotAllowedChannels"`
 }
@@ -49,4 +49,9 @@ type TapRules []struct {
 		Tasks LevelTasks `yaml:"tasks" json:"tasks"`
 		Cost  int        `yaml:"cost" json:"cost"`
 	} `yaml:"nextLevel" json:"nextLevel"`
+}
+
+type LevelTasks struct {
+	Telegram []int `yaml:"telegram" json:"telegram"`
+	Referral int   `yaml:"referral" json:"referral"`
 }
