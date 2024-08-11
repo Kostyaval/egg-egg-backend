@@ -81,6 +81,53 @@ func (_c *DBInterface_CheckUserNickname_Call) RunAndReturn(run func(context.Cont
 	return _c
 }
 
+// CreateUser provides a mock function with given fields: ctx, user
+func (_m *DBInterface) CreateUser(ctx context.Context, user *domain.UserDocument) error {
+	ret := _m.Called(ctx, user)
+
+	if len(ret) == 0 {
+		panic("no return value specified for CreateUser")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.UserDocument) error); ok {
+		r0 = rf(ctx, user)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DBInterface_CreateUser_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CreateUser'
+type DBInterface_CreateUser_Call struct {
+	*mock.Call
+}
+
+// CreateUser is a helper method to define mock.On call
+//   - ctx context.Context
+//   - user *domain.UserDocument
+func (_e *DBInterface_Expecter) CreateUser(ctx interface{}, user interface{}) *DBInterface_CreateUser_Call {
+	return &DBInterface_CreateUser_Call{Call: _e.mock.On("CreateUser", ctx, user)}
+}
+
+func (_c *DBInterface_CreateUser_Call) Run(run func(ctx context.Context, user *domain.UserDocument)) *DBInterface_CreateUser_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*domain.UserDocument))
+	})
+	return _c
+}
+
+func (_c *DBInterface_CreateUser_Call) Return(_a0 error) *DBInterface_CreateUser_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *DBInterface_CreateUser_Call) RunAndReturn(run func(context.Context, *domain.UserDocument) error) *DBInterface_CreateUser_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // CreateUserAutoClicker provides a mock function with given fields: ctx, uid, cost
 func (_m *DBInterface) CreateUserAutoClicker(ctx context.Context, uid int64, cost int) (domain.UserDocument, error) {
 	ret := _m.Called(ctx, uid, cost)

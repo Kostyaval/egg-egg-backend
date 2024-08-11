@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"math"
+	"strconv"
 	"time"
 )
 
@@ -21,6 +22,7 @@ type meDB interface {
 	UpdateUserAutoClicker(ctx context.Context, uid int64, isEnabled bool) (domain.UserDocument, error)
 	ReadTotalUserReferrals(ctx context.Context, uid int64) (int64, error)
 	UpdateUserLevel(ctx context.Context, uid int64, level int, cost int) (domain.UserDocument, error)
+	CreateUser(ctx context.Context, user *domain.UserDocument) error
 }
 
 type meRedis interface {
@@ -150,6 +152,53 @@ func (s Service) checkAutoClicker(u *domain.UserDocument) int {
 	}
 
 	return u.Points + int(math.Floor(delta/s.cfg.Rules.AutoClicker.Speed.Seconds()))
+}
+
+func (s Service) SetMeReferral(ctx context.Context, u *domain.UserDocument, ref string) error {
+	if ref == "" {
+		return nil
+	}
+
+	if u.Profile.Nickname != nil || u.Profile.Referral != nil {
+		return nil
+	}
+
+	// plain referral parameter is user telegram id
+	refID, err := strconv.ParseInt(ref, 10, 64)
+	if err == nil {
+		refUser, err := s.db.GetUserProfileWithID(ctx, refID)
+		if err != nil {
+			return err
+		}
+
+		if !refUser.IsGhost && !refUser.HasBan && refUser.Nickname != nil {
+			u.Profile.Referral = &domain.ReferralUserProfile{
+				ID:       refUser.Telegram.ID,
+				Nickname: *refUser.Nickname,
+			}
+		}
+
+		return nil
+	}
+
+	// TODO implement another referral program
+	return nil
+}
+
+func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument) ([]byte, error) {
+	jwtClaims, err := domain.NewJWTClaims(u.Profile.Telegram.ID, u.Profile.Nickname)
+	if err != nil {
+		return nil, err
+	}
+
+	jwtBytes, err := s.cfg.JWT.Encode(jwtClaims)
+	if err != nil {
+		return nil, err
+	}
+
+	u.Profile.JTI = &jwtClaims.JTI
+
+	return jwtBytes, s.db.CreateUser(ctx, u)
 }
 
 func (s Service) CheckUserNickname(ctx context.Context, nickname string) (bool, error) {

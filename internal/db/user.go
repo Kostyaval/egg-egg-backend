@@ -54,37 +54,8 @@ func (db DB) GetUserProfileWithID(ctx context.Context, uid int64) (domain.UserPr
 	return result.Profile, nil
 }
 
-func (db DB) CreateUser(ctx context.Context, user *domain.UserProfile) error {
-	_, err := db.users.InsertOne(ctx, bson.D{
-		{Key: "profile", Value: user},
-		{Key: "level", Value: domain.Lv0},
-		{Key: "points", Value: 0},
-		{Key: "tap", Value: &domain.UserTap{
-			Count:  0,
-			Points: 1,
-			Boost:  make([]int, len(db.cfg.Rules.Taps)),
-			Energy: domain.UserTapEnergy{
-				Charge:            db.cfg.Rules.TapsBaseEnergyCharge,
-				Boost:             make([]int, len(db.cfg.Rules.Taps)),
-				RechargeAvailable: db.cfg.Rules.Taps[domain.Lv0].Energy.RechargeAvailable,
-				RechargedAt:       primitive.NewDateTimeFromTime(time.Now().UTC()),
-			},
-			PlayedAt: primitive.NewDateTimeFromTime(time.Now().UTC()),
-		}},
-		{Key: "referralPoints", Value: 0},
-		{Key: "playedAt", Value: primitive.NewDateTimeFromTime(time.Now().UTC())},
-		{Key: "dailyReward", Value: domain.DailyReward{
-			ReceivedAt: primitive.NewDateTimeFromTime(time.Now().UTC()),
-			Day:        0,
-		}},
-		{Key: "autoClicker", Value: domain.AutoClicker{
-			IsAvailable: false,
-			IsEnabled:   false,
-		}},
-		{Key: "tasks", Value: domain.UserTasks{
-			Telegram: []int{},
-		}},
-	})
+func (db DB) CreateUser(ctx context.Context, user *domain.UserDocument) error {
+	_, err := db.users.InsertOne(ctx, user)
 	if err != nil {
 		return err
 	}

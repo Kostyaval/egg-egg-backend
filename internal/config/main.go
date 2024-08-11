@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
@@ -20,7 +21,7 @@ type Config struct {
 	MongoURI      string
 	RedisURI      string
 	TelegramToken string
-	Rules         *Rules
+	Rules         *domain.Rules
 	JWT           *JWTConfig
 	CORS          *CORSConfig
 	APIKey        string

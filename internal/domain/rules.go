@@ -1,7 +1,6 @@
-package config
+package domain
 
 import (
-	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"time"
 )
 
@@ -31,7 +30,7 @@ type AutoClickerRules struct {
 	Speed    time.Duration `yaml:"speed" json:"speed"`
 	TTL      time.Duration `yaml:"ttl" json:"ttl"`
 	Cost     int           `yaml:"cost" json:"cost"`
-	MinLevel domain.Level  `yaml:"minLevel" json:"minLevel"`
+	MinLevel Level         `yaml:"minLevel" json:"minLevel"`
 }
 
 type TapRules []struct {

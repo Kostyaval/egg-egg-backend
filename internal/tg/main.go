@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"gitlab.com/egg-be/egg-backend/internal/config"
+	"gitlab.com/egg-be/egg-backend/internal/domain"
 	tele "gopkg.in/telebot.v3"
 	"log/slog"
 	"sync"
@@ -21,7 +22,7 @@ type RedisInterface interface {
 
 type Tg struct {
 	Bot   *tele.Bot
-	Rules *config.Rules
+	Rules *domain.Rules
 }
 
 func NewTelegramBot(cfg *config.Config, logger *slog.Logger, db DBInterface, rdb RedisInterface) (*Tg, error) {
@@ -36,7 +37,6 @@ func NewTelegramBot(cfg *config.Config, logger *slog.Logger, db DBInterface, rdb
 	}
 
 	h := newHandler(logger, cfg.Rules, db, rdb)
-	bot.Handle("/start", h.start)
 	bot.Handle(tele.OnChatMember, h.onChatMemberUpdate)
 
 	if cfg.Runtime == config.RuntimeDevelopment {

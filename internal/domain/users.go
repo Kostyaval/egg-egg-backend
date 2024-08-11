@@ -3,6 +3,7 @@ package domain
 import (
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
 type UserDocument struct {
@@ -15,6 +16,36 @@ type UserDocument struct {
 	DailyReward    DailyReward        `bson:"dailyReward" json:"dailyReward"`
 	AutoClicker    AutoClicker        `bson:"autoClicker" json:"autoClicker"`
 	Tasks          UserTasks          `bson:"tasks" json:"tasks"`
+}
+
+func NewUserDocument(rules *Rules) UserDocument {
+	now := time.Now().UTC()
+
+	return UserDocument{
+		PlayedAt: primitive.NewDateTimeFromTime(now),
+		Level:    Lv0,
+		Profile: UserProfile{
+			CreatedAt: primitive.NewDateTimeFromTime(now),
+			UpdatedAt: primitive.NewDateTimeFromTime(now),
+		},
+		Tap: UserTap{
+			Points: 1,
+			Boost:  make([]int, len(rules.Taps)),
+			Energy: UserTapEnergy{
+				Charge:            rules.TapsBaseEnergyCharge,
+				Boost:             make([]int, len(rules.Taps)),
+				RechargeAvailable: rules.Taps[Lv0].Energy.RechargeAvailable,
+				RechargedAt:       primitive.NewDateTimeFromTime(now),
+			},
+			PlayedAt: primitive.NewDateTimeFromTime(now),
+		},
+		DailyReward: DailyReward{
+			ReceivedAt: primitive.NewDateTimeFromTime(now),
+		},
+		Tasks: UserTasks{
+			Telegram: make([]int, 0),
+		},
+	}
 }
 
 type UserTap struct {
@@ -49,12 +80,13 @@ type ReferralUserProfile struct {
 }
 
 type TelegramUserProfile struct {
-	ID        int64  `bson:"id" json:"id"`
-	IsPremium bool   `bson:"isPremium" json:"isPremium"`
-	Firstname string `bson:"firstname" json:"-"`
-	Lastname  string `bson:"lastname" json:"-"`
-	Language  string `bson:"language" json:"language"`
-	Username  string `bson:"username" json:"-"`
+	ID              int64  `bson:"id" json:"id"`
+	IsPremium       bool   `bson:"isPremium" json:"isPremium"`
+	FirstName       string `bson:"firstname" json:"-"`
+	LastName        string `bson:"lastname" json:"-"`
+	Language        string `bson:"language" json:"language"`
+	Username        string `bson:"username" json:"username"`
+	AllowsWriteToPm bool   `bson:"allowsWriteToPm" json:"-"`
 }
 
 type DailyReward struct {
