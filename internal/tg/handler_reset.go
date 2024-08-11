@@ -135,6 +135,10 @@ func (h handler) reset(c tele.Context) error {
 
 					// utils -- random int
 					randInt := func(min, max int) int {
+						if min == max {
+							return min
+						}
+
 						n, err := rand.Int(rand.Reader, big.NewInt(int64(max-min)))
 						if err != nil {
 							return 0
@@ -193,25 +197,44 @@ func (h handler) reset(c tele.Context) error {
 					// create users
 					for i := 0; i < limit; i++ {
 						createdAt := randTime(now.Add(-time.Hour*24*14), now)
-						users[i] = domain.UserDocument{
-							Profile: domain.UserProfile{
-								Telegram: domain.TelegramUserProfile{
-									ID:        int64(400_000_000 + i),
-									Username:  fmt.Sprintf("id%d", i),
-									Language:  language(),
-									IsPremium: isPremiumUser(),
-								},
-								Nickname:  nickname(400_000_000 + i),
-								CreatedAt: primitive.NewDateTimeFromTime(createdAt),
-								UpdatedAt: primitive.NewDateTimeFromTime(randTime(createdAt, now)),
+						users[i] = domain.NewUserDocument(h.rules)
+
+						users[i].Profile = domain.UserProfile{
+							Telegram: domain.TelegramUserProfile{
+								ID:        int64(400_000_000 + i),
+								Username:  fmt.Sprintf("id%d", i),
+								Language:  language(),
+								IsPremium: isPremiumUser(),
 							},
-							Points:   randInt(0, 1_000_000),
-							Level:    level(),
-							PlayedAt: primitive.NewDateTimeFromTime(randTime(now.Add(-time.Hour*48), now)),
-							AutoClicker: domain.AutoClicker{
-								IsAvailable: false,
-								IsEnabled:   false,
-							},
+							Nickname:  nickname(400_000_000 + i),
+							CreatedAt: primitive.NewDateTimeFromTime(createdAt),
+							UpdatedAt: primitive.NewDateTimeFromTime(randTime(createdAt, now)),
+						}
+
+						users[i].Points = randInt(0, 1_000_000)
+						users[i].Level = level()
+						users[i].PlayedAt = primitive.NewDateTimeFromTime(randTime(now.Add(-time.Hour*48), now))
+						users[i].Tap.PlayedAt = users[i].PlayedAt
+						users[i].Tap.Energy.Charge = randInt(0, h.rules.TapsBaseEnergyCharge)
+
+						if users[i].Level > 0 {
+							users[i].Tasks.Telegram = h.rules.Taps[0].NextLevel.Tasks.Telegram
+						} else {
+							if randBool() {
+								users[i].Tasks.Telegram = h.rules.Taps[0].NextLevel.Tasks.Telegram
+							}
+						}
+
+						for j := 0; j <= int(users[i].Level); j++ {
+							users[i].Tap.Boost[j] = randInt(0, h.rules.Taps[j].BoostAvailable)
+							users[i].Tap.Points += users[i].Tap.Boost[j]
+							users[i].Tap.Energy.Boost[j] = randInt(0, h.rules.Taps[j].Energy.BoostChargeAvailable)
+							users[i].Tap.Energy.Charge += h.rules.Taps[j].Energy.BoostCharge
+							users[i].Tap.Energy.RechargeAvailable = h.rules.Taps[j].Energy.BoostChargeAvailable
+							users[i].Tap.Energy.RechargedAt = primitive.NewDateTimeFromTime(randTime(
+								time.Date(users[i].PlayedAt.Time().Year(), users[i].PlayedAt.Time().Month(), users[i].PlayedAt.Time().Day(), 0, 0, 0, 0, time.UTC),
+								users[i].PlayedAt.Time(),
+							))
 						}
 					}
 
@@ -277,7 +300,6 @@ func (h handler) reset(c tele.Context) error {
 						for j := 0; j < limit; j++ {
 							if users[i].Profile.Telegram.ID != users[j].Profile.Telegram.ID {
 								if users[j].Profile.Nickname == n {
-									fmt.Printf("%+v\n%+v", users[j], users[i])
 									return fmt.Errorf("nickname collision")
 								}
 							}

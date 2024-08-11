@@ -10,7 +10,6 @@ type Rules struct {
 	AutoClicker                AutoClickerRules `yaml:"autoClicker" json:"autoClicker"`
 	TapsBaseEnergyCharge       int              `yaml:"tapsBaseEnergyCharge" json:"tapsBaseEnergyCharge"`
 	Taps                       TapRules         `yaml:"taps" json:"taps"`
-	Tasks                      LevelTasks       `yaml:"tasks" json:"tasks"`
 	TelegramBotAllowedChannels []int            `yaml:"telegramBotAllowedChannels" json:"telegramBotAllowedChannels"`
 }
 
