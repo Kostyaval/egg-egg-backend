@@ -50,7 +50,6 @@ RUN apk update && \
     rm -rf /var/cache/apk/*
 
 COPY --from=builder /home/$USER/server /bin/server
-COPY --from=builder /home/$USER/rules.yml /etc/egg/rules.yml
 
 USER $USER
 CMD ["/bin/server"]
