@@ -17,6 +17,9 @@ spec:
         image: registry.digitalocean.com/egg-registry/egg-backend:latest
         ports:
         - containerPort: 8000
+        envFrom:
+          - configMapRef:
+              name: egg-backend-config
         env:
         - name: MONGODB_URI
           valueFrom:
