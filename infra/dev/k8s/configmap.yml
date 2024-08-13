@@ -8,6 +8,6 @@ data:
   RULES_PATH: "/etc/egg/rules.yml"
   REDIS_ENABLED: "true"
   REDIS_URI: ${REDIS_URI}
-  CORS_ALLOW_ORIGINS: "https://egg.serveo.net, https://eggone-dev.serveo.net, http://localhost"
+  CORS_ALLOW_ORIGINS: "https://egg.serveo.net, https://eggone-dev.serveo.net, http://localhost:5173"
   CORS_MAX_AGE: "3600" 
   API_KEY: "U7UWPUAxco72f7wEra7dq-RQxu-Yg-ys"
