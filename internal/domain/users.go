@@ -39,7 +39,10 @@ func NewUserDocument(rules *Rules) UserDocument {
 			},
 			PlayedAt: primitive.NewDateTimeFromTime(now),
 		},
+		// at registration user gets daily reward
+		Points: rules.DailyRewards[0],
 		DailyReward: DailyReward{
+			Day:        1,
 			ReceivedAt: primitive.NewDateTimeFromTime(now),
 		},
 		Tasks: UserTasks{

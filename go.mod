@@ -7,6 +7,7 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.5
 	github.com/google/uuid v1.6.0
 	github.com/lestrrat-go/jwx/v2 v2.1.0
+	github.com/matoous/go-nanoid/v2 v2.1.0
 	github.com/redis/go-redis/v9 v9.6.0
 	github.com/speps/go-hashids/v2 v2.0.1
 	github.com/stretchr/testify v1.9.0

@@ -14,8 +14,7 @@ import (
 
 type meService interface {
 	GetMe(ctx context.Context, uid int64) (domain.UserDocument, []byte, error)
-	CreateUser(ctx context.Context, u *domain.UserDocument) ([]byte, error)
-	SetMeReferral(ctx context.Context, u *domain.UserDocument, ref string) error
+	CreateUser(ctx context.Context, u *domain.UserDocument, ref string) ([]byte, error)
 }
 
 func (h handler) me(c *fiber.Ctx) error {
@@ -54,8 +53,6 @@ func (h handler) me(c *fiber.Ctx) error {
 	u, jwt, err := h.srv.GetMe(ctx, data.User.ID)
 	if err != nil {
 		if errors.Is(err, domain.ErrNoUser) {
-			log.Info("registration", slog.Int64("uid", data.User.ID))
-
 			u = domain.NewUserDocument(h.cfg.Rules)
 			u.Profile.Telegram.ID = data.User.ID
 			u.Profile.Telegram.FirstName = data.User.FirstName
@@ -65,16 +62,32 @@ func (h handler) me(c *fiber.Ctx) error {
 			u.Profile.Telegram.IsPremium = data.User.IsPremium
 			u.Profile.Telegram.AllowsWriteToPm = data.User.AllowsWriteToPm
 
-			if data.StartParam != "" {
-				if err := h.srv.SetMeReferral(ctx, &u, data.StartParam); err != nil {
-					log.Error("srv.SetMeReferral", slog.String("error", err.Error()))
-				}
+			jwt, err := h.srv.CreateUser(ctx, &u, data.StartParam)
+			if err != nil {
+				log.Error(
+					"registration",
+					slog.Int64("uid", u.Profile.Telegram.ID),
+					slog.String("error", err.Error()),
+				)
+
+				return c.Status(fiber.StatusInternalServerError).Send(nil)
 			}
 
-			jwt, err := h.srv.CreateUser(ctx, &u)
-			if err != nil {
-				log.Error("srv.CreateUser", slog.String("error", err.Error()))
-				return c.Status(fiber.StatusInternalServerError).Send(nil)
+			if u.Profile.Referral != nil {
+				log.Info(
+					"registration",
+					slog.Int64("uid", u.Profile.Telegram.ID),
+					slog.Int("pts", u.Points),
+					slog.Int("nrg", u.Tap.Energy.Charge),
+					slog.Int64("ref", u.Profile.Referral.ID),
+				)
+			} else {
+				log.Info(
+					"registration",
+					slog.Int64("uid", u.Profile.Telegram.ID),
+					slog.Int("pts", u.Points),
+					slog.Int("nrg", u.Tap.Energy.Charge),
+				)
 			}
 
 			res.UserDocument = u
@@ -83,7 +96,11 @@ func (h handler) me(c *fiber.Ctx) error {
 			return c.JSON(res)
 		}
 
-		log.Error("srv.GetMe", slog.String("error", err.Error()))
+		log.Error(
+			"initialization",
+			slog.Int64("uid", data.User.ID),
+			slog.String("error", err.Error()),
+		)
 
 		if errors.Is(err, domain.ErrGhostUser) || errors.Is(err, domain.ErrBannedUser) {
 			return c.Status(fiber.StatusForbidden).Send(nil)
@@ -92,16 +109,15 @@ func (h handler) me(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).Send(nil)
 	}
 
-	if u.Profile.Nickname == nil && data.StartParam != "" {
-		if err := h.srv.SetMeReferral(ctx, &u, data.StartParam); err != nil {
-			log.Error("srv.SetMeReferral", slog.String("error", err.Error()))
-		}
-	}
-
 	res.UserDocument = u
 	res.Token = string(jwt)
 
-	log.Info("me", slog.Int64("uid", u.Profile.Telegram.ID))
+	log.Info(
+		"initialization",
+		slog.Int64("uid", u.Profile.Telegram.ID),
+		slog.Int("pts", u.Points),
+		slog.Int("nrg", u.Tap.Energy.Charge),
+	)
 
 	return c.JSON(res)
 }

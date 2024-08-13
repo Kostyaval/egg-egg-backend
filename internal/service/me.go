@@ -3,7 +3,9 @@ package service
 import (
 	"context"
 	"github.com/google/uuid"
+	gonanoid "github.com/matoous/go-nanoid/v2"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math"
 	"strconv"
 	"time"
@@ -154,38 +156,34 @@ func (s Service) checkAutoClicker(u *domain.UserDocument) int {
 	return u.Points + int(math.Floor(delta/s.cfg.Rules.AutoClicker.Speed.Seconds()))
 }
 
-func (s Service) SetMeReferral(ctx context.Context, u *domain.UserDocument, ref string) error {
-	if ref == "" {
-		return nil
-	}
+func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument, ref string) ([]byte, error) {
+	var (
+		isFreeNickname bool
+		err            error
+	)
 
-	if u.Profile.Nickname != nil || u.Profile.Referral != nil {
-		return nil
-	}
-
-	// plain referral parameter is user telegram id
-	refID, err := strconv.ParseInt(ref, 10, 64)
-	if err == nil {
-		refUser, err := s.db.GetUserProfileWithID(ctx, refID)
+	if u.Profile.Telegram.Username != "" {
+		isFreeNickname, err = s.db.CheckUserNickname(ctx, u.Profile.Telegram.Username)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		if !refUser.IsGhost && !refUser.HasBan && refUser.Nickname != nil {
-			u.Profile.Referral = &domain.ReferralUserProfile{
-				ID:       refUser.Telegram.ID,
-				Nickname: *refUser.Nickname,
-			}
+		if isFreeNickname {
+			u.Profile.Nickname = &u.Profile.Telegram.Username
 		}
-
-		return nil
 	}
 
-	// TODO implement another referral program
-	return nil
-}
+	if !isFreeNickname {
+		randNickname, err := gonanoid.Generate("abcdefghijklmnopqrstuvwxyz0123456789", 8)
+		if err != nil {
+			return nil, err
+		}
 
-func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument) ([]byte, error) {
+		randNickname = "_" + randNickname
+		u.Profile.Nickname = &randNickname
+	}
+
+	// set jwt
 	jwtClaims, err := domain.NewJWTClaims(u.Profile.Telegram.ID, u.Profile.Nickname)
 	if err != nil {
 		return nil, err
@@ -198,7 +196,86 @@ func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument) ([]byte
 
 	u.Profile.JTI = &jwtClaims.JTI
 
-	return jwtBytes, s.db.CreateUser(ctx, u)
+	// set referral
+	refUser, err := s.setReferral(ctx, u, ref)
+	if err != nil {
+		return nil, err
+	}
+
+	if u.Profile.Referral != nil && len(s.cfg.Rules.Referral) > 0 {
+		if u.Profile.Telegram.IsPremium {
+			u.Points += s.cfg.Rules.Referral[0].Recipient.Premium
+		} else {
+			u.Points += s.cfg.Rules.Referral[0].Recipient.Plain
+		}
+	}
+
+	// try to save here
+	if err := s.db.CreateUser(ctx, u); err != nil {
+		return nil, err
+	}
+
+	// no need to check error, because always will be updated with taps
+	_ = s.rdb.SetLeaderboardPlayerPoints(ctx, u.Profile.Telegram.ID, u.Level, u.Points)
+
+	// indicate that user has not played yet
+	u.PlayedAt = primitive.NewDateTimeFromTime(time.Unix(0, 0).UTC())
+
+	// save referral bonus
+	if refUser != nil && len(s.cfg.Rules.Referral) > 0 {
+		inc := 0
+
+		if u.Profile.Telegram.IsPremium {
+			inc = s.cfg.Rules.Referral[0].Sender.Premium
+		} else {
+			inc = s.cfg.Rules.Referral[0].Sender.Plain
+		}
+
+		if inc > 0 {
+			if refUserPoints, err := s.db.IncPointsWithReferral(ctx, refUser.Profile.Telegram.ID, inc); err == nil {
+				// no need to check error, because always will be updated with taps
+				_ = s.rdb.SetLeaderboardPlayerPoints(ctx, refUser.Profile.Telegram.ID, refUser.Level, refUserPoints)
+			}
+		}
+	}
+
+	return jwtBytes, nil
+}
+
+func (s Service) setReferral(ctx context.Context, u *domain.UserDocument, ref string) (*domain.UserDocument, error) {
+	if ref == "" {
+		return nil, nil
+	}
+
+	if u.Profile.Referral != nil {
+		return nil, nil
+	}
+
+	// plain referral parameter is user telegram id
+	refID, err := strconv.ParseInt(ref, 10, 64)
+	if err == nil {
+		// prevent referral to self
+		if refID == u.Profile.Telegram.ID {
+			return nil, nil
+		}
+
+		refUser, err := s.db.GetUserDocumentWithID(ctx, refID)
+		if err != nil {
+			return nil, err
+		}
+
+		if !refUser.Profile.IsGhost && !refUser.Profile.HasBan && refUser.Profile.Nickname != nil {
+			u.Profile.Referral = &domain.ReferralUserProfile{
+				ID:       refUser.Profile.Telegram.ID,
+				Nickname: *refUser.Profile.Nickname,
+			}
+		}
+
+		return &refUser, nil
+	}
+
+	// TODO implement another referral program
+	return nil, nil
 }
 
 func (s Service) CheckUserNickname(ctx context.Context, nickname string) (bool, error) {
@@ -206,79 +283,36 @@ func (s Service) CheckUserNickname(ctx context.Context, nickname string) (bool, 
 }
 
 // CreateUserNickname update a user profile nickname from null to a `nickname` if no conflict with another user.
-func (s Service) CreateUserNickname(ctx context.Context, uid int64, nickname string) ([]byte, *domain.UserDocument, *domain.ReferralBonus, error) {
+func (s Service) CreateUserNickname(ctx context.Context, uid int64, nickname string) ([]byte, *domain.UserDocument, error) {
 	ok, err := s.db.CheckUserNickname(ctx, nickname)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 
 	if !ok {
-		return nil, nil, nil, domain.ErrConflictNickname
+		return nil, nil, domain.ErrConflictNickname
 	}
 
 	jwtClaims, err := domain.NewJWTClaims(uid, &nickname)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 
 	token, err := s.cfg.JWT.Encode(jwtClaims)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 
 	if err := s.db.UpdateUserNickname(ctx, uid, nickname, jwtClaims.JTI); err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 
 	user, err := s.db.GetUserDocumentWithID(ctx, uid)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 
-	if len(s.cfg.Rules.Referral) > 0 {
-		if user.Profile.Referral != nil {
-			refUser, err := s.db.GetUserDocumentWithID(ctx, user.Profile.Referral.ID)
-			if err != nil {
-				return token, &user, nil, err
-			}
-
-			if !refUser.Profile.HasBan && !refUser.Profile.IsGhost && refUser.Profile.Nickname != nil {
-				ref := &domain.ReferralBonus{
-					UserID:         user.Profile.Telegram.ID,
-					ReferralUserID: refUser.Profile.Telegram.ID,
-				}
-
-				if user.Profile.Telegram.IsPremium {
-					ref.UserPoints = s.cfg.Rules.Referral[0].Recipient.Premium
-					ref.ReferralUserPoints = s.cfg.Rules.Referral[0].Sender.Premium
-				} else {
-					ref.UserPoints = s.cfg.Rules.Referral[0].Recipient.Plain
-					ref.ReferralUserPoints = s.cfg.Rules.Referral[0].Sender.Plain
-				}
-
-				if _, err := s.db.IncPoints(context.Background(), user.Profile.Telegram.ID, ref.UserPoints); err != nil {
-					ref.UserPoints = 0
-					return token, &user, nil, err
-				}
-
-				// no need to check error, because always will be updated with taps
-				_ = s.rdb.SetLeaderboardPlayerPoints(ctx, user.Profile.Telegram.ID, user.Level, ref.UserPoints)
-				user.Points = ref.UserPoints
-
-				if _, err := s.db.IncPointsWithReferral(context.Background(), refUser.Profile.Telegram.ID, ref.ReferralUserPoints); err != nil {
-					ref.ReferralUserPoints = 0
-					return token, &user, nil, err
-				}
-
-				// no need to check error, because always will be updated with taps
-				_ = s.rdb.SetLeaderboardPlayerPoints(ctx, refUser.Profile.Telegram.ID, refUser.Level, ref.ReferralUserPoints+refUser.Points)
-
-				return token, &user, ref, nil
-			}
-		}
-	}
-
-	return token, &user, nil, nil
+	return token, &user, nil
 }
 
 func (s Service) CreateAutoClicker(ctx context.Context, uid int64) (domain.UserDocument, error) {
