@@ -455,7 +455,7 @@ func (s *Suite) TestRechargeTapEnergy_AutoClicker() {
 				ID: 1,
 			},
 		},
-		Points:   2100,
+		Points:   101,
 		Level:    0,
 		PlayedAt: primitive.NewDateTimeFromTime(now.Add(-1 * s.cfg.Rules.Taps[0].Energy.RechargeAvailableAfter).Add(-time.Second)),
 		Tap: domain.UserTap{
@@ -482,14 +482,14 @@ func (s *Suite) TestRechargeTapEnergy_AutoClicker() {
 		uDoc.Profile.Telegram.ID,
 		uDoc.Tap.Energy.RechargeAvailable,
 		s.cfg.Rules.TapsBaseEnergyCharge,
-		2100,
+		101,
 	).Return(uDoc, nil)
 
 	u, err := s.srv.RechargeTapEnergy(ctx, doc.Profile.Telegram.ID)
 	s.NoError(err)
 	s.Equal(u.Tap.Energy.RechargeAvailable, uDoc.Tap.Energy.RechargeAvailable)
 	s.Equal(u.Tap.Energy.Charge, s.cfg.Rules.TapsBaseEnergyCharge)
-	s.Equal(u.Points, 2100)
+	s.Equal(u.Points, 101)
 
 	s.dbMocks.AssertExpectations(s.T())
 	s.dbMocks.AssertCalled(s.T(), "GetUserDocumentWithID", ctx, doc.Profile.Telegram.ID)
