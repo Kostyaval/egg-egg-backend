@@ -1,8 +1,13 @@
 package domain
 
 import (
+	_ "embed"
+	"gopkg.in/yaml.v3"
 	"time"
 )
+
+//go:embed rules.yml
+var rulesByte []byte
 
 type Rules struct {
 	Referral                   ReferralRules    `yaml:"referral" json:"referral"`
@@ -11,6 +16,17 @@ type Rules struct {
 	TapsBaseEnergyCharge       int              `yaml:"tapsBaseEnergyCharge" json:"tapsBaseEnergyCharge"`
 	Taps                       TapRules         `yaml:"taps" json:"taps"`
 	TelegramBotAllowedChannels []int            `yaml:"telegramBotAllowedChannels" json:"telegramBotAllowedChannels"`
+}
+
+func NewRules() (*Rules, error) {
+	rules := &Rules{}
+
+	err := yaml.Unmarshal(rulesByte, rules)
+	if err != nil {
+		return nil, err
+	}
+
+	return rules, nil
 }
 
 // ReferralRules has values of bonus points and index is an egg level.

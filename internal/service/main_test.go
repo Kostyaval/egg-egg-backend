@@ -52,10 +52,6 @@ func (s *Suite) SetupSuite() {
 		s.T().Fatal(err)
 	}
 
-	if err := os.Setenv("RULES_PATH", "../../rules.yml"); err != nil {
-		s.T().Fatal(err)
-	}
-
 	s.cfg, err = config.NewConfig()
 	if err != nil {
 		s.T().Fatal(err)

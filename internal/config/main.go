@@ -4,9 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
-	"gopkg.in/yaml.v3"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 )
@@ -72,22 +70,7 @@ func NewConfig() (*Config, error) {
 	}
 
 	// Setup game rules path
-	rulesPath, ok := os.LookupEnv("RULES_PATH")
-	if !ok || rulesPath == "" {
-		return nil, errors.New("env RULES_PATH is not set")
-	}
-
-	rulesPath, err = filepath.Abs(rulesPath)
-	if err != nil {
-		return nil, err
-	}
-
-	data, err := os.ReadFile(rulesPath)
-	if err != nil {
-		return nil, err
-	}
-
-	err = yaml.Unmarshal(data, &cfg.Rules)
+	cfg.Rules, err = domain.NewRules()
 	if err != nil {
 		return nil, err
 	}

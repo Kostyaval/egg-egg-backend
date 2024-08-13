@@ -15,7 +15,6 @@
 | **JWT_PUBLIC_KEY**     | T |                                                                                  |              |
 | **JWT_ISS**            | F |                                                                                  | `egg.one`    |
 | **JWT_TTL**            | F |                                                                                  | `15m`        |
-| **RULES_PATH**         | T | Path to yaml file described the game rules                                       |              |
 | **CORS_ALLOW_ORIGINS** | F |                                                                                  |              |
 | **CORS_MAX_AGE**       | F | In seconds, e.g. `3600`. To disable caching completely, pass negative value      | `0`          |
 | **API_KEY**            | F | Secret access token for development purposes. Used in header `X-Api-Key`         |              |
