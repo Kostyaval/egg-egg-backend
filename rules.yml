@@ -48,13 +48,13 @@ referral:
 tapsBaseEnergyCharge: 500
 taps:
   # egg level: 0
-  - boostCost: 5000
-    boostAvailable: 0
+  - boostCost: 0
+    boostAvailable: 1
     energy:
       chargeTimeSegment: 3600ms
       boostCharge: 500
-      boostChargeCost: 5000
-      boostChargeAvailable: 0
+      boostChargeCost: 0
+      boostChargeAvailable: 1
       rechargeAvailable: 5
       rechargeAvailableAfter: 1h
     nextLevel:
