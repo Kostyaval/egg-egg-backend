@@ -26,6 +26,7 @@ type meDB interface {
 	ReadTotalUserReferrals(ctx context.Context, uid int64) (int64, error)
 	UpdateUserLevel(ctx context.Context, uid int64, level int, cost int) (domain.UserDocument, error)
 	CreateUser(ctx context.Context, user *domain.UserDocument) error
+	UpdateUserQuests(ctx context.Context, uid int64, quests domain.UserQuests) error
 }
 
 type meRedis interface {
@@ -433,4 +434,51 @@ func (s Service) UpgradeLevel(ctx context.Context, uid int64) (domain.UserDocume
 	}
 
 	return user, nil
+}
+
+func (s Service) StartQuest(ctx context.Context, uid int64, questName string) error {
+	user, err := s.db.GetUserDocumentWithID(ctx, uid)
+	if err != nil {
+		return err
+	}
+
+	if user.Profile.IsGhost {
+		return domain.ErrGhostUser
+	}
+
+	if user.Profile.HasBan {
+		return domain.ErrBannedUser
+	}
+
+	switch questName {
+	case "telegram":
+		if user.Quests.Telegram > -1 {
+			return domain.ErrReplay
+		}
+
+		user.Quests.Telegram = 0
+		user.Quests.TelegramStartedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
+	case "youtube":
+		if user.Quests.Youtube > -1 {
+			return domain.ErrReplay
+		}
+
+		user.Quests.Youtube = 0
+		user.Quests.YoutubeStartedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
+	case "x":
+		if user.Quests.X > -1 {
+			return domain.ErrReplay
+		}
+
+		user.Quests.X = 0
+		user.Quests.XStartedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
+	default:
+		return domain.ErrInvalidQuest
+	}
+
+	if err := s.db.UpdateUserQuests(ctx, uid, user.Quests); err != nil {
+		return err
+	}
+
+	return nil
 }

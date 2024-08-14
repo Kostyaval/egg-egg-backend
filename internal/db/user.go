@@ -291,3 +291,25 @@ func (db DB) CreateUsers(ctx context.Context, users []domain.UserDocument) error
 
 	return err
 }
+
+func (db DB) UpdateUserQuests(ctx context.Context, uid int64, quests domain.UserQuests) error {
+	res, err := db.users.UpdateOne(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: uid},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$set", Value: bson.M{
+			"quests": quests,
+		}},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return domain.ErrNoUser
+	}
+
+	return nil
+}
