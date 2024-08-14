@@ -109,7 +109,7 @@ type AutoClicker struct {
 }
 
 type UserTasks struct {
-	Telegram []int `yaml:"telegram" json:"telegram"`
+	Telegram []int `bson:"telegram" json:"telegram"`
 }
 
 type UserQuests struct {
