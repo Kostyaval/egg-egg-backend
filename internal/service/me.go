@@ -59,8 +59,19 @@ func (s Service) GetMe(ctx context.Context, uid int64) (domain.UserDocument, []b
 		return u, nil, err
 	}
 
-	if err := s.checkUserQuests(ctx, &u); err != nil {
-		return u, nil, err
+	// TODO optimize it for unite with getMe
+	if s.checkUserQuests(&u) {
+		if err := s.db.SetPoints(ctx, u.Profile.Telegram.ID, u.Points); err != nil {
+			return u, nil, err
+		}
+
+		if err := s.rdb.SetLeaderboardPlayerPoints(ctx, u.Profile.Telegram.ID, u.Level, u.Points); err != nil {
+			return u, nil, err
+		}
+
+		if err := s.db.UpdateUserQuests(ctx, u.Profile.Telegram.ID, u.Quests); err != nil {
+			return u, nil, err
+		}
 	}
 
 	// TODO optimize it for unite with autoclicker
@@ -164,7 +175,7 @@ func (s Service) checkAutoClicker(u *domain.UserDocument) int {
 	return u.Points + int(math.Floor(delta/s.cfg.Rules.AutoClicker.Speed.Seconds()))
 }
 
-func (s Service) checkUserQuests(ctx context.Context, u *domain.UserDocument) error {
+func (s Service) checkUserQuests(u *domain.UserDocument) bool {
 	var (
 		hasUpdate      bool
 		now            = time.Now().UTC()
@@ -187,38 +198,25 @@ func (s Service) checkUserQuests(ctx context.Context, u *domain.UserDocument) er
 		}
 	)
 
-	if u.Quests.Telegram == 0 && solvedRandTime(u.Quests.TelegramStartedAt.Time()) {
+	if u.Quests.Telegram == -1 && solvedRandTime(u.Quests.TelegramStartedAt.Time()) {
 		u.Points += s.cfg.Rules.Quests.Telegram
 		u.Quests.Telegram = 1
 		hasUpdate = true
 	}
 
-	if u.Quests.Youtube == 0 && solvedRandTime(u.Quests.YoutubeStartedAt.Time()) {
+	if u.Quests.Youtube == -1 && solvedRandTime(u.Quests.YoutubeStartedAt.Time()) {
 		u.Points += s.cfg.Rules.Quests.Youtube
 		u.Quests.Youtube = 1
 		hasUpdate = true
 	}
 
-	if u.Quests.X == 0 && solvedRandTime(u.Quests.XStartedAt.Time()) {
+	if u.Quests.X == -1 && solvedRandTime(u.Quests.XStartedAt.Time()) {
 		u.Points += s.cfg.Rules.Quests.X
 		u.Quests.X = 1
 		hasUpdate = true
 	}
 
-	// TODO optimize it for unite with getMe
-	if hasUpdate {
-		if err := s.db.SetPoints(ctx, u.Profile.Telegram.ID, u.Points); err != nil {
-			return err
-		}
-
-		if err := s.rdb.SetLeaderboardPlayerPoints(ctx, u.Profile.Telegram.ID, u.Level, u.Points); err != nil {
-			return err
-		}
-
-		return s.db.UpdateUserQuests(ctx, u.Profile.Telegram.ID, u.Quests)
-	}
-
-	return nil
+	return hasUpdate
 }
 
 func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument, ref string) ([]byte, error) {
@@ -515,25 +513,25 @@ func (s Service) StartQuest(ctx context.Context, uid int64, questName string) er
 
 	switch questName {
 	case "telegram":
-		if user.Quests.Telegram > -1 {
+		if user.Quests.Telegram != 0 {
 			return domain.ErrReplay
 		}
 
-		user.Quests.Telegram = 0
+		user.Quests.Telegram = -1
 		user.Quests.TelegramStartedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
 	case "youtube":
-		if user.Quests.Youtube > -1 {
+		if user.Quests.Youtube != 0 {
 			return domain.ErrReplay
 		}
 
-		user.Quests.Youtube = 0
+		user.Quests.Youtube = -1
 		user.Quests.YoutubeStartedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
 	case "x":
-		if user.Quests.X > -1 {
+		if user.Quests.X != 0 {
 			return domain.ErrReplay
 		}
 
-		user.Quests.X = 0
+		user.Quests.X = -1
 		user.Quests.XStartedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
 	default:
 		return domain.ErrInvalidQuest

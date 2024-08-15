@@ -50,9 +50,9 @@ func NewUserDocument(rules *Rules) UserDocument {
 			Telegram: make([]int, 0),
 		},
 		Quests: UserQuests{
-			Telegram: -1,
-			Youtube:  -1,
-			X:        -1,
+			Telegram: 0,
+			Youtube:  0,
+			X:        0,
 		},
 	}
 }
