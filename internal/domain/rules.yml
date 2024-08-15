@@ -167,5 +167,4 @@ autoClicker:
   minLevel: 2
 
 telegramBotAllowedChannels:
-    - -1002241888670
     - -1002185605437
