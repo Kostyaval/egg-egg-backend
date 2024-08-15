@@ -1246,6 +1246,54 @@ func (_c *DBInterface_UpdateUserNickname_Call) RunAndReturn(run func(context.Con
 	return _c
 }
 
+// UpdateUserQuests provides a mock function with given fields: ctx, uid, quests
+func (_m *DBInterface) UpdateUserQuests(ctx context.Context, uid int64, quests domain.UserQuests) error {
+	ret := _m.Called(ctx, uid, quests)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateUserQuests")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int64, domain.UserQuests) error); ok {
+		r0 = rf(ctx, uid, quests)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DBInterface_UpdateUserQuests_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateUserQuests'
+type DBInterface_UpdateUserQuests_Call struct {
+	*mock.Call
+}
+
+// UpdateUserQuests is a helper method to define mock.On call
+//   - ctx context.Context
+//   - uid int64
+//   - quests domain.UserQuests
+func (_e *DBInterface_Expecter) UpdateUserQuests(ctx interface{}, uid interface{}, quests interface{}) *DBInterface_UpdateUserQuests_Call {
+	return &DBInterface_UpdateUserQuests_Call{Call: _e.mock.On("UpdateUserQuests", ctx, uid, quests)}
+}
+
+func (_c *DBInterface_UpdateUserQuests_Call) Run(run func(ctx context.Context, uid int64, quests domain.UserQuests)) *DBInterface_UpdateUserQuests_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(int64), args[2].(domain.UserQuests))
+	})
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserQuests_Call) Return(_a0 error) *DBInterface_UpdateUserQuests_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserQuests_Call) RunAndReturn(run func(context.Context, int64, domain.UserQuests) error) *DBInterface_UpdateUserQuests_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdateUserTap provides a mock function with given fields: ctx, uid, tap, points
 func (_m *DBInterface) UpdateUserTap(ctx context.Context, uid int64, tap domain.UserTap, points int) (domain.UserDocument, error) {
 	ret := _m.Called(ctx, uid, tap, points)

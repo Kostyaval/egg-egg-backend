@@ -20,6 +20,7 @@ type ServiceInterface interface {
 	leaderboardService
 	autoClickerService
 	levelService
+	questsService
 }
 
 func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fiber.App {
@@ -80,6 +81,7 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 	api.Put("/me/tap/energy/boost", h.addTapEnergyBoost)
 	api.Post("/me/tap/autoclicker", h.createAutoClicker)
 	api.Put("/me/tap/autoclicker", h.updateAutoClicker)
+	api.Put("/me/quest", h.updateQuest)
 
 	api.Get("/me/friends", h.readUserFriends)
 	api.Get("/leaderboard", h.leaderboard)

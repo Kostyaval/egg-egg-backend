@@ -2,12 +2,14 @@ package service
 
 import (
 	"context"
+	"crypto/rand"
 	"errors"
 	"github.com/google/uuid"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math"
+	"math/big"
 	"strconv"
 	"time"
 )
@@ -26,6 +28,7 @@ type meDB interface {
 	ReadTotalUserReferrals(ctx context.Context, uid int64) (int64, error)
 	UpdateUserLevel(ctx context.Context, uid int64, level int, cost int) (domain.UserDocument, error)
 	CreateUser(ctx context.Context, user *domain.UserDocument) error
+	UpdateUserQuests(ctx context.Context, uid int64, quests domain.UserQuests) error
 }
 
 type meRedis interface {
@@ -54,6 +57,21 @@ func (s Service) GetMe(ctx context.Context, uid int64) (domain.UserDocument, []b
 	jwtBytes, err := s.cfg.JWT.Encode(jwtClaims)
 	if err != nil {
 		return u, nil, err
+	}
+
+	// TODO optimize it for unite with getMe
+	if s.checkUserQuests(&u) {
+		if err := s.db.SetPoints(ctx, u.Profile.Telegram.ID, u.Points); err != nil {
+			return u, nil, err
+		}
+
+		if err := s.rdb.SetLeaderboardPlayerPoints(ctx, u.Profile.Telegram.ID, u.Level, u.Points); err != nil {
+			return u, nil, err
+		}
+
+		if err := s.db.UpdateUserQuests(ctx, u.Profile.Telegram.ID, u.Quests); err != nil {
+			return u, nil, err
+		}
 	}
 
 	// TODO optimize it for unite with autoclicker
@@ -155,6 +173,50 @@ func (s Service) checkAutoClicker(u *domain.UserDocument) int {
 	}
 
 	return u.Points + int(math.Floor(delta/s.cfg.Rules.AutoClicker.Speed.Seconds()))
+}
+
+func (s Service) checkUserQuests(u *domain.UserDocument) bool {
+	var (
+		hasUpdate      bool
+		now            = time.Now().UTC()
+		solvedRandTime = func(startedAt time.Time) bool {
+			if startedAt.After(now.Add(-2 * time.Hour)) {
+				return false
+			}
+
+			if startedAt.Add(24 * time.Hour).Before(now) {
+				return true
+			}
+
+			d := 24 * time.Hour
+			n, err := rand.Int(rand.Reader, big.NewInt(d.Nanoseconds()))
+			if err != nil {
+				return false
+			}
+
+			return startedAt.Add(time.Duration(n.Int64())).Before(now)
+		}
+	)
+
+	if u.Quests.Telegram == -1 && solvedRandTime(u.Quests.TelegramStartedAt.Time()) {
+		u.Points += s.cfg.Rules.Quests.Telegram
+		u.Quests.Telegram = 1
+		hasUpdate = true
+	}
+
+	if u.Quests.Youtube == -1 && solvedRandTime(u.Quests.YoutubeStartedAt.Time()) {
+		u.Points += s.cfg.Rules.Quests.Youtube
+		u.Quests.Youtube = 1
+		hasUpdate = true
+	}
+
+	if u.Quests.X == -1 && solvedRandTime(u.Quests.XStartedAt.Time()) {
+		u.Points += s.cfg.Rules.Quests.X
+		u.Quests.X = 1
+		hasUpdate = true
+	}
+
+	return hasUpdate
 }
 
 func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument, ref string) ([]byte, error) {
@@ -433,4 +495,51 @@ func (s Service) UpgradeLevel(ctx context.Context, uid int64) (domain.UserDocume
 	}
 
 	return user, nil
+}
+
+func (s Service) StartQuest(ctx context.Context, uid int64, questName string) error {
+	user, err := s.db.GetUserDocumentWithID(ctx, uid)
+	if err != nil {
+		return err
+	}
+
+	if user.Profile.IsGhost {
+		return domain.ErrGhostUser
+	}
+
+	if user.Profile.HasBan {
+		return domain.ErrBannedUser
+	}
+
+	switch questName {
+	case "telegram":
+		if user.Quests.Telegram != 0 {
+			return domain.ErrReplay
+		}
+
+		user.Quests.Telegram = -1
+		user.Quests.TelegramStartedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
+	case "youtube":
+		if user.Quests.Youtube != 0 {
+			return domain.ErrReplay
+		}
+
+		user.Quests.Youtube = -1
+		user.Quests.YoutubeStartedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
+	case "x":
+		if user.Quests.X != 0 {
+			return domain.ErrReplay
+		}
+
+		user.Quests.X = -1
+		user.Quests.XStartedAt = primitive.NewDateTimeFromTime(time.Now().UTC())
+	default:
+		return domain.ErrInvalidQuest
+	}
+
+	if err := s.db.UpdateUserQuests(ctx, uid, user.Quests); err != nil {
+		return err
+	}
+
+	return nil
 }

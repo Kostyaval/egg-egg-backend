@@ -16,6 +16,7 @@ type UserDocument struct {
 	DailyReward    DailyReward        `bson:"dailyReward" json:"dailyReward"`
 	AutoClicker    AutoClicker        `bson:"autoClicker" json:"autoClicker"`
 	Tasks          UserTasks          `bson:"tasks" json:"tasks"`
+	Quests         UserQuests         `bson:"quests" json:"quests"`
 }
 
 func NewUserDocument(rules *Rules) UserDocument {
@@ -47,6 +48,11 @@ func NewUserDocument(rules *Rules) UserDocument {
 		},
 		Tasks: UserTasks{
 			Telegram: make([]int, 0),
+		},
+		Quests: UserQuests{
+			Telegram: 0,
+			Youtube:  0,
+			X:        0,
 		},
 	}
 }
@@ -103,5 +109,14 @@ type AutoClicker struct {
 }
 
 type UserTasks struct {
-	Telegram []int `yaml:"telegram" json:"telegram"`
+	Telegram []int `bson:"telegram" json:"telegram"`
+}
+
+type UserQuests struct {
+	Telegram          int8               `bson:"telegram" json:"telegram"`
+	TelegramStartedAt primitive.DateTime `bson:"telegramStartedAt" json:"-"`
+	Youtube           int8               `bson:"youtube" json:"youtube"`
+	YoutubeStartedAt  primitive.DateTime `bson:"youtubeStartedAt" json:"-"`
+	X                 int8               `bson:"x" json:"x"`
+	XStartedAt        primitive.DateTime `bson:"xStartedAt" json:"-"`
 }

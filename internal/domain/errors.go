@@ -24,4 +24,6 @@ var (
 	ErrNotEnoughReferrals         = errors.New("not enough referrals")
 	ErrNotFollowedTelegramChannel = errors.New("not followed telegram channel")
 	ErrReachedLevelLimit          = errors.New("reached level limit")
+	ErrReplay                     = errors.New("replay")
+	ErrInvalidQuest               = errors.New("invalid quest")
 )

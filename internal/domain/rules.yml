@@ -168,3 +168,9 @@ autoClicker:
 
 telegramBotAllowedChannels:
     - -1002185605437
+
+# egg points for complete quests
+quests:
+  telegram: 2000
+  youtube: 2000
+  x: 2000
