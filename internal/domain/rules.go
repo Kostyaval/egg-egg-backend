@@ -16,6 +16,7 @@ type Rules struct {
 	TapsBaseEnergyCharge       int              `yaml:"tapsBaseEnergyCharge" json:"tapsBaseEnergyCharge"`
 	Taps                       TapRules         `yaml:"taps" json:"taps"`
 	TelegramBotAllowedChannels []int            `yaml:"telegramBotAllowedChannels" json:"telegramBotAllowedChannels"`
+	Quests                     Quests           `yaml:"quests" json:"quests"`
 }
 
 func NewRules() (*Rules, error) {
@@ -68,4 +69,10 @@ type TapRules []struct {
 type LevelTasks struct {
 	Telegram []int `yaml:"telegram" json:"telegram"`
 	Referral int   `yaml:"referral" json:"referral"`
+}
+
+type Quests struct {
+	Telegram int `yaml:"telegram" json:"telegram"`
+	Youtube  int `yaml:"youtube" json:"youtube"`
+	X        int `yaml:"x" json:"x"`
 }

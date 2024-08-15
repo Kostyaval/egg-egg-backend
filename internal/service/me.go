@@ -2,12 +2,14 @@ package service
 
 import (
 	"context"
+	"crypto/rand"
 	"errors"
 	"github.com/google/uuid"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math"
+	"math/big"
 	"strconv"
 	"time"
 )
@@ -54,6 +56,10 @@ func (s Service) GetMe(ctx context.Context, uid int64) (domain.UserDocument, []b
 
 	jwtBytes, err := s.cfg.JWT.Encode(jwtClaims)
 	if err != nil {
+		return u, nil, err
+	}
+
+	if err := s.checkUserQuests(ctx, &u); err != nil {
 		return u, nil, err
 	}
 
@@ -156,6 +162,63 @@ func (s Service) checkAutoClicker(u *domain.UserDocument) int {
 	}
 
 	return u.Points + int(math.Floor(delta/s.cfg.Rules.AutoClicker.Speed.Seconds()))
+}
+
+func (s Service) checkUserQuests(ctx context.Context, u *domain.UserDocument) error {
+	var (
+		hasUpdate      bool
+		now            = time.Now().UTC()
+		solvedRandTime = func(startedAt time.Time) bool {
+			if startedAt.After(now.Add(-2 * time.Hour)) {
+				return false
+			}
+
+			if startedAt.Add(24 * time.Hour).Before(now) {
+				return true
+			}
+
+			d := 24 * time.Hour
+			n, err := rand.Int(rand.Reader, big.NewInt(d.Nanoseconds()))
+			if err != nil {
+				return false
+			}
+
+			return startedAt.Add(time.Duration(n.Int64())).Before(now)
+		}
+	)
+
+	if u.Quests.Telegram == 0 && solvedRandTime(u.Quests.TelegramStartedAt.Time()) {
+		u.Points += s.cfg.Rules.Quests.Telegram
+		u.Quests.Telegram = 1
+		hasUpdate = true
+	}
+
+	if u.Quests.Youtube == 0 && solvedRandTime(u.Quests.YoutubeStartedAt.Time()) {
+		u.Points += s.cfg.Rules.Quests.Youtube
+		u.Quests.Youtube = 1
+		hasUpdate = true
+	}
+
+	if u.Quests.X == 0 && solvedRandTime(u.Quests.XStartedAt.Time()) {
+		u.Points += s.cfg.Rules.Quests.X
+		u.Quests.X = 1
+		hasUpdate = true
+	}
+
+	// TODO optimize it for unite with getMe
+	if hasUpdate {
+		if err := s.db.SetPoints(ctx, u.Profile.Telegram.ID, u.Points); err != nil {
+			return err
+		}
+
+		if err := s.rdb.SetLeaderboardPlayerPoints(ctx, u.Profile.Telegram.ID, u.Level, u.Points); err != nil {
+			return err
+		}
+
+		return s.db.UpdateUserQuests(ctx, u.Profile.Telegram.ID, u.Quests)
+	}
+
+	return nil
 }
 
 func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument, ref string) ([]byte, error) {
