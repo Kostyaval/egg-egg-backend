@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"github.com/google/uuid"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
@@ -261,6 +262,10 @@ func (s Service) setReferral(ctx context.Context, u *domain.UserDocument, ref st
 
 		refUser, err := s.db.GetUserDocumentWithID(ctx, refID)
 		if err != nil {
+			if errors.Is(err, domain.ErrNoUser) {
+				return nil, nil
+			}
+
 			return nil, err
 		}
 
