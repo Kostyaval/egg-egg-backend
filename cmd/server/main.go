@@ -85,6 +85,7 @@ func main() {
 	restAddr := "0.0.0.0:8000"
 
 	go func() {
+		logger.Info("telegram bot", slog.String("username", bot.Bot.Me.Username))
 		logger.With(slog.String("addr", restAddr)).Info("start REST")
 
 		if err := restApp.Listen(restAddr); err != nil {
