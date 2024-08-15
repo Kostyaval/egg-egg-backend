@@ -4,7 +4,6 @@ import "gitlab.com/egg-be/egg-backend/internal/config"
 
 type DBInterface interface {
 	meDB
-	jwtDB
 	tapDB
 	friendsDB
 	leaderboardDB

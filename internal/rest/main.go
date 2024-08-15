@@ -12,8 +12,6 @@ import (
 
 type ServiceInterface interface {
 	meService
-	jwtRefreshService
-	jwtDeleteService
 	nicknameService
 	tapService
 	friendsService
@@ -67,14 +65,10 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 	api := app.Group("/api")
 	api.Get("/me", h.me)
 
-	api.Use(middlewareJWT(&middlewareJWTConfig{log: h.log, cfg: cfg.JWT, mustNickname: false}))
-	api.Put("/me/token", h.jwtRefresh)
-	api.Delete("/me/token", h.jwtDelete)
+	api.Use(middlewareJWT(&middlewareJWTConfig{log: h.log, cfg: cfg.JWT}))
 	api.Get("/me/nickname", h.checkUserNickname)
 	api.Post("/me/nickname", h.createUserNickname)
 	api.Put("/me/level", h.upgradeLevel)
-
-	api.Use(middlewareJWT(&middlewareJWTConfig{log: h.log, cfg: cfg.JWT, mustNickname: true}))
 	api.Put("/me/tap", h.addTap)
 	api.Put("/me/tap/boost", h.addTapBoost)
 	api.Put("/me/tap/energy", h.rechargeTapEnergy)

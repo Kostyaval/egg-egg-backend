@@ -16,7 +16,6 @@ import (
 
 type meDB interface {
 	GetUserDocumentWithID(ctx context.Context, uid int64) (domain.UserDocument, error)
-	UpdateUserJWT(ctx context.Context, uid int64, jti uuid.UUID) error
 	CheckUserNickname(ctx context.Context, nickname string) (bool, error)
 	UpdateUserNickname(ctx context.Context, uid int64, nickname string, jti uuid.UUID) error
 	IncPointsWithReferral(ctx context.Context, uid int64, points int) (int, error)
@@ -122,10 +121,6 @@ func (s Service) GetMe(ctx context.Context, uid int64) (domain.UserDocument, []b
 		}
 
 		u.PlayedAt = prevPlayedAt
-	}
-
-	if err := s.db.UpdateUserJWT(ctx, uid, jwtClaims.JTI); err != nil {
-		return u, nil, err
 	}
 
 	return u, jwtBytes, nil
@@ -256,8 +251,6 @@ func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument, ref str
 	if err != nil {
 		return nil, err
 	}
-
-	u.Profile.JTI = &jwtClaims.JTI
 
 	// set referral
 	refUser, err := s.setReferral(ctx, u, ref)

@@ -18,7 +18,6 @@ import (
 
 type JWTConfig struct {
 	Iss        string
-	TTL        time.Duration
 	PrivateKey jwk.Key
 	PublicKey  jwk.Key
 }
@@ -37,15 +36,6 @@ func newJWTConfig() (*JWTConfig, error) {
 		cfg.Iss = "egg.one"
 	} else {
 		cfg.Iss = strings.TrimSpace(iss)
-	}
-
-	// Set TTL for tokens
-	if ttl, ok := os.LookupEnv("JWT_TTL"); !ok || ttl == "" {
-		cfg.TTL, _ = time.ParseDuration("15m")
-	} else {
-		if cfg.TTL, err = time.ParseDuration(ttl); err != nil {
-			return nil, err
-		}
 	}
 
 	// Set private key
@@ -121,7 +111,7 @@ func newJWTConfig() (*JWTConfig, error) {
 
 func (cfg JWTConfig) Encode(c *domain.JWTClaims) ([]byte, error) {
 	now := time.Now().UTC().Truncate(time.Second)
-	exp := now.Add(cfg.TTL)
+	exp := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, int(time.Second-time.Nanosecond), time.UTC)
 
 	token, err := jwt.NewBuilder().
 		Issuer(cfg.Iss).

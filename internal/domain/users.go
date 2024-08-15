@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )
@@ -80,7 +79,6 @@ type UserProfile struct {
 	IsGhost   bool                 `bson:"isGhost" json:"-"`
 	Telegram  TelegramUserProfile  `bson:"telegram" json:"telegram"`
 	Referral  *ReferralUserProfile `bson:"ref" json:"referral"`
-	JTI       *uuid.UUID           `bson:"jti" json:"-"`
 }
 
 type ReferralUserProfile struct {

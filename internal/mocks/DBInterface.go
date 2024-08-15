@@ -186,53 +186,6 @@ func (_c *DBInterface_CreateUserAutoClicker_Call) RunAndReturn(run func(context.
 	return _c
 }
 
-// DeleteUserJWT provides a mock function with given fields: ctx, uid
-func (_m *DBInterface) DeleteUserJWT(ctx context.Context, uid int64) error {
-	ret := _m.Called(ctx, uid)
-
-	if len(ret) == 0 {
-		panic("no return value specified for DeleteUserJWT")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64) error); ok {
-		r0 = rf(ctx, uid)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// DBInterface_DeleteUserJWT_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteUserJWT'
-type DBInterface_DeleteUserJWT_Call struct {
-	*mock.Call
-}
-
-// DeleteUserJWT is a helper method to define mock.On call
-//   - ctx context.Context
-//   - uid int64
-func (_e *DBInterface_Expecter) DeleteUserJWT(ctx interface{}, uid interface{}) *DBInterface_DeleteUserJWT_Call {
-	return &DBInterface_DeleteUserJWT_Call{Call: _e.mock.On("DeleteUserJWT", ctx, uid)}
-}
-
-func (_c *DBInterface_DeleteUserJWT_Call) Run(run func(ctx context.Context, uid int64)) *DBInterface_DeleteUserJWT_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int64))
-	})
-	return _c
-}
-
-func (_c *DBInterface_DeleteUserJWT_Call) Return(_a0 error) *DBInterface_DeleteUserJWT_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *DBInterface_DeleteUserJWT_Call) RunAndReturn(run func(context.Context, int64) error) *DBInterface_DeleteUserJWT_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // GetUserDocumentWithID provides a mock function with given fields: ctx, uid
 func (_m *DBInterface) GetUserDocumentWithID(ctx context.Context, uid int64) (domain.UserDocument, error) {
 	ret := _m.Called(ctx, uid)
@@ -286,63 +239,6 @@ func (_c *DBInterface_GetUserDocumentWithID_Call) Return(_a0 domain.UserDocument
 }
 
 func (_c *DBInterface_GetUserDocumentWithID_Call) RunAndReturn(run func(context.Context, int64) (domain.UserDocument, error)) *DBInterface_GetUserDocumentWithID_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// GetUserProfileWithID provides a mock function with given fields: ctx, uid
-func (_m *DBInterface) GetUserProfileWithID(ctx context.Context, uid int64) (domain.UserProfile, error) {
-	ret := _m.Called(ctx, uid)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetUserProfileWithID")
-	}
-
-	var r0 domain.UserProfile
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64) (domain.UserProfile, error)); ok {
-		return rf(ctx, uid)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, int64) domain.UserProfile); ok {
-		r0 = rf(ctx, uid)
-	} else {
-		r0 = ret.Get(0).(domain.UserProfile)
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, int64) error); ok {
-		r1 = rf(ctx, uid)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// DBInterface_GetUserProfileWithID_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetUserProfileWithID'
-type DBInterface_GetUserProfileWithID_Call struct {
-	*mock.Call
-}
-
-// GetUserProfileWithID is a helper method to define mock.On call
-//   - ctx context.Context
-//   - uid int64
-func (_e *DBInterface_Expecter) GetUserProfileWithID(ctx interface{}, uid interface{}) *DBInterface_GetUserProfileWithID_Call {
-	return &DBInterface_GetUserProfileWithID_Call{Call: _e.mock.On("GetUserProfileWithID", ctx, uid)}
-}
-
-func (_c *DBInterface_GetUserProfileWithID_Call) Run(run func(ctx context.Context, uid int64)) *DBInterface_GetUserProfileWithID_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int64))
-	})
-	return _c
-}
-
-func (_c *DBInterface_GetUserProfileWithID_Call) Return(_a0 domain.UserProfile, _a1 error) *DBInterface_GetUserProfileWithID_Call {
-	_c.Call.Return(_a0, _a1)
-	return _c
-}
-
-func (_c *DBInterface_GetUserProfileWithID_Call) RunAndReturn(run func(context.Context, int64) (domain.UserProfile, error)) *DBInterface_GetUserProfileWithID_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1086,54 +982,6 @@ func (_c *DBInterface_UpdateUserAutoClicker_Call) Return(_a0 domain.UserDocument
 }
 
 func (_c *DBInterface_UpdateUserAutoClicker_Call) RunAndReturn(run func(context.Context, int64, bool) (domain.UserDocument, error)) *DBInterface_UpdateUserAutoClicker_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
-// UpdateUserJWT provides a mock function with given fields: ctx, uid, jti
-func (_m *DBInterface) UpdateUserJWT(ctx context.Context, uid int64, jti uuid.UUID) error {
-	ret := _m.Called(ctx, uid, jti)
-
-	if len(ret) == 0 {
-		panic("no return value specified for UpdateUserJWT")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64, uuid.UUID) error); ok {
-		r0 = rf(ctx, uid, jti)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// DBInterface_UpdateUserJWT_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateUserJWT'
-type DBInterface_UpdateUserJWT_Call struct {
-	*mock.Call
-}
-
-// UpdateUserJWT is a helper method to define mock.On call
-//   - ctx context.Context
-//   - uid int64
-//   - jti uuid.UUID
-func (_e *DBInterface_Expecter) UpdateUserJWT(ctx interface{}, uid interface{}, jti interface{}) *DBInterface_UpdateUserJWT_Call {
-	return &DBInterface_UpdateUserJWT_Call{Call: _e.mock.On("UpdateUserJWT", ctx, uid, jti)}
-}
-
-func (_c *DBInterface_UpdateUserJWT_Call) Run(run func(ctx context.Context, uid int64, jti uuid.UUID)) *DBInterface_UpdateUserJWT_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int64), args[2].(uuid.UUID))
-	})
-	return _c
-}
-
-func (_c *DBInterface_UpdateUserJWT_Call) Return(_a0 error) *DBInterface_UpdateUserJWT_Call {
-	_c.Call.Return(_a0)
-	return _c
-}
-
-func (_c *DBInterface_UpdateUserJWT_Call) RunAndReturn(run func(context.Context, int64, uuid.UUID) error) *DBInterface_UpdateUserJWT_Call {
 	_c.Call.Return(run)
 	return _c
 }

@@ -2,8 +2,6 @@ package service
 
 import (
 	"context"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/mock"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"math"
@@ -101,10 +99,8 @@ func (s *Suite) TestGetMe() {
 	)
 
 	ctx := context.Background()
-	jti := mock.MatchedBy(func(_ uuid.UUID) bool { return true })
 
 	s.dbMocks.On("GetUserDocumentWithID", ctx, uid).Return(doc, nil)
-	s.dbMocks.On("UpdateUserJWT", ctx, uid, jti).Return(nil)
 
 	u, t, err := s.srv.GetMe(ctx, uid)
 	s.Nil(err)
@@ -117,7 +113,6 @@ func (s *Suite) TestGetMe() {
 	s.dbMocks.AssertExpectations(s.T())
 	s.dbMocks.AssertCalled(s.T(), "GetUserDocumentWithID", ctx, doc.Profile.Telegram.ID)
 	s.dbMocks.AssertNotCalled(s.T(), "SetDailyReward")
-	s.dbMocks.AssertCalled(s.T(), "UpdateUserJWT", ctx, doc.Profile.Telegram.ID, jti)
 }
 
 func (s *Suite) TestGetMe_DailyReward() {
@@ -146,12 +141,10 @@ func (s *Suite) TestGetMe_DailyReward() {
 	)
 
 	ctx := context.Background()
-	jti := mock.MatchedBy(func(_ uuid.UUID) bool { return true })
 
 	s.dbMocks.On("GetUserDocumentWithID", ctx, uid).Return(doc, nil)
 	s.dbMocks.On("SetDailyReward", ctx, uid, dailyRewardPoints, dailyReward).Return(nil)
 	s.rdbMocks.On("SetLeaderboardPlayerPoints", ctx, uid, doc.Level, dailyRewardPoints).Return(nil)
-	s.dbMocks.On("UpdateUserJWT", ctx, uid, jti).Return(nil)
 
 	u, t, err := s.srv.GetMe(ctx, uid)
 	s.Nil(err)
@@ -166,7 +159,6 @@ func (s *Suite) TestGetMe_DailyReward() {
 	s.dbMocks.AssertCalled(s.T(), "GetUserDocumentWithID", ctx, doc.Profile.Telegram.ID)
 	s.dbMocks.AssertCalled(s.T(), "SetDailyReward", ctx, uid, dailyRewardPoints, dailyReward)
 	s.rdbMocks.AssertCalled(s.T(), "SetLeaderboardPlayerPoints", ctx, uid, doc.Level, dailyRewardPoints)
-	s.dbMocks.AssertCalled(s.T(), "UpdateUserJWT", ctx, doc.Profile.Telegram.ID, jti)
 }
 
 func (s *Suite) TestGetMe_checkDailyReward() {
@@ -259,12 +251,10 @@ func (s *Suite) TestGetMe_AutoClicker() {
 	)
 
 	ctx := context.Background()
-	jti := mock.MatchedBy(func(_ uuid.UUID) bool { return true })
 
 	s.dbMocks.On("GetUserDocumentWithID", ctx, uid).Return(doc, nil)
 	s.dbMocks.On("SetPoints", ctx, uid, autoClickerPoints).Return(nil)
 	s.rdbMocks.On("SetLeaderboardPlayerPoints", ctx, uid, doc.Level, autoClickerPoints).Return(nil)
-	s.dbMocks.On("UpdateUserJWT", ctx, uid, jti).Return(nil)
 
 	u, t, err := s.srv.GetMe(ctx, uid)
 	s.Nil(err)
@@ -280,7 +270,6 @@ func (s *Suite) TestGetMe_AutoClicker() {
 	s.dbMocks.AssertNotCalled(s.T(), "SetDailyReward")
 	s.dbMocks.AssertCalled(s.T(), "SetPoints", ctx, uid, u.Points)
 	s.rdbMocks.AssertCalled(s.T(), "SetLeaderboardPlayerPoints", ctx, uid, doc.Level, u.Points)
-	s.dbMocks.AssertCalled(s.T(), "UpdateUserJWT", ctx, doc.Profile.Telegram.ID, jti)
 }
 
 func (s *Suite) TestGetMe_DailyRewardWithAutoClicker() {
@@ -315,14 +304,12 @@ func (s *Suite) TestGetMe_DailyRewardWithAutoClicker() {
 	)
 
 	ctx := context.Background()
-	jti := mock.MatchedBy(func(_ uuid.UUID) bool { return true })
 
 	s.dbMocks.On("GetUserDocumentWithID", ctx, uid).Return(doc, nil)
 	s.dbMocks.On("SetDailyReward", ctx, uid, dailyRewardPoints, dailyReward).Return(nil)
 	s.rdbMocks.On("SetLeaderboardPlayerPoints", ctx, uid, doc.Level, dailyRewardPoints).Return(nil)
 	s.dbMocks.On("SetPoints", ctx, uid, autoClickerPoints).Return(nil)
 	s.rdbMocks.On("SetLeaderboardPlayerPoints", ctx, uid, doc.Level, autoClickerPoints).Return(nil)
-	s.dbMocks.On("UpdateUserJWT", ctx, uid, jti).Return(nil)
 
 	u, t, err := s.srv.GetMe(ctx, uid)
 	s.Nil(err)
@@ -339,7 +326,6 @@ func (s *Suite) TestGetMe_DailyRewardWithAutoClicker() {
 	s.rdbMocks.AssertCalled(s.T(), "SetLeaderboardPlayerPoints", ctx, uid, doc.Level, dailyRewardPoints)
 	s.dbMocks.AssertCalled(s.T(), "SetPoints", ctx, uid, autoClickerPoints)
 	s.rdbMocks.AssertCalled(s.T(), "SetLeaderboardPlayerPoints", ctx, uid, doc.Level, autoClickerPoints)
-	s.dbMocks.AssertCalled(s.T(), "UpdateUserJWT", ctx, doc.Profile.Telegram.ID, jti)
 }
 
 func (s *Suite) TestGetMe_checkAutoClicker() {
@@ -408,7 +394,6 @@ func (s *Suite) TestGetMe_ResetTapEnergyRechargeAvailable() {
 	)
 
 	ctx := context.Background()
-	jti := mock.MatchedBy(func(_ uuid.UUID) bool { return true })
 
 	s.dbMocks.On("GetUserDocumentWithID", ctx, uid).Return(doc, nil)
 
@@ -421,8 +406,6 @@ func (s *Suite) TestGetMe_ResetTapEnergyRechargeAvailable() {
 		s.cfg.Rules.Taps[doc.Level].Energy.RechargeAvailable,
 		s.cfg.Rules.TapsBaseEnergyCharge,
 		doc.Points).Return(energyRechargeDoc, nil)
-
-	s.dbMocks.On("UpdateUserJWT", ctx, uid, jti).Return(nil)
 
 	u, t, err := s.srv.GetMe(ctx, uid)
 	s.Nil(err)
@@ -445,5 +428,4 @@ func (s *Suite) TestGetMe_ResetTapEnergyRechargeAvailable() {
 		u.Tap.Energy.RechargeAvailable,
 		u.Tap.Energy.Charge,
 		u.Points)
-	s.dbMocks.AssertCalled(s.T(), "UpdateUserJWT", ctx, doc.Profile.Telegram.ID, jti)
 }
