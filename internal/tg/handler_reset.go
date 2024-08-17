@@ -218,10 +218,10 @@ func (h handler) reset(c tele.Context) error {
 						users[i].Tap.Energy.Charge = randInt(0, h.rules.TapsBaseEnergyCharge)
 
 						if users[i].Level > 0 {
-							users[i].Tasks.Telegram = h.rules.Taps[0].NextLevel.Tasks.Telegram
+							users[i].Profile.Channel.ID = h.rules.TelegramBotAllowedChannels[0]
 						} else {
 							if randBool() {
-								users[i].Tasks.Telegram = h.rules.Taps[0].NextLevel.Tasks.Telegram
+								users[i].Profile.Channel.ID = h.rules.TelegramBotAllowedChannels[0]
 							}
 						}
 

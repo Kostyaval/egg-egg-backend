@@ -238,12 +238,6 @@ func (db DB) SetUserIsTelegramChannelLeft(ctx context.Context, uid int64, channe
 	return nil
 }
 
-func (db DB) ReadTotalUserReferrals(ctx context.Context, uid int64) (int64, error) {
-	return db.users.CountDocuments(ctx, bson.M{
-		"profile.referral.id": uid,
-	})
-}
-
 func (db DB) UpdateUserLevel(ctx context.Context, uid int64, level int, cost int) (domain.UserDocument, error) {
 	var doc domain.UserDocument
 

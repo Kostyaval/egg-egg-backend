@@ -15,7 +15,7 @@ type Rules struct {
 	AutoClicker                AutoClickerRules `yaml:"autoClicker" json:"autoClicker"`
 	TapsBaseEnergyCharge       int              `yaml:"tapsBaseEnergyCharge" json:"tapsBaseEnergyCharge"`
 	Taps                       TapRules         `yaml:"taps" json:"taps"`
-	TelegramBotAllowedChannels []int            `yaml:"telegramBotAllowedChannels" json:"telegramBotAllowedChannels"`
+	TelegramBotAllowedChannels []int64          `yaml:"telegramBotAllowedChannels" json:"telegramBotAllowedChannels"`
 	Quests                     Quests           `yaml:"quests" json:"quests"`
 }
 
@@ -61,14 +61,9 @@ type TapRules []struct {
 		RechargeAvailableAfter time.Duration `yaml:"rechargeAvailableAfter" json:"rechargeAvailableAfter"`
 	} `yaml:"energy" json:"energy"`
 	NextLevel struct {
-		Tasks LevelTasks `yaml:"tasks" json:"tasks"`
-		Cost  int        `yaml:"cost" json:"cost"`
+		Referrals int `yaml:"referrals" json:"referrals"`
+		Cost      int `yaml:"cost" json:"cost"`
 	} `yaml:"nextLevel" json:"nextLevel"`
-}
-
-type LevelTasks struct {
-	Telegram []int `yaml:"telegram" json:"telegram"`
-	Referral int   `yaml:"referral" json:"referral"`
 }
 
 type Quests struct {

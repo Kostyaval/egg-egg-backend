@@ -257,3 +257,73 @@ func TestUserDocument_calculateIsChannelMember(t *testing.T) {
 	u.calculateIsChannelMember()
 	a.True(u.Profile.IsChannelMember)
 }
+
+func TestUserDocument_CalculateNextLevelAvailability(t *testing.T) {
+	t.Parallel()
+
+	rules, err := NewRules()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	a := assert.New(t)
+	u := NewUserDocument(rules)
+
+	// initial
+	a.False(u.IsNextLevelAvailable)
+	u.calculateNextLevelAvailability(rules)
+	a.False(u.IsNextLevelAvailable)
+
+	u.Profile.Channel.ID = 1
+	u.calculateIsChannelMember()
+	a.True(u.Profile.IsChannelMember)
+
+	for k, v := range rules.Taps {
+		u.Points = v.NextLevel.Cost
+		u.ReferralCount = v.NextLevel.Referrals
+		u.Level = Level(k)
+
+		u.calculateNextLevelAvailability(rules)
+
+		if k != len(rules.Taps)-1 {
+			a.True(u.IsNextLevelAvailable)
+		} else {
+			a.False(u.IsNextLevelAvailable)
+		}
+	}
+
+	for k, v := range rules.Taps {
+		u.Points = v.NextLevel.Cost + 1
+		u.ReferralCount = v.NextLevel.Referrals + 1
+		u.Level = Level(k)
+
+		u.calculateNextLevelAvailability(rules)
+
+		if k != len(rules.Taps)-1 {
+			a.True(u.IsNextLevelAvailable)
+		} else {
+			a.False(u.IsNextLevelAvailable)
+		}
+	}
+
+	for k, v := range rules.Taps {
+		u.Points = v.NextLevel.Cost - 1
+		u.ReferralCount = v.NextLevel.Referrals - 1
+		u.Level = Level(k)
+
+		u.calculateNextLevelAvailability(rules)
+		a.False(u.IsNextLevelAvailable)
+	}
+
+	u.Profile.Channel.ID = 0
+	u.calculateIsChannelMember()
+
+	for k, v := range rules.Taps {
+		u.Points = v.NextLevel.Cost
+		u.ReferralCount = v.NextLevel.Referrals
+		u.Level = Level(k)
+
+		u.calculateNextLevelAvailability(rules)
+		a.False(u.IsNextLevelAvailable)
+	}
+}

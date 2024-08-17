@@ -9,17 +9,17 @@ import (
 )
 
 type UserDocument struct {
-	Profile        UserProfile        `bson:"profile" json:"profile"`
-	PlayedAt       primitive.DateTime `bson:"playedAt" json:"playedAt"`
-	Points         int                `bson:"points" json:"points"`
-	ReferralPoints int                `bson:"referralPoints" json:"referralPoints"`
-	ReferralCount  int                `bson:"referralCount" json:"referralCount"`
-	Level          Level              `bson:"level" json:"level"`
-	Tap            UserTap            `bson:"tap" json:"tap"`
-	DailyReward    DailyReward        `bson:"dailyReward" json:"dailyReward"`
-	AutoClicker    AutoClicker        `bson:"autoClicker" json:"autoClicker"`
-	Tasks          UserTasks          `bson:"tasks" json:"tasks"`
-	Quests         UserQuests         `bson:"quests" json:"quests"`
+	Profile              UserProfile        `bson:"profile" json:"profile"`
+	PlayedAt             primitive.DateTime `bson:"playedAt" json:"playedAt"`
+	Points               int                `bson:"points" json:"points"`
+	ReferralPoints       int                `bson:"referralPoints" json:"referralPoints"`
+	ReferralCount        int                `bson:"referralCount" json:"referralCount"`
+	Level                Level              `bson:"level" json:"level"`
+	IsNextLevelAvailable bool               `json:"isNextLevelAvailable"`
+	Tap                  UserTap            `bson:"tap" json:"tap"`
+	DailyReward          DailyReward        `bson:"dailyReward" json:"dailyReward"`
+	AutoClicker          AutoClicker        `bson:"autoClicker" json:"autoClicker"`
+	Quests               UserQuests         `bson:"quests" json:"quests"`
 }
 
 func NewUserDocument(rules *Rules) UserDocument {
@@ -50,9 +50,6 @@ func NewUserDocument(rules *Rules) UserDocument {
 			ReceivedAt: primitive.NewDateTimeFromTime(now),
 			Notify:     true, // at registration user gets daily reward
 		},
-		Tasks: UserTasks{
-			Telegram: make([]int, 0),
-		},
 		Quests: UserQuests{
 			Telegram: 0,
 			Youtube:  0,
@@ -80,6 +77,9 @@ func (u *UserDocument) Calculate(rules *Rules) {
 	u.calculateDailyReward(rules)
 	u.calculateTapEnergyRecharge(rules)
 	u.calculateIsChannelMember()
+
+	// at the end because depends on points and IsChannelMember
+	u.calculateNextLevelAvailability(rules)
 }
 
 func (u *UserDocument) calculateTapEnergyCharge(rules *Rules) {
@@ -211,6 +211,24 @@ func (u *UserDocument) calculateIsChannelMember() {
 	u.Profile.IsChannelMember = u.Profile.Channel.ID != 0
 }
 
+func (u *UserDocument) calculateNextLevelAvailability(rules *Rules) {
+	u.IsNextLevelAvailable = false
+
+	if int(u.Level) >= len(rules.Taps)-1 {
+		return
+	}
+
+	if !u.Profile.IsChannelMember {
+		return
+	}
+
+	if u.ReferralCount < rules.Taps[u.Level].NextLevel.Referrals {
+		return
+	}
+
+	u.IsNextLevelAvailable = u.Points >= rules.Taps[u.Level].NextLevel.Cost
+}
+
 type UserTap struct {
 	Count    int                `bson:"count" json:"-"`
 	Points   int                `bson:"points" json:"points"`
@@ -269,10 +287,6 @@ type AutoClicker struct {
 	IsEnabled   bool `bson:"isEnabled" json:"isEnabled"`
 	IsAvailable bool `bson:"isAvailable" json:"isAvailable"`
 	Points      int  `json:"points"`
-}
-
-type UserTasks struct {
-	Telegram []int `bson:"telegram" json:"telegram"`
 }
 
 type UserQuests struct {

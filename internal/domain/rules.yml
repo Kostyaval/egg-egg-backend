@@ -58,10 +58,7 @@ taps:
       rechargeAvailable: 5
       rechargeAvailableAfter: 1s
     nextLevel:
-      tasks:
-        telegram:
-          - -1002241888670
-        referral: 1
+      referrals: 1
       cost: 100000
 
   # egg level: 1
@@ -75,10 +72,7 @@ taps:
       rechargeAvailable: 5
       rechargeAvailableAfter: 1s
     nextLevel:
-      tasks:
-        telegram:
-          - -1002241888670
-        referral: 2
+      referrals: 2
       cost: 250000
 
   # egg level: 2
@@ -92,10 +86,7 @@ taps:
       rechargeAvailable: 5
       rechargeAvailableAfter: 1s
     nextLevel:
-      tasks:
-        telegram:
-          - -1002241888670
-        referral: 3
+      referrals: 3
       cost: 500000
 
   # egg level: 3
@@ -109,9 +100,7 @@ taps:
       rechargeAvailable: 5
       rechargeAvailableAfter: 1s
     nextLevel:
-      telegram:
-        - -1002241888670
-      referral: 4
+      referrals: 4
       cost: 1000000
 
   # egg level: 4
@@ -125,10 +114,7 @@ taps:
       rechargeAvailable: 5
       rechargeAvailableAfter: 1s
     nextLevel:
-      tasks:
-        telegram:
-          - -1002241888670
-        referral: 5
+      referrals: 5
       cost: 2500000
 
   # egg level: 5
@@ -142,9 +128,7 @@ taps:
       rechargeAvailable: 5
       rechargeAvailableAfter: 1s
     nextLevel:
-      tasks:
-        telegram:
-        referral: 0
+      referrals: 0
       cost: 0
 
 # daily rewards egg points

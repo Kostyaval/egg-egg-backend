@@ -27,8 +27,7 @@ func (h handler) upgradeLevel(c *fiber.Ctx) error {
 			return newHTTPError(fiber.StatusForbidden, err.Error())
 		}
 
-		if errors.Is(err, domain.ErrNoPoints) || errors.Is(err, domain.ErrReachedLevelLimit) ||
-			errors.Is(err, domain.ErrNotFollowedTelegramChannel) || errors.Is(err, domain.ErrNotEnoughReferrals) {
+		if errors.Is(err, domain.ErrNextLevelNotAvailable) {
 			return newHTTPError(fiber.StatusBadRequest, err.Error())
 		}
 
