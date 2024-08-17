@@ -301,9 +301,9 @@ func (_c *DBInterface_IncPoints_Call) RunAndReturn(run func(context.Context, int
 	return _c
 }
 
-// IncPointsWithReferral provides a mock function with given fields: ctx, uid, points
-func (_m *DBInterface) IncPointsWithReferral(ctx context.Context, uid int64, points int) (int, error) {
-	ret := _m.Called(ctx, uid, points)
+// IncPointsWithReferral provides a mock function with given fields: ctx, uid, points, incNewUser
+func (_m *DBInterface) IncPointsWithReferral(ctx context.Context, uid int64, points int, incNewUser bool) (int, error) {
+	ret := _m.Called(ctx, uid, points, incNewUser)
 
 	if len(ret) == 0 {
 		panic("no return value specified for IncPointsWithReferral")
@@ -311,17 +311,17 @@ func (_m *DBInterface) IncPointsWithReferral(ctx context.Context, uid int64, poi
 
 	var r0 int
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int64, int) (int, error)); ok {
-		return rf(ctx, uid, points)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int, bool) (int, error)); ok {
+		return rf(ctx, uid, points, incNewUser)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int64, int) int); ok {
-		r0 = rf(ctx, uid, points)
+	if rf, ok := ret.Get(0).(func(context.Context, int64, int, bool) int); ok {
+		r0 = rf(ctx, uid, points, incNewUser)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, int64, int) error); ok {
-		r1 = rf(ctx, uid, points)
+	if rf, ok := ret.Get(1).(func(context.Context, int64, int, bool) error); ok {
+		r1 = rf(ctx, uid, points, incNewUser)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -338,13 +338,14 @@ type DBInterface_IncPointsWithReferral_Call struct {
 //   - ctx context.Context
 //   - uid int64
 //   - points int
-func (_e *DBInterface_Expecter) IncPointsWithReferral(ctx interface{}, uid interface{}, points interface{}) *DBInterface_IncPointsWithReferral_Call {
-	return &DBInterface_IncPointsWithReferral_Call{Call: _e.mock.On("IncPointsWithReferral", ctx, uid, points)}
+//   - incNewUser bool
+func (_e *DBInterface_Expecter) IncPointsWithReferral(ctx interface{}, uid interface{}, points interface{}, incNewUser interface{}) *DBInterface_IncPointsWithReferral_Call {
+	return &DBInterface_IncPointsWithReferral_Call{Call: _e.mock.On("IncPointsWithReferral", ctx, uid, points, incNewUser)}
 }
 
-func (_c *DBInterface_IncPointsWithReferral_Call) Run(run func(ctx context.Context, uid int64, points int)) *DBInterface_IncPointsWithReferral_Call {
+func (_c *DBInterface_IncPointsWithReferral_Call) Run(run func(ctx context.Context, uid int64, points int, incNewUser bool)) *DBInterface_IncPointsWithReferral_Call {
 	_c.Call.Run(func(args mock.Arguments) {
-		run(args[0].(context.Context), args[1].(int64), args[2].(int))
+		run(args[0].(context.Context), args[1].(int64), args[2].(int), args[3].(bool))
 	})
 	return _c
 }
@@ -354,7 +355,7 @@ func (_c *DBInterface_IncPointsWithReferral_Call) Return(_a0 int, _a1 error) *DB
 	return _c
 }
 
-func (_c *DBInterface_IncPointsWithReferral_Call) RunAndReturn(run func(context.Context, int64, int) (int, error)) *DBInterface_IncPointsWithReferral_Call {
+func (_c *DBInterface_IncPointsWithReferral_Call) RunAndReturn(run func(context.Context, int64, int, bool) (int, error)) *DBInterface_IncPointsWithReferral_Call {
 	_c.Call.Return(run)
 	return _c
 }

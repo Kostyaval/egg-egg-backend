@@ -15,7 +15,7 @@ type meDB interface {
 	GetUserDocumentWithID(ctx context.Context, uid int64) (domain.UserDocument, error)
 	CheckUserNickname(ctx context.Context, nickname string) (bool, error)
 	UpdateUserNickname(ctx context.Context, uid int64, nickname string, jti uuid.UUID) error
-	IncPointsWithReferral(ctx context.Context, uid int64, points int) (int, error)
+	IncPointsWithReferral(ctx context.Context, uid int64, points int, incNewUser bool) (int, error)
 	IncPoints(ctx context.Context, uid int64, points int) (int, error)
 	SetPoints(ctx context.Context, uid int64, points int) error
 	SetDailyReward(ctx context.Context, uid int64, points int, reward *domain.DailyReward) error
@@ -141,7 +141,7 @@ func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument, ref str
 		}
 
 		if inc > 0 {
-			if refUserPoints, err := s.db.IncPointsWithReferral(ctx, refUser.Profile.Telegram.ID, inc); err == nil {
+			if refUserPoints, err := s.db.IncPointsWithReferral(ctx, refUser.Profile.Telegram.ID, inc, true); err == nil {
 				// no need to check error, because always will be updated with taps
 				_ = s.rdb.SetLeaderboardPlayerPoints(ctx, refUser.Profile.Telegram.ID, refUser.Level, refUserPoints)
 			}

@@ -11,9 +11,14 @@ import (
 	"time"
 )
 
-func (db DB) IncPointsWithReferral(ctx context.Context, uid int64, points int) (int, error) {
+func (db DB) IncPointsWithReferral(ctx context.Context, uid int64, points int, incNewUser bool) (int, error) {
 	var result struct {
 		Points int `bson:"points"`
+	}
+
+	incRefCount := 0
+	if incNewUser {
+		incRefCount = 1
 	}
 
 	opt := options.FindOneAndUpdate().SetReturnDocument(options.After)
@@ -23,7 +28,7 @@ func (db DB) IncPointsWithReferral(ctx context.Context, uid int64, points int) (
 		{Key: "profile.hasBan", Value: false},
 		{Key: "profile.isGhost", Value: false},
 	}, bson.D{
-		{Key: "$inc", Value: bson.M{"points": points, "referralPoints": points}},
+		{Key: "$inc", Value: bson.M{"points": points, "referralPoints": points, "referralCount": incRefCount}},
 	}, opt).Decode(&result)
 
 	if err != nil {

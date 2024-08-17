@@ -13,6 +13,7 @@ type UserDocument struct {
 	PlayedAt       primitive.DateTime `bson:"playedAt" json:"playedAt"`
 	Points         int                `bson:"points" json:"points"`
 	ReferralPoints int                `bson:"referralPoints" json:"referralPoints"`
+	ReferralCount  int                `bson:"referralCount" json:"referralCount"`
 	Level          Level              `bson:"level" json:"level"`
 	Tap            UserTap            `bson:"tap" json:"tap"`
 	DailyReward    DailyReward        `bson:"dailyReward" json:"dailyReward"`
