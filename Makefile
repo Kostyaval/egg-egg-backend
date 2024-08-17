@@ -18,5 +18,9 @@ clean-test:
 test-service:
 	go test -count=1 -failfast -v ./internal/service
 
+.PHONI: test-service
+test-domain:
+	go test -count=1 -failfast -v ./internal/domain
+
 .PHONI: test
-test: clean-test test-service
+test: clean-test test-domain test-service

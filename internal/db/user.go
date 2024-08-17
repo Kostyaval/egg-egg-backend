@@ -313,3 +313,31 @@ func (db DB) UpdateUserQuests(ctx context.Context, uid int64, quests domain.User
 
 	return nil
 }
+
+func (db DB) UpdateUserDocument(ctx context.Context, u *domain.UserDocument) error {
+	primitive.NewDateTimeFromTime(time.Now().UTC())
+
+	res, err := db.users.UpdateOne(ctx, bson.D{
+		{Key: "profile.telegram.id", Value: u.Profile.Telegram.ID},
+		{Key: "profile.hasBan", Value: false},
+		{Key: "profile.isGhost", Value: false},
+	}, bson.D{
+		{Key: "$set", Value: bson.M{
+			"points":      u.Points,
+			"profile":     u.Profile,
+			"tap":         u.Tap,
+			"dailyReward": u.DailyReward,
+			"playedAt":    primitive.NewDateTimeFromTime(time.Now().UTC()),
+		}},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	if res.MatchedCount == 0 {
+		return domain.ErrNoUser
+	}
+
+	return nil
+}

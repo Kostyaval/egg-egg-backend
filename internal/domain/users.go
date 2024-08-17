@@ -1,7 +1,10 @@
 package domain
 
 import (
+	"crypto/rand"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"math"
+	"math/big"
 	"time"
 )
 
@@ -44,6 +47,7 @@ func NewUserDocument(rules *Rules) UserDocument {
 		DailyReward: DailyReward{
 			Day:        1,
 			ReceivedAt: primitive.NewDateTimeFromTime(now),
+			Notify:     true, // at registration user gets daily reward
 		},
 		Tasks: UserTasks{
 			Telegram: make([]int, 0),
@@ -53,6 +57,151 @@ func NewUserDocument(rules *Rules) UserDocument {
 			Youtube:  0,
 			X:        0,
 		},
+	}
+}
+
+func (u *UserDocument) TapEnergyChargeMax(rules *Rules) int {
+	maxCharge := rules.TapsBaseEnergyCharge
+
+	for i, v := range u.Tap.Energy.Boost {
+		if i < len(rules.Taps) {
+			maxCharge += rules.Taps[i].Energy.BoostCharge * v
+		}
+	}
+
+	return maxCharge
+}
+
+func (u *UserDocument) Calculate(rules *Rules) {
+	u.calculateTapEnergyCharge(rules)
+	u.calculateAutoClicker(rules)
+	u.calculateQuests(rules)
+	u.calculateDailyReward(rules)
+	u.calculateTapEnergyRecharge(rules)
+}
+
+func (u *UserDocument) calculateTapEnergyCharge(rules *Rules) {
+	maxCharge := u.TapEnergyChargeMax(rules)
+
+	// when used recharge
+	if u.Tap.Energy.Charge >= maxCharge {
+		u.Tap.Energy.Charge = maxCharge
+		return
+	}
+
+	// when left 1 day from last tap request
+	now := time.Now().UTC()
+	ago := time.Date(now.Year(), now.Month(), now.Day()-1, 0, 0, 0, 0, time.UTC)
+
+	if u.Tap.PlayedAt.Time().UTC().Before(ago) {
+		u.Tap.Energy.Charge = maxCharge
+		return
+	}
+
+	delta := now.Sub(u.Tap.PlayedAt.Time().UTC()).Milliseconds()
+	if delta < rules.Taps[u.Level].Energy.ChargeTimeSegment.Milliseconds() {
+		return
+	}
+
+	charge := int(delta / rules.Taps[u.Level].Energy.ChargeTimeSegment.Milliseconds())
+	if charge > maxCharge {
+		u.Tap.Energy.Charge = maxCharge
+		return
+	}
+
+	u.Tap.Energy.Charge += charge
+	if u.Tap.Energy.Charge > maxCharge {
+		u.Tap.Energy.Charge = maxCharge
+	}
+}
+
+func (u *UserDocument) calculateAutoClicker(rules *Rules) {
+	if !u.AutoClicker.IsAvailable || !u.AutoClicker.IsEnabled {
+		return
+	}
+
+	delta := time.Now().Truncate(time.Second).UTC().Sub(u.PlayedAt.Time()).Seconds()
+	if delta <= 0 {
+		return
+	}
+
+	if delta >= rules.AutoClicker.TTL.Seconds() {
+		u.AutoClicker.Points = int(math.Floor(rules.AutoClicker.TTL.Seconds() / rules.AutoClicker.Speed.Seconds()))
+	} else {
+		u.AutoClicker.Points = int(math.Floor(delta / rules.AutoClicker.Speed.Seconds()))
+	}
+
+	u.Points += u.AutoClicker.Points
+}
+
+func (u *UserDocument) calculateQuests(rules *Rules) {
+	var (
+		now            = time.Now().UTC()
+		solvedRandTime = func(startedAt time.Time) bool {
+			if startedAt.After(now.Add(-2 * time.Hour)) {
+				return false
+			}
+
+			if startedAt.Add(24 * time.Hour).Before(now) {
+				return true
+			}
+
+			d := 24 * time.Hour
+			n, err := rand.Int(rand.Reader, big.NewInt(d.Nanoseconds()))
+			if err != nil {
+				return false
+			}
+
+			return startedAt.Add(time.Duration(n.Int64())).Before(now)
+		}
+	)
+
+	if u.Quests.Telegram == -1 && solvedRandTime(u.Quests.TelegramStartedAt.Time()) {
+		u.Points += rules.Quests.Telegram
+		u.Quests.Telegram = 1
+	}
+
+	if u.Quests.Youtube == -1 && solvedRandTime(u.Quests.YoutubeStartedAt.Time()) {
+		u.Points += rules.Quests.Youtube
+		u.Quests.Youtube = 1
+	}
+
+	if u.Quests.X == -1 && solvedRandTime(u.Quests.XStartedAt.Time()) {
+		u.Points += rules.Quests.X
+		u.Quests.X = 1
+	}
+}
+
+func (u *UserDocument) calculateDailyReward(rules *Rules) {
+	now := time.Now().Truncate(time.Second).UTC()
+	startOfToday := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+	startOfYesterday := startOfToday.AddDate(0, 0, -1)
+
+	if u.DailyReward.ReceivedAt.Time().After(startOfToday) || u.DailyReward.ReceivedAt.Time().Equal(startOfToday) {
+		u.DailyReward.Notify = false
+
+		return
+	}
+
+	if u.DailyReward.ReceivedAt.Time().After(startOfYesterday) || u.DailyReward.ReceivedAt.Time().Equal(startOfYesterday) {
+		if u.DailyReward.Day >= len(rules.DailyRewards) {
+			u.DailyReward.Day = 1
+		} else {
+			u.DailyReward.Day++
+		}
+	} else {
+		u.DailyReward.Day = 1
+	}
+
+	u.Points += rules.DailyRewards[u.DailyReward.Day-1]
+	u.DailyReward.Notify = true
+	u.DailyReward.ReceivedAt = primitive.NewDateTimeFromTime(now)
+}
+
+func (u *UserDocument) calculateTapEnergyRecharge(rules *Rules) {
+	if u.Tap.Energy.RechargedAt.Time().UTC().Day() != time.Now().UTC().Day() {
+		u.Tap.Energy.RechargedAt = primitive.NewDateTimeFromTime(time.Now().Truncate(time.Second).UTC())
+		u.Tap.Energy.RechargeAvailable = rules.Taps[u.Level].Energy.RechargeAvailable
 	}
 }
 
@@ -99,11 +248,13 @@ type TelegramUserProfile struct {
 type DailyReward struct {
 	ReceivedAt primitive.DateTime `bson:"receivedAt" json:"receivedAt"`
 	Day        int                `bson:"day" json:"day"`
+	Notify     bool               `json:"notify"`
 }
 
 type AutoClicker struct {
 	IsEnabled   bool `bson:"isEnabled" json:"isEnabled"`
 	IsAvailable bool `bson:"isAvailable" json:"isAvailable"`
+	Points      int  `json:"points"`
 }
 
 type UserTasks struct {

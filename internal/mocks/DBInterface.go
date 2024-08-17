@@ -986,6 +986,53 @@ func (_c *DBInterface_UpdateUserAutoClicker_Call) RunAndReturn(run func(context.
 	return _c
 }
 
+// UpdateUserDocument provides a mock function with given fields: ctx, u
+func (_m *DBInterface) UpdateUserDocument(ctx context.Context, u *domain.UserDocument) error {
+	ret := _m.Called(ctx, u)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateUserDocument")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *domain.UserDocument) error); ok {
+		r0 = rf(ctx, u)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DBInterface_UpdateUserDocument_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'UpdateUserDocument'
+type DBInterface_UpdateUserDocument_Call struct {
+	*mock.Call
+}
+
+// UpdateUserDocument is a helper method to define mock.On call
+//   - ctx context.Context
+//   - u *domain.UserDocument
+func (_e *DBInterface_Expecter) UpdateUserDocument(ctx interface{}, u interface{}) *DBInterface_UpdateUserDocument_Call {
+	return &DBInterface_UpdateUserDocument_Call{Call: _e.mock.On("UpdateUserDocument", ctx, u)}
+}
+
+func (_c *DBInterface_UpdateUserDocument_Call) Run(run func(ctx context.Context, u *domain.UserDocument)) *DBInterface_UpdateUserDocument_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(*domain.UserDocument))
+	})
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserDocument_Call) Return(_a0 error) *DBInterface_UpdateUserDocument_Call {
+	_c.Call.Return(_a0)
+	return _c
+}
+
+func (_c *DBInterface_UpdateUserDocument_Call) RunAndReturn(run func(context.Context, *domain.UserDocument) error) *DBInterface_UpdateUserDocument_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // UpdateUserLevel provides a mock function with given fields: ctx, uid, level, cost
 func (_m *DBInterface) UpdateUserLevel(ctx context.Context, uid int64, level int, cost int) (domain.UserDocument, error) {
 	ret := _m.Called(ctx, uid, level, cost)

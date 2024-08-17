@@ -28,19 +28,20 @@ func (s Service) AddTap(ctx context.Context, uid int64, tapCount int) (domain.Us
 		return u, domain.ErrBannedUser
 	}
 
-	energyAvailable, _ := s.userTapEnergy(&u)
-	if energyAvailable == 0 || energyAvailable < u.Tap.Points {
+	u.Calculate(s.cfg.Rules)
+
+	if u.Tap.Energy.Charge == 0 || u.Tap.Energy.Charge < u.Tap.Points {
 		return u, domain.ErrNoTapEnergy
 	}
 
 	energySpent := tapCount * u.Tap.Points
-	if energySpent > energyAvailable {
-		tapCount = energyAvailable / u.Tap.Points
+	if energySpent > u.Tap.Energy.Charge {
+		tapCount = u.Tap.Energy.Charge / u.Tap.Points
 		energySpent = tapCount * u.Tap.Points
 	}
 
 	u.Tap.Count += tapCount
-	u.Tap.Energy.Charge = energyAvailable - energySpent
+	u.Tap.Energy.Charge = u.Tap.Energy.Charge - energySpent
 	u.Tap.PlayedAt = primitive.NewDateTimeFromTime(time.Now().UTC().Truncate(time.Second))
 
 	u, err = s.db.UpdateUserTap(ctx, uid, u.Tap, u.Points+energySpent)
@@ -53,47 +54,6 @@ func (s Service) AddTap(ctx context.Context, uid int64, tapCount int) (domain.Us
 	}
 
 	return u, nil
-}
-
-// userTapEnergy returns available energy charge and max energy.
-func (s Service) userTapEnergy(u *domain.UserDocument) (int, int) {
-	maxCharge := s.cfg.Rules.TapsBaseEnergyCharge
-
-	for i, v := range u.Tap.Energy.Boost {
-		if i < len(s.cfg.Rules.Taps) {
-			maxCharge += s.cfg.Rules.Taps[i].Energy.BoostCharge * v
-		}
-	}
-
-	// when used recharge
-	if u.Tap.Energy.Charge >= maxCharge {
-		return maxCharge, maxCharge
-	}
-
-	// when left 1 day from last tap request
-	now := time.Now().UTC()
-	ago := time.Date(now.Year(), now.Month(), now.Day()-1, 0, 0, 0, 0, time.UTC)
-
-	if u.Tap.PlayedAt.Time().UTC().Before(ago) {
-		return maxCharge, maxCharge
-	}
-
-	delta := now.Sub(u.Tap.PlayedAt.Time().UTC()).Milliseconds()
-	if delta < s.cfg.Rules.Taps[u.Level].Energy.ChargeTimeSegment.Milliseconds() {
-		return u.Tap.Energy.Charge, maxCharge
-	}
-
-	charge := int(delta / s.cfg.Rules.Taps[u.Level].Energy.ChargeTimeSegment.Milliseconds())
-	if charge > maxCharge {
-		return maxCharge, maxCharge
-	}
-
-	charge += u.Tap.Energy.Charge
-	if charge > maxCharge {
-		charge = maxCharge
-	}
-
-	return charge, maxCharge
 }
 
 func (s Service) RechargeTapEnergy(ctx context.Context, uid int64) (domain.UserDocument, error) {
@@ -112,6 +72,9 @@ func (s Service) RechargeTapEnergy(ctx context.Context, uid int64) (domain.UserD
 		return u, domain.ErrBannedUser
 	}
 
+	pts := u.Points
+	u.Calculate(s.cfg.Rules)
+
 	if u.Tap.Energy.RechargeAvailable == 0 {
 		return u, domain.ErrNoEnergyRecharge
 	}
@@ -122,16 +85,13 @@ func (s Service) RechargeTapEnergy(ctx context.Context, uid int64) (domain.UserD
 		return u, domain.ErrNoEnergyRecharge
 	}
 
-	pts := s.checkAutoClicker(&u)
-	_, chargeMax := s.userTapEnergy(&u)
-
 	if u.Points != pts {
-		if err := s.rdb.SetLeaderboardPlayerPoints(ctx, uid, u.Level, pts); err != nil {
+		if err := s.rdb.SetLeaderboardPlayerPoints(ctx, uid, u.Level, u.Points); err != nil {
 			return u, err
 		}
 	}
 
-	return s.db.UpdateUserTapEnergyRecharge(ctx, uid, u.Tap.Energy.RechargeAvailable-1, chargeMax, pts)
+	return s.db.UpdateUserTapEnergyRecharge(ctx, uid, u.Tap.Energy.RechargeAvailable-1, u.TapEnergyChargeMax(s.cfg.Rules), u.Points)
 }
 
 func (s Service) AddTapBoost(ctx context.Context, uid int64) (domain.UserDocument, error) {
@@ -148,24 +108,25 @@ func (s Service) AddTapBoost(ctx context.Context, uid int64) (domain.UserDocumen
 		return u, domain.ErrBannedUser
 	}
 
+	u.Calculate(s.cfg.Rules)
+
 	if u.Tap.Boost[u.Level] >= s.cfg.Rules.Taps[u.Level].BoostAvailable {
 		return u, domain.ErrNoBoost
 	}
 
-	pts := s.checkAutoClicker(&u)
-	if pts < s.cfg.Rules.Taps[u.Level].BoostCost {
+	if u.Points < s.cfg.Rules.Taps[u.Level].BoostCost {
 		return u, domain.ErrNoPoints
 	}
 
-	pts -= s.cfg.Rules.Taps[u.Level].BoostCost
+	u.Points -= s.cfg.Rules.Taps[u.Level].BoostCost
 	u.Tap.Boost[u.Level]++
 
-	u, err = s.db.UpdateUserTapBoost(ctx, uid, u.Tap.Boost, pts)
+	u, err = s.db.UpdateUserTapBoost(ctx, uid, u.Tap.Boost, u.Points)
 	if err != nil {
 		return u, err
 	}
 
-	if err := s.rdb.SetLeaderboardPlayerPoints(ctx, uid, u.Level, pts); err != nil {
+	if err := s.rdb.SetLeaderboardPlayerPoints(ctx, uid, u.Level, u.Points); err != nil {
 		return u, err
 	}
 
@@ -186,25 +147,26 @@ func (s Service) AddTapEnergyBoost(ctx context.Context, uid int64) (domain.UserD
 		return u, domain.ErrBannedUser
 	}
 
+	u.Calculate(s.cfg.Rules)
+
 	if u.Tap.Energy.Boost[u.Level] >= s.cfg.Rules.Taps[u.Level].Energy.BoostChargeAvailable {
 		return u, domain.ErrNoBoost
 	}
 
-	pts := s.checkAutoClicker(&u)
-	if pts < s.cfg.Rules.Taps[u.Level].Energy.BoostChargeCost {
+	if u.Points < s.cfg.Rules.Taps[u.Level].Energy.BoostChargeCost {
 		return u, domain.ErrNoPoints
 	}
 
-	pts -= s.cfg.Rules.Taps[u.Level].Energy.BoostChargeCost
+	u.Points -= s.cfg.Rules.Taps[u.Level].Energy.BoostChargeCost
 	u.Tap.Energy.Boost[u.Level]++
-	_, chargeMax := s.userTapEnergy(&u)
+	u.TapEnergyChargeMax(s.cfg.Rules)
 
-	u, err = s.db.UpdateUserTapEnergyBoost(ctx, uid, u.Tap.Energy.Boost, chargeMax, pts)
+	u, err = s.db.UpdateUserTapEnergyBoost(ctx, uid, u.Tap.Energy.Boost, u.TapEnergyChargeMax(s.cfg.Rules), u.Points)
 	if err != nil {
 		return u, err
 	}
 
-	if err := s.rdb.SetLeaderboardPlayerPoints(ctx, uid, u.Level, pts); err != nil {
+	if err := s.rdb.SetLeaderboardPlayerPoints(ctx, uid, u.Level, u.Points); err != nil {
 		return u, err
 	}
 

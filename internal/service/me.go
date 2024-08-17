@@ -2,14 +2,11 @@ package service
 
 import (
 	"context"
-	"crypto/rand"
 	"errors"
 	"github.com/google/uuid"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"math"
-	"math/big"
 	"strconv"
 	"time"
 )
@@ -28,6 +25,7 @@ type meDB interface {
 	UpdateUserLevel(ctx context.Context, uid int64, level int, cost int) (domain.UserDocument, error)
 	CreateUser(ctx context.Context, user *domain.UserDocument) error
 	UpdateUserQuests(ctx context.Context, uid int64, quests domain.UserQuests) error
+	UpdateUserDocument(ctx context.Context, u *domain.UserDocument) error
 }
 
 type meRedis interface {
@@ -58,160 +56,15 @@ func (s Service) GetMe(ctx context.Context, uid int64) (domain.UserDocument, []b
 		return u, nil, err
 	}
 
-	// TODO optimize it for unite with getMe
-	if s.checkUserQuests(&u) {
-		if err := s.db.SetPoints(ctx, u.Profile.Telegram.ID, u.Points); err != nil {
-			return u, nil, err
-		}
+	u.Calculate(s.cfg.Rules)
 
-		if err := s.rdb.SetLeaderboardPlayerPoints(ctx, u.Profile.Telegram.ID, u.Level, u.Points); err != nil {
-			return u, nil, err
-		}
-
-		if err := s.db.UpdateUserQuests(ctx, u.Profile.Telegram.ID, u.Quests); err != nil {
-			return u, nil, err
-		}
+	if err := s.db.UpdateUserDocument(ctx, &u); err != nil {
+		return u, nil, err
 	}
 
-	// TODO optimize it for unite with autoclicker
-	dailyReward, withDailyRewardPoints := s.checkDailyReward(&u)
-	if dailyReward != nil {
-		if err := s.db.SetDailyReward(ctx, u.Profile.Telegram.ID, withDailyRewardPoints, dailyReward); err != nil {
-			return u, nil, err
-		}
-
-		if u.Points != withDailyRewardPoints {
-			u.Points = withDailyRewardPoints
-
-			if err := s.rdb.SetLeaderboardPlayerPoints(ctx, u.Profile.Telegram.ID, u.Level, withDailyRewardPoints); err != nil {
-				return u, nil, err
-			}
-		}
-	}
-
-	// TODO optimize it for unite with daily reward
-	withAutoclickerPoints := s.checkAutoClicker(&u)
-	if withAutoclickerPoints != u.Points {
-		u.Points = withAutoclickerPoints
-
-		if err := s.db.SetPoints(ctx, uid, withAutoclickerPoints); err != nil {
-			return u, nil, err
-		}
-
-		if err := s.rdb.SetLeaderboardPlayerPoints(ctx, u.Profile.Telegram.ID, u.Level, withAutoclickerPoints); err != nil {
-			return u, nil, err
-		}
-	}
-
-	charge, _ := s.userTapEnergy(&u)
-	u.Tap.Energy.Charge = charge
-
-	if u.Tap.Energy.RechargedAt.Time().UTC().Day() != time.Now().UTC().Day() {
-		prevPlayedAt := u.PlayedAt
-		u, err = s.db.UpdateUserTapEnergyRecharge(
-			ctx,
-			uid,
-			s.cfg.Rules.Taps[u.Level].Energy.RechargeAvailable,
-			charge,
-			u.Points,
-		)
-
-		if err != nil {
-			return u, nil, err
-		}
-
-		u.PlayedAt = prevPlayedAt
-	}
+	_ = s.rdb.SetLeaderboardPlayerPoints(ctx, u.Profile.Telegram.ID, u.Level, u.Points)
 
 	return u, jwtBytes, nil
-}
-
-func (s Service) checkDailyReward(u *domain.UserDocument) (*domain.DailyReward, int) {
-	now := time.Now().UTC()
-	startOfToday := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
-	startOfYesterday := startOfToday.AddDate(0, 0, -1)
-
-	if u.DailyReward.ReceivedAt.Time().After(startOfToday) || u.DailyReward.ReceivedAt.Time().Equal(startOfToday) {
-		return nil, u.Points
-	}
-
-	dr := &domain.DailyReward{Day: u.DailyReward.Day}
-	pts := u.Points
-
-	if u.DailyReward.ReceivedAt.Time().After(startOfYesterday) || u.DailyReward.ReceivedAt.Time().Equal(startOfYesterday) {
-		if u.DailyReward.Day >= len(s.cfg.Rules.DailyRewards) {
-			dr.Day = 1
-		} else {
-			dr.Day++
-		}
-
-		pts += s.cfg.Rules.DailyRewards[dr.Day-1]
-	} else {
-		dr.Day = 1
-	}
-
-	return dr, pts
-}
-
-func (s Service) checkAutoClicker(u *domain.UserDocument) int {
-	if !u.AutoClicker.IsAvailable || !u.AutoClicker.IsEnabled {
-		return u.Points
-	}
-
-	delta := time.Now().Truncate(time.Second).UTC().Sub(u.PlayedAt.Time()).Seconds()
-	if delta <= 0 {
-		return u.Points
-	}
-
-	if delta >= s.cfg.Rules.AutoClicker.TTL.Seconds() {
-		return u.Points + int(math.Floor(s.cfg.Rules.AutoClicker.TTL.Seconds()/s.cfg.Rules.AutoClicker.Speed.Seconds()))
-	}
-
-	return u.Points + int(math.Floor(delta/s.cfg.Rules.AutoClicker.Speed.Seconds()))
-}
-
-func (s Service) checkUserQuests(u *domain.UserDocument) bool {
-	var (
-		hasUpdate      bool
-		now            = time.Now().UTC()
-		solvedRandTime = func(startedAt time.Time) bool {
-			if startedAt.After(now.Add(-2 * time.Hour)) {
-				return false
-			}
-
-			if startedAt.Add(24 * time.Hour).Before(now) {
-				return true
-			}
-
-			d := 24 * time.Hour
-			n, err := rand.Int(rand.Reader, big.NewInt(d.Nanoseconds()))
-			if err != nil {
-				return false
-			}
-
-			return startedAt.Add(time.Duration(n.Int64())).Before(now)
-		}
-	)
-
-	if u.Quests.Telegram == -1 && solvedRandTime(u.Quests.TelegramStartedAt.Time()) {
-		u.Points += s.cfg.Rules.Quests.Telegram
-		u.Quests.Telegram = 1
-		hasUpdate = true
-	}
-
-	if u.Quests.Youtube == -1 && solvedRandTime(u.Quests.YoutubeStartedAt.Time()) {
-		u.Points += s.cfg.Rules.Quests.Youtube
-		u.Quests.Youtube = 1
-		hasUpdate = true
-	}
-
-	if u.Quests.X == -1 && solvedRandTime(u.Quests.XStartedAt.Time()) {
-		u.Points += s.cfg.Rules.Quests.X
-		u.Quests.X = 1
-		hasUpdate = true
-	}
-
-	return hasUpdate
 }
 
 func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument, ref string) ([]byte, error) {
