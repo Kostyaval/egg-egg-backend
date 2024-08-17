@@ -67,7 +67,7 @@ func NewREST(cfg *config.Config, logger *slog.Logger, srv ServiceInterface) *fib
 
 	api.Use(middlewareJWT(&middlewareJWTConfig{log: h.log, cfg: cfg.JWT}))
 	api.Get("/me/nickname", h.checkUserNickname)
-	api.Post("/me/nickname", h.createUserNickname)
+	api.Put("/me/nickname", h.updateUserNickname)
 	api.Put("/me/level", h.upgradeLevel)
 	api.Put("/me/tap", h.addTap)
 	api.Put("/me/tap/boost", h.addTapBoost)

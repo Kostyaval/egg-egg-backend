@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -74,21 +73,17 @@ func (db DB) CheckUserNickname(ctx context.Context, nickname string) (bool, erro
 	return count == 0, nil
 }
 
-func (db DB) UpdateUserNickname(ctx context.Context, uid int64, nickname string, jti uuid.UUID) error {
+func (db DB) UpdateUserNickname(ctx context.Context, uid int64, nickname string) error {
+	now := primitive.NewDateTimeFromTime(time.Now().UTC())
 	res, err := db.users.UpdateOne(ctx, bson.D{
 		{Key: "profile.telegram.id", Value: uid},
 		{Key: "profile.hasBan", Value: false},
 		{Key: "profile.isGhost", Value: false},
 	}, bson.D{
 		{Key: "$set", Value: bson.M{
-			"profile.jti":       jti,
 			"profile.nickname":  nickname,
-			"profile.updatedAt": primitive.NewDateTimeFromTime(time.Now().UTC()),
-			"playedAt":          primitive.NewDateTimeFromTime(time.Now().UTC()),
-			"dailyReward": domain.DailyReward{
-				ReceivedAt: primitive.NewDateTimeFromTime(time.Now().UTC()),
-				Day:        0,
-			},
+			"profile.updatedAt": now,
+			"playedAt":          now,
 		}},
 	})
 
@@ -102,6 +97,13 @@ func (db DB) UpdateUserNickname(ctx context.Context, uid int64, nickname string,
 
 	if res.ModifiedCount != 1 {
 		return domain.ErrConflictNickname
+	}
+
+	_, err = db.users.UpdateMany(ctx,
+		bson.D{{Key: "profile.ref.id", Value: uid}},
+		bson.D{{Key: "$set", Value: bson.M{"profile.ref.nickname": nickname}}})
+	if err != nil {
+		return err
 	}
 
 	return nil

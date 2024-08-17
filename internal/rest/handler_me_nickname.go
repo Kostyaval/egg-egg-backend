@@ -11,21 +11,16 @@ import (
 
 type nicknameService interface {
 	CheckUserNickname(ctx context.Context, nickname string) (bool, error)
-	CreateUserNickname(ctx context.Context, uid int64, nickname string) ([]byte, *domain.UserDocument, error)
+	UpdateUserNickname(ctx context.Context, uid int64, nickname string) error
 }
 
-var regexpNickname = regexp.MustCompile(`^(?i)[a-z][a-z0-9]{3,31}$`)
+var regexpNickname = regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]{3,30}[a-zA-Z0-9]$`)
 
 func (h handler) checkUserNickname(c *fiber.Ctx) error {
 	log, jwt := h.log.AuthorizedHTTPRequest(c)
 	if jwt == nil {
 		log.Debug("jwt is null")
 		return c.Status(fiber.StatusUnauthorized).Send(nil)
-	}
-
-	if jwt.Nickname != "" {
-		log.Error("already has a nickname")
-		return c.Status(fiber.StatusBadRequest).Send(nil)
 	}
 
 	var req struct {
@@ -64,16 +59,11 @@ func (h handler) checkUserNickname(c *fiber.Ctx) error {
 	return c.JSON(res)
 }
 
-func (h handler) createUserNickname(c *fiber.Ctx) error {
+func (h handler) updateUserNickname(c *fiber.Ctx) error {
 	log, jwt := h.log.AuthorizedHTTPRequest(c)
 	if jwt == nil {
 		log.Debug("jwt is null")
 		return c.Status(fiber.StatusUnauthorized).Send(nil)
-	}
-
-	if jwt.Nickname != "" {
-		log.Error("already has a nickname")
-		return c.Status(fiber.StatusBadRequest).Send(nil)
 	}
 
 	var req struct {
@@ -95,9 +85,9 @@ func (h handler) createUserNickname(c *fiber.Ctx) error {
 		return newHTTPError(fiber.StatusBadRequest, "invalid nickname format")
 	}
 
-	token, user, err := h.srv.CreateUserNickname(c.Context(), jwt.UID, req.Nickname)
+	err := h.srv.UpdateUserNickname(c.Context(), jwt.UID, req.Nickname)
 	if err != nil {
-		log.Error("srv.CreateUserNickname", slog.String("error", err.Error()))
+		log.Error("srv.UpdateUserNickname", slog.String("error", err.Error()))
 
 		if errors.Is(err, domain.ErrConflictNickname) {
 			return c.Status(fiber.StatusConflict).Send(nil)
@@ -110,15 +100,7 @@ func (h handler) createUserNickname(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).Send(nil)
 	}
 
-	log.Info("create nickname")
+	log.Info("update nickname", slog.String("nickname", req.Nickname))
 
-	var res struct {
-		*domain.UserDocument
-		Token string `json:"token"`
-	}
-
-	res.UserDocument = user
-	res.Token = string(token)
-
-	return c.JSON(res)
+	return c.Status(fiber.StatusOK).Send(nil)
 }

@@ -120,7 +120,6 @@ func (cfg JWTConfig) Encode(c *domain.JWTClaims) ([]byte, error) {
 		IssuedAt(now).
 		Expiration(exp).
 		JwtID(c.JTI.String()).
-		Claim("nickname", c.Nickname).
 		Build()
 
 	if err != nil {
@@ -164,22 +163,6 @@ func (cfg JWTConfig) Decode(token []byte) (domain.JWTClaims, error) {
 	// sub - subject
 	if c.UID, err = strconv.ParseInt(verifiedToken.Subject(), 10, 64); err != nil {
 		return c, fmt.Errorf("%w: %v", domain.ErrJWTDecode, err)
-	}
-
-	// nickname
-	nickname, ok := verifiedToken.PrivateClaims()["nickname"]
-	if !ok {
-		return c, fmt.Errorf("%w: %v", domain.ErrJWTDecode, errors.New("no nickname"))
-	}
-
-	if nickname == nil {
-		c.Nickname = ""
-	} else {
-		if str, ok := nickname.(string); ok {
-			c.Nickname = str
-		} else {
-			return c, fmt.Errorf("%w: %v", domain.ErrJWTDecode, errors.New("invalid nickname"))
-		}
 	}
 
 	// jti

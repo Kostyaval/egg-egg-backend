@@ -101,7 +101,6 @@ func (s *Suite) TestGetMe() {
 	claims, err := s.cfg.JWT.Decode(t)
 	s.NoError(err)
 	s.Equal(u.Profile.Telegram.ID, claims.UID)
-	s.Equal(u.Profile.Nickname, claims.Nickname)
 
 	s.dbMocks.AssertExpectations(s.T())
 	s.dbMocks.AssertCalled(s.T(), "GetUserDocumentWithID", ctx, doc.Profile.Telegram.ID)
@@ -138,7 +137,6 @@ func (s *Suite) TestGetMe_DailyReward() {
 	claims, err := s.cfg.JWT.Decode(t)
 	s.NoError(err)
 	s.Equal(u.Profile.Telegram.ID, claims.UID)
-	s.Equal(u.Profile.Nickname, claims.Nickname)
 	s.Equal(u.Points, doc.Points)
 
 	s.dbMocks.AssertExpectations(s.T())
@@ -177,7 +175,6 @@ func (s *Suite) TestGetMe_AutoClicker() {
 	claims, err := s.cfg.JWT.Decode(t)
 	s.NoError(err)
 	s.Equal(u.Profile.Telegram.ID, claims.UID)
-	s.Equal(u.Profile.Nickname, claims.Nickname)
 	s.Equal(u.Points, 3000)
 	s.Equal(u.AutoClicker.Points, 2000)
 
@@ -222,7 +219,6 @@ func (s *Suite) TestGetMe_DailyRewardWithAutoClicker() {
 	claims, err := s.cfg.JWT.Decode(t)
 	s.NoError(err)
 	s.Equal(u.Profile.Telegram.ID, claims.UID)
-	s.Equal(u.Profile.Nickname, claims.Nickname)
 	s.Equal(u.Points, doc.Points)
 	s.True(u.DailyReward.Notify)
 	s.Equal(u.AutoClicker.Points, 2000)
@@ -262,7 +258,6 @@ func (s *Suite) TestGetMe_ResetTapEnergyRechargeAvailable() {
 	claims, err := s.cfg.JWT.Decode(t)
 	s.NoError(err)
 	s.Equal(u.Profile.Telegram.ID, claims.UID)
-	s.Equal(u.Profile.Nickname, claims.Nickname)
 	s.Equal(u.Tap.Energy.RechargeAvailable, doc.Tap.Energy.RechargeAvailable)
 	s.Equal(u.Tap.Energy.RechargedAt, doc.Tap.Energy.RechargedAt)
 

@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"github.com/google/uuid"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	"gitlab.com/egg-be/egg-backend/internal/domain"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -14,7 +13,7 @@ import (
 type meDB interface {
 	GetUserDocumentWithID(ctx context.Context, uid int64) (domain.UserDocument, error)
 	CheckUserNickname(ctx context.Context, nickname string) (bool, error)
-	UpdateUserNickname(ctx context.Context, uid int64, nickname string, jti uuid.UUID) error
+	UpdateUserNickname(ctx context.Context, uid int64, nickname string) error
 	IncPointsWithReferral(ctx context.Context, uid int64, points int, incNewUser bool) (int, error)
 	IncPoints(ctx context.Context, uid int64, points int) (int, error)
 	SetPoints(ctx context.Context, uid int64, points int) error
@@ -45,7 +44,7 @@ func (s Service) GetMe(ctx context.Context, uid int64) (domain.UserDocument, []b
 		return u, nil, domain.ErrBannedUser
 	}
 
-	jwtClaims, err := domain.NewJWTClaims(u.Profile.Telegram.ID, u.Profile.Nickname)
+	jwtClaims, err := domain.NewJWTClaims(u.Profile.Telegram.ID)
 	if err != nil {
 		return u, nil, err
 	}
@@ -93,7 +92,7 @@ func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument, ref str
 	}
 
 	// set jwt
-	jwtClaims, err := domain.NewJWTClaims(u.Profile.Telegram.ID, u.Profile.Nickname)
+	jwtClaims, err := domain.NewJWTClaims(u.Profile.Telegram.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -193,37 +192,17 @@ func (s Service) CheckUserNickname(ctx context.Context, nickname string) (bool, 
 	return s.db.CheckUserNickname(ctx, nickname)
 }
 
-// CreateUserNickname update a user profile nickname from null to a `nickname` if no conflict with another user.
-func (s Service) CreateUserNickname(ctx context.Context, uid int64, nickname string) ([]byte, *domain.UserDocument, error) {
+func (s Service) UpdateUserNickname(ctx context.Context, uid int64, nickname string) error {
 	ok, err := s.db.CheckUserNickname(ctx, nickname)
 	if err != nil {
-		return nil, nil, err
+		return err
 	}
 
 	if !ok {
-		return nil, nil, domain.ErrConflictNickname
+		return domain.ErrConflictNickname
 	}
 
-	jwtClaims, err := domain.NewJWTClaims(uid, nickname)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	token, err := s.cfg.JWT.Encode(jwtClaims)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	if err := s.db.UpdateUserNickname(ctx, uid, nickname, jwtClaims.JTI); err != nil {
-		return nil, nil, err
-	}
-
-	user, err := s.db.GetUserDocumentWithID(ctx, uid)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return token, &user, nil
+	return s.db.UpdateUserNickname(ctx, uid, nickname)
 }
 
 func (s Service) CreateAutoClicker(ctx context.Context, uid int64) (domain.UserDocument, error) {
