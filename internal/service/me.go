@@ -79,7 +79,7 @@ func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument, ref str
 		}
 
 		if isFreeNickname {
-			u.Profile.Nickname = &u.Profile.Telegram.Username
+			u.Profile.Nickname = u.Profile.Telegram.Username
 		}
 	}
 
@@ -89,8 +89,7 @@ func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument, ref str
 			return nil, err
 		}
 
-		randNickname = "_" + randNickname
-		u.Profile.Nickname = &randNickname
+		u.Profile.Nickname = "_" + randNickname
 	}
 
 	// set jwt
@@ -176,10 +175,10 @@ func (s Service) setReferral(ctx context.Context, u *domain.UserDocument, ref st
 			return nil, err
 		}
 
-		if !refUser.Profile.IsGhost && !refUser.Profile.HasBan && refUser.Profile.Nickname != nil {
+		if !refUser.Profile.IsGhost && !refUser.Profile.HasBan && refUser.Profile.Nickname != "" {
 			u.Profile.Referral = &domain.ReferralUserProfile{
 				ID:       refUser.Profile.Telegram.ID,
-				Nickname: *refUser.Profile.Nickname,
+				Nickname: refUser.Profile.Nickname,
 			}
 		}
 
@@ -205,7 +204,7 @@ func (s Service) CreateUserNickname(ctx context.Context, uid int64, nickname str
 		return nil, nil, domain.ErrConflictNickname
 	}
 
-	jwtClaims, err := domain.NewJWTClaims(uid, &nickname)
+	jwtClaims, err := domain.NewJWTClaims(uid, nickname)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -6,7 +6,6 @@ import (
 	"gitlab.com/egg-be/egg-backend/internal/rdb"
 	"gitlab.com/egg-be/egg-backend/internal/rest"
 	"gitlab.com/egg-be/egg-backend/internal/service"
-	"gitlab.com/egg-be/egg-backend/internal/tg"
 	"log"
 	"log/slog"
 	"os"
@@ -65,18 +64,6 @@ func main() {
 		}
 	}()
 
-	// Setup Telegram bot
-	bot, err := tg.NewTelegramBot(cfg, logger, mongodb, redis)
-	if err != nil {
-		logger.Error("new telegram bot", slog.String("error", err.Error()))
-		os.Exit(1)
-	}
-
-	go func() {
-		logger.Info("start telegram bot")
-		bot.Bot.Start()
-	}()
-
 	// Setup service
 	srv := service.NewService(cfg, mongodb, redis)
 
@@ -85,7 +72,6 @@ func main() {
 	restAddr := "0.0.0.0:8000"
 
 	go func() {
-		logger.Info("telegram bot", slog.String("username", bot.Bot.Me.Username))
 		logger.With(slog.String("addr", restAddr)).Info("start REST")
 
 		if err := restApp.Listen(restAddr); err != nil {
@@ -105,8 +91,6 @@ func main() {
 		logger.Error("shutdown REST", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
-
-	bot.Bot.Stop()
 
 	logger.Info("good bye")
 }

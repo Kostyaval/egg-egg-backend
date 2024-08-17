@@ -9,12 +9,10 @@ require (
 	github.com/lestrrat-go/jwx/v2 v2.1.0
 	github.com/matoous/go-nanoid/v2 v2.1.0
 	github.com/redis/go-redis/v9 v9.6.0
-	github.com/speps/go-hashids/v2 v2.0.1
 	github.com/stretchr/testify v1.9.0
 	github.com/telegram-mini-apps/init-data-golang v1.1.5
 	github.com/urfave/cli/v2 v2.27.3
 	go.mongodb.org/mongo-driver v1.16.0
-	gopkg.in/telebot.v3 v3.3.6
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -31,6 +29,7 @@ require (
 	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
+	github.com/kr/pretty v0.3.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.2 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
@@ -59,4 +58,5 @@ require (
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 )

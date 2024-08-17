@@ -23,7 +23,7 @@ func (h handler) checkUserNickname(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).Send(nil)
 	}
 
-	if jwt.Nickname != nil {
+	if jwt.Nickname != "" {
 		log.Error("already has a nickname")
 		return c.Status(fiber.StatusBadRequest).Send(nil)
 	}
@@ -71,7 +71,7 @@ func (h handler) createUserNickname(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).Send(nil)
 	}
 
-	if jwt.Nickname != nil {
+	if jwt.Nickname != "" {
 		log.Error("already has a nickname")
 		return c.Status(fiber.StatusBadRequest).Send(nil)
 	}

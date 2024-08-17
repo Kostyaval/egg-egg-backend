@@ -173,10 +173,10 @@ func (cfg JWTConfig) Decode(token []byte) (domain.JWTClaims, error) {
 	}
 
 	if nickname == nil {
-		c.Nickname = nil
+		c.Nickname = ""
 	} else {
 		if str, ok := nickname.(string); ok {
-			c.Nickname = &str
+			c.Nickname = str
 		} else {
 			return c, fmt.Errorf("%w: %v", domain.ErrJWTDecode, errors.New("invalid nickname"))
 		}

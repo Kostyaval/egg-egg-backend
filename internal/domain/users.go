@@ -15,7 +15,7 @@ type UserDocument struct {
 	ReferralPoints       int                `bson:"referralPoints" json:"referralPoints"`
 	ReferralCount        int                `bson:"referralCount" json:"referralCount"`
 	Level                Level              `bson:"level" json:"level"`
-	IsNextLevelAvailable bool               `json:"isNextLevelAvailable"`
+	IsNextLevelAvailable bool               `bson:"-" json:"isNextLevelAvailable"`
 	Tap                  UserTap            `bson:"tap" json:"tap"`
 	DailyReward          DailyReward        `bson:"dailyReward" json:"dailyReward"`
 	AutoClicker          AutoClicker        `bson:"autoClicker" json:"autoClicker"`
@@ -245,7 +245,7 @@ type UserTapEnergy struct {
 }
 
 type UserProfile struct {
-	Nickname        *string              `bson:"nickname" json:"nickname"`
+	Nickname        string               `bson:"nickname" json:"nickname"`
 	CreatedAt       primitive.DateTime   `bson:"createdAt" json:"-"`
 	UpdatedAt       primitive.DateTime   `bson:"updatedAt" json:"-"`
 	HasBan          bool                 `bson:"hasBan" json:"-"`
@@ -253,7 +253,7 @@ type UserProfile struct {
 	Telegram        TelegramUserProfile  `bson:"telegram" json:"telegram"`
 	Referral        *ReferralUserProfile `bson:"ref" json:"referral"`
 	Channel         ChannelUserProfile   `bson:"channel" json:"-"`
-	IsChannelMember bool                 `json:"isChannelMember"`
+	IsChannelMember bool                 `bson:"-" json:"isChannelMember"`
 }
 
 type ReferralUserProfile struct {
@@ -280,13 +280,13 @@ type TelegramUserProfile struct {
 type DailyReward struct {
 	ReceivedAt primitive.DateTime `bson:"receivedAt" json:"receivedAt"`
 	Day        int                `bson:"day" json:"day"`
-	Notify     bool               `json:"notify"`
+	Notify     bool               `bson:"-" json:"notify"`
 }
 
 type AutoClicker struct {
 	IsEnabled   bool `bson:"isEnabled" json:"isEnabled"`
 	IsAvailable bool `bson:"isAvailable" json:"isAvailable"`
-	Points      int  `json:"points"`
+	Points      int  `bson:"-" json:"points"`
 }
 
 type UserQuests struct {

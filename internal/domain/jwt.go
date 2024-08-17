@@ -6,11 +6,11 @@ import (
 
 type JWTClaims struct {
 	UID      int64
-	Nickname *string
+	Nickname string
 	JTI      uuid.UUID
 }
 
-func NewJWTClaims(uid int64, nickname *string) (*JWTClaims, error) {
+func NewJWTClaims(uid int64, nickname string) (*JWTClaims, error) {
 	jti, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err

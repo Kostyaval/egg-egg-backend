@@ -43,7 +43,7 @@ func (db DB) ReadLeaderboardPlayer(ctx context.Context, uid int64) (domain.Leade
 		return result, err
 	}
 
-	result.Nickname = *doc.Profile.Nickname
+	result.Nickname = doc.Profile.Nickname
 	result.IsPremium = doc.Profile.Telegram.IsPremium
 	result.Points = doc.Points
 	result.Level = doc.Level
@@ -89,7 +89,7 @@ func (db DB) ReadLeaderboardPlayers(ctx context.Context, uids []int64) ([]domain
 
 	for _, doc := range players {
 		list = append(list, domain.LeaderboardPlayer{
-			Nickname:  *doc.Profile.Nickname,
+			Nickname:  doc.Profile.Nickname,
 			Level:     doc.Level,
 			IsPremium: doc.Profile.Telegram.IsPremium,
 			Points:    doc.Points,
@@ -141,7 +141,7 @@ func (db DB) ReadFriendsLeaderboardPlayers(ctx context.Context, uid int64, limit
 		}
 
 		list = append(list, domain.LeaderboardPlayer{
-			Nickname:  *doc.Profile.Nickname,
+			Nickname:  doc.Profile.Nickname,
 			Level:     doc.Level,
 			IsPremium: doc.Profile.Telegram.IsPremium,
 			Points:    doc.Points,
