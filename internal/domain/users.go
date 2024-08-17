@@ -78,6 +78,7 @@ func (u *UserDocument) Calculate(rules *Rules) {
 	u.calculateQuests(rules)
 	u.calculateDailyReward(rules)
 	u.calculateTapEnergyRecharge(rules)
+	u.calculateIsChannelMember()
 }
 
 func (u *UserDocument) calculateTapEnergyCharge(rules *Rules) {
@@ -205,6 +206,10 @@ func (u *UserDocument) calculateTapEnergyRecharge(rules *Rules) {
 	}
 }
 
+func (u *UserDocument) calculateIsChannelMember() {
+	u.Profile.IsChannelMember = u.Profile.Channel.ID != 0
+}
+
 type UserTap struct {
 	Count    int                `bson:"count" json:"-"`
 	Points   int                `bson:"points" json:"points"`
@@ -221,18 +226,26 @@ type UserTapEnergy struct {
 }
 
 type UserProfile struct {
-	Nickname  *string              `bson:"nickname" json:"nickname"`
-	CreatedAt primitive.DateTime   `bson:"createdAt" json:"-"`
-	UpdatedAt primitive.DateTime   `bson:"updatedAt" json:"-"`
-	HasBan    bool                 `bson:"hasBan" json:"-"`
-	IsGhost   bool                 `bson:"isGhost" json:"-"`
-	Telegram  TelegramUserProfile  `bson:"telegram" json:"telegram"`
-	Referral  *ReferralUserProfile `bson:"ref" json:"referral"`
+	Nickname        *string              `bson:"nickname" json:"nickname"`
+	CreatedAt       primitive.DateTime   `bson:"createdAt" json:"-"`
+	UpdatedAt       primitive.DateTime   `bson:"updatedAt" json:"-"`
+	HasBan          bool                 `bson:"hasBan" json:"-"`
+	IsGhost         bool                 `bson:"isGhost" json:"-"`
+	Telegram        TelegramUserProfile  `bson:"telegram" json:"telegram"`
+	Referral        *ReferralUserProfile `bson:"ref" json:"referral"`
+	Channel         ChannelUserProfile   `bson:"channel" json:"-"`
+	IsChannelMember bool                 `json:"isChannelMember"`
 }
 
 type ReferralUserProfile struct {
 	ID       int64  `bson:"id" json:"id"`
 	Nickname string `bson:"nickname" json:"nickname"`
+}
+
+type ChannelUserProfile struct {
+	ID        int64              `bson:"id" json:"-"`
+	UpdatedAt primitive.DateTime `bson:"updatedAt" json:"-"`
+	CheckedAt primitive.DateTime `bson:"checkedAt" json:"-"`
 }
 
 type TelegramUserProfile struct {

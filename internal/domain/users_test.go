@@ -235,3 +235,25 @@ func TestUserDocument_tapEnergyChargeMax(t *testing.T) {
 		a.Equal(u.TapEnergyChargeMax(rules), j)
 	}
 }
+
+func TestUserDocument_calculateIsChannelMember(t *testing.T) {
+	t.Parallel()
+
+	rules, err := NewRules()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	a := assert.New(t)
+	u := NewUserDocument(rules)
+
+	// initial
+	a.False(u.Profile.IsChannelMember)
+
+	u.calculateIsChannelMember()
+	a.False(u.Profile.IsChannelMember)
+
+	u.Profile.Channel.ID = 1
+	u.calculateIsChannelMember()
+	a.True(u.Profile.IsChannelMember)
+}
