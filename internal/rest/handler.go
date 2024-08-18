@@ -26,7 +26,7 @@ func (l handlerLogger) AuthorizedHTTPRequest(c *fiber.Ctx) (*slog.Logger, *domai
 
 	jwt, ok := c.Locals("jwt").(*domain.JWTClaims)
 	if ok {
-		return log.With(slog.Int64("uid", jwt.UID)), jwt
+		return log.With(slog.Int64("uid", jwt.UID), slog.String("sid", jwt.JTI.String())), jwt
 	}
 
 	return log, nil

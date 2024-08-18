@@ -13,7 +13,7 @@ import (
 )
 
 type meService interface {
-	GetMe(ctx context.Context, uid int64) (domain.UserDocument, []byte, error)
+	GetMe(ctx context.Context, uid int64) (domain.UserDocument, *domain.JWTClaims, []byte, error)
 	CreateUser(ctx context.Context, u *domain.UserDocument, ref string) ([]byte, error)
 }
 
@@ -50,7 +50,7 @@ func (h handler) me(c *fiber.Ctx) error {
 		return newHTTPError(fiber.StatusBadRequest, "incorrect user id or no initial data")
 	}
 
-	u, jwt, err := h.srv.GetMe(ctx, data.User.ID)
+	u, jwtClaims, jwt, err := h.srv.GetMe(ctx, data.User.ID)
 	if err != nil {
 		if errors.Is(err, domain.ErrNoUser) {
 			u = domain.NewUserDocument(h.cfg.Rules)
@@ -80,6 +80,7 @@ func (h handler) me(c *fiber.Ctx) error {
 					slog.Int("pts", u.Points),
 					slog.Int("nrg", u.Tap.Energy.Charge),
 					slog.Int64("ref", u.Profile.Referral.ID),
+					slog.String("sid", jwtClaims.JTI.String()),
 				)
 			} else {
 				log.Info(
@@ -87,6 +88,7 @@ func (h handler) me(c *fiber.Ctx) error {
 					slog.Int64("uid", u.Profile.Telegram.ID),
 					slog.Int("pts", u.Points),
 					slog.Int("nrg", u.Tap.Energy.Charge),
+					slog.String("sid", jwtClaims.JTI.String()),
 				)
 			}
 
@@ -117,6 +119,7 @@ func (h handler) me(c *fiber.Ctx) error {
 		slog.Int64("uid", u.Profile.Telegram.ID),
 		slog.Int("pts", u.Points),
 		slog.Int("nrg", u.Tap.Energy.Charge),
+		slog.String("sid", jwtClaims.JTI.String()),
 	)
 
 	return c.JSON(res)

@@ -30,39 +30,39 @@ type meRedis interface {
 	SetLeaderboardPlayerPoints(ctx context.Context, uid int64, level domain.Level, points int) error
 }
 
-func (s Service) GetMe(ctx context.Context, uid int64) (domain.UserDocument, []byte, error) {
+func (s Service) GetMe(ctx context.Context, uid int64) (domain.UserDocument, *domain.JWTClaims, []byte, error) {
 	u, err := s.db.GetUserDocumentWithID(ctx, uid)
 	if err != nil {
-		return u, nil, err
+		return u, nil, nil, err
 	}
 
 	if u.Profile.IsGhost {
-		return u, nil, domain.ErrGhostUser
+		return u, nil, nil, domain.ErrGhostUser
 	}
 
 	if u.Profile.HasBan {
-		return u, nil, domain.ErrBannedUser
+		return u, nil, nil, domain.ErrBannedUser
 	}
 
 	jwtClaims, err := domain.NewJWTClaims(u.Profile.Telegram.ID)
 	if err != nil {
-		return u, nil, err
+		return u, nil, nil, err
 	}
 
 	jwtBytes, err := s.cfg.JWT.Encode(jwtClaims)
 	if err != nil {
-		return u, nil, err
+		return u, nil, nil, err
 	}
 
 	u.Calculate(s.cfg.Rules)
 
 	if err := s.db.UpdateUserDocument(ctx, &u); err != nil {
-		return u, nil, err
+		return u, nil, nil, err
 	}
 
 	_ = s.rdb.SetLeaderboardPlayerPoints(ctx, u.Profile.Telegram.ID, u.Level, u.Points)
 
-	return u, jwtBytes, nil
+	return u, jwtClaims, jwtBytes, nil
 }
 
 func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument, ref string) ([]byte, error) {
