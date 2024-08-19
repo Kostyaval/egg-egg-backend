@@ -280,7 +280,7 @@ func (s Service) UpgradeLevel(ctx context.Context, uid int64) (domain.UserDocume
 
 	u.Calculate(s.cfg.Rules)
 
-	if u.IsNextLevelAvailable {
+	if !u.IsNextLevelAvailable {
 		return u, domain.ErrNextLevelNotAvailable
 	}
 
