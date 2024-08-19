@@ -34,7 +34,8 @@ func (s *Suite) TestGetMe_GhostUser() {
 	ctx := context.Background()
 	s.dbMocks.On("GetUserDocumentWithID", ctx, uid).Return(doc, nil)
 
-	_, t, err := s.srv.GetMe(ctx, uid)
+	_, c, t, err := s.srv.GetMe(ctx, uid)
+	s.Nil(c)
 	s.Nil(t)
 	s.ErrorIs(err, domain.ErrGhostUser)
 
@@ -68,7 +69,8 @@ func (s *Suite) TestGetMe_BannedUser() {
 	ctx := context.Background()
 	s.dbMocks.On("GetUserDocumentWithID", ctx, uid).Return(doc, nil)
 
-	_, t, err := s.srv.GetMe(ctx, uid)
+	_, c, t, err := s.srv.GetMe(ctx, uid)
+	s.Nil(c)
 	s.Nil(t)
 	s.ErrorIs(err, domain.ErrBannedUser)
 
@@ -95,12 +97,13 @@ func (s *Suite) TestGetMe() {
 	s.dbMocks.On("UpdateUserDocument", ctx, &doc).Return(nil)
 	s.rdbMocks.On("SetLeaderboardPlayerPoints", ctx, uid, doc.Level, doc.Points).Return(nil)
 
-	u, t, err := s.srv.GetMe(ctx, uid)
+	u, c, t, err := s.srv.GetMe(ctx, uid)
 	s.Nil(err)
 
 	claims, err := s.cfg.JWT.Decode(t)
 	s.NoError(err)
-	s.Equal(u.Profile.Telegram.ID, claims.UID)
+	s.Equal(c.UID, claims.UID)
+	s.Equal(c.UID, u.Profile.Telegram.ID)
 
 	s.dbMocks.AssertExpectations(s.T())
 	s.dbMocks.AssertCalled(s.T(), "GetUserDocumentWithID", ctx, doc.Profile.Telegram.ID)
@@ -131,12 +134,13 @@ func (s *Suite) TestGetMe_DailyReward() {
 	s.dbMocks.On("UpdateUserDocument", ctx, &doc).Return(nil)
 	s.rdbMocks.On("SetLeaderboardPlayerPoints", ctx, uid, doc.Level, doc.Points).Return(nil)
 
-	u, t, err := s.srv.GetMe(ctx, uid)
+	u, c, t, err := s.srv.GetMe(ctx, uid)
 	s.Nil(err)
 
 	claims, err := s.cfg.JWT.Decode(t)
 	s.NoError(err)
 	s.Equal(u.Profile.Telegram.ID, claims.UID)
+	s.Equal(u.Profile.Telegram.ID, c.UID)
 	s.Equal(u.Points, doc.Points)
 
 	s.dbMocks.AssertExpectations(s.T())
@@ -169,12 +173,13 @@ func (s *Suite) TestGetMe_AutoClicker() {
 	s.dbMocks.On("UpdateUserDocument", ctx, &doc).Return(nil)
 	s.rdbMocks.On("SetLeaderboardPlayerPoints", ctx, uid, doc.Level, 3000).Return(nil)
 
-	u, t, err := s.srv.GetMe(ctx, uid)
+	u, c, t, err := s.srv.GetMe(ctx, uid)
 	s.Nil(err)
 
 	claims, err := s.cfg.JWT.Decode(t)
 	s.NoError(err)
 	s.Equal(u.Profile.Telegram.ID, claims.UID)
+	s.Equal(c.UID, claims.UID)
 	s.Equal(u.Points, 3000)
 	s.Equal(u.AutoClicker.Points, 2000)
 
@@ -213,12 +218,13 @@ func (s *Suite) TestGetMe_DailyRewardWithAutoClicker() {
 	s.dbMocks.On("UpdateUserDocument", ctx, &doc).Return(nil)
 	s.rdbMocks.On("SetLeaderboardPlayerPoints", ctx, uid, doc.Level, doc.Points).Return(nil)
 
-	u, t, err := s.srv.GetMe(ctx, uid)
+	u, c, t, err := s.srv.GetMe(ctx, uid)
 	s.Nil(err)
 
 	claims, err := s.cfg.JWT.Decode(t)
 	s.NoError(err)
 	s.Equal(u.Profile.Telegram.ID, claims.UID)
+	s.Equal(u.Profile.Telegram.ID, c.UID)
 	s.Equal(u.Points, doc.Points)
 	s.True(u.DailyReward.Notify)
 	s.Equal(u.AutoClicker.Points, 2000)
@@ -252,12 +258,12 @@ func (s *Suite) TestGetMe_ResetTapEnergyRechargeAvailable() {
 	s.dbMocks.On("UpdateUserDocument", ctx, &doc).Return(nil)
 	s.rdbMocks.On("SetLeaderboardPlayerPoints", ctx, uid, doc.Level, doc.Points).Return(nil)
 
-	u, t, err := s.srv.GetMe(ctx, uid)
+	u, c, t, err := s.srv.GetMe(ctx, uid)
 	s.Nil(err)
 
 	claims, err := s.cfg.JWT.Decode(t)
 	s.NoError(err)
-	s.Equal(u.Profile.Telegram.ID, claims.UID)
+	s.Equal(c.UID, claims.UID)
 	s.Equal(u.Tap.Energy.RechargeAvailable, doc.Tap.Energy.RechargeAvailable)
 	s.Equal(u.Tap.Energy.RechargedAt, doc.Tap.Energy.RechargedAt)
 

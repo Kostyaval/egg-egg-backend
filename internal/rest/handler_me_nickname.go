@@ -48,6 +48,8 @@ func (h handler) checkUserNickname(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).Send(nil)
 	}
 
+	log.Info("check nickname", slog.String("nickname", req.Nickname))
+
 	var res struct {
 		Nickname  string `json:"nickname"`
 		Available bool   `json:"isAvailable"`
