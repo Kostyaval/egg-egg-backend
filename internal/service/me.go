@@ -65,7 +65,7 @@ func (s Service) GetMe(ctx context.Context, uid int64) (domain.UserDocument, *do
 	return u, jwtClaims, jwtBytes, nil
 }
 
-func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument, ref string) ([]byte, error) {
+func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument, ref string) (*domain.JWTClaims, []byte, error) {
 	var (
 		isFreeNickname bool
 		err            error
@@ -74,7 +74,7 @@ func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument, ref str
 	if u.Profile.Telegram.Username != "" {
 		isFreeNickname, err = s.db.CheckUserNickname(ctx, u.Profile.Telegram.Username)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		if isFreeNickname {
@@ -85,7 +85,7 @@ func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument, ref str
 	if !isFreeNickname {
 		randNickname, err := gonanoid.Generate("abcdefghijklmnopqrstuvwxyz0123456789", 8)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		u.Profile.Nickname = "_" + randNickname
@@ -94,18 +94,18 @@ func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument, ref str
 	// set jwt
 	jwtClaims, err := domain.NewJWTClaims(u.Profile.Telegram.ID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	jwtBytes, err := s.cfg.JWT.Encode(jwtClaims)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// set referral
 	refUser, err := s.setReferral(ctx, u, ref)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if u.Profile.Referral != nil && len(s.cfg.Rules.Referral) > 0 {
@@ -118,7 +118,7 @@ func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument, ref str
 
 	// try to save here
 	if err := s.db.CreateUser(ctx, u); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	// no need to check error, because always will be updated with taps
@@ -145,7 +145,7 @@ func (s Service) CreateUser(ctx context.Context, u *domain.UserDocument, ref str
 		}
 	}
 
-	return jwtBytes, nil
+	return jwtClaims, jwtBytes, nil
 }
 
 func (s Service) setReferral(ctx context.Context, u *domain.UserDocument, ref string) (*domain.UserDocument, error) {

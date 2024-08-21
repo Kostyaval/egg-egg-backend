@@ -14,7 +14,7 @@ import (
 
 type meService interface {
 	GetMe(ctx context.Context, uid int64) (domain.UserDocument, *domain.JWTClaims, []byte, error)
-	CreateUser(ctx context.Context, u *domain.UserDocument, ref string) ([]byte, error)
+	CreateUser(ctx context.Context, u *domain.UserDocument, ref string) (*domain.JWTClaims, []byte, error)
 }
 
 func (h handler) me(c *fiber.Ctx) error {
@@ -62,7 +62,7 @@ func (h handler) me(c *fiber.Ctx) error {
 			u.Profile.Telegram.IsPremium = data.User.IsPremium
 			u.Profile.Telegram.AllowsWriteToPm = data.User.AllowsWriteToPm
 
-			jwt, err := h.srv.CreateUser(ctx, &u, data.StartParam)
+			jwtClaims, jwt, err := h.srv.CreateUser(ctx, &u, data.StartParam)
 			if err != nil {
 				log.Error(
 					"registration",
