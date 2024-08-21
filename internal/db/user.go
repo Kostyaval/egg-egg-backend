@@ -324,6 +324,7 @@ func (db DB) UpdateUserDocument(ctx context.Context, u *domain.UserDocument) err
 			"tap":         u.Tap,
 			"dailyReward": u.DailyReward,
 			"playedAt":    primitive.NewDateTimeFromTime(time.Now().UTC()),
+			"quests":      u.Quests,
 		}},
 	})
 
